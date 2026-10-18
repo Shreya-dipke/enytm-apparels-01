@@ -1,0 +1,483 @@
+{
+  "users": [
+    {
+      "id": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "name": "Mrunal Pimpalkar",
+      "email": "mrunal.pimpalkar.mp@gmail.com",
+      "phone": "50372047",
+      "passwordHash": "$2a$12$YRxKMPYyoPLXAjwx4L/VWemnT/qWTttbpOGdM/Xg3/KWPKhr3t40.",
+      "whatsappOptIn": true,
+      "emailOptIn": true,
+      "role": "customer",
+      "createdAt": 1790876967535,
+      "lastLoginAt": 1792300215401,
+      "addresses": []
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Essential Oversized Tee",
+      "category": "Oversized",
+      "price": 649,
+      "oldPrice": 1649,
+      "stock": 4,
+      "badge": "NEW",
+      "fabric": "240 GSM Premium Cotton",
+      "description": "A structured oversized silhouette made for everyday movement.",
+      "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "image2": "",
+      "image3": "",
+      "video": ""
+    },
+    {
+      "id": 2,
+      "name": "Heavyweight Oversized Tee",
+      "category": "Oversized",
+      "price": 1099,
+      "oldPrice": 1299,
+      "stock": 0,
+      "badge": "BESTSELLER",
+      "fabric": "260 GSM Premium Cotton",
+      "description": "A heavier everyday essential with a premium drape.",
+      "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "image2": "",
+      "image3": "",
+      "video": ""
+    },
+    {
+      "id": 3,
+      "name": "Organic Signature Polo",
+      "category": "Polos",
+      "price": 899,
+      "oldPrice": 1099,
+      "stock": 40,
+      "badge": "SIGNATURE",
+      "fabric": "280 GSM Organic Cotton",
+      "description": "Minimal branding. Elevated texture. Designed beyond one occasion.",
+      "image": "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Core French Terry Sweatshirt",
+      "category": "Sweatshirts",
+      "price": 1499,
+      "oldPrice": 1699,
+      "stock": 30,
+      "badge": "CORE",
+      "fabric": "360 GSM French Terry",
+      "description": "Clean proportions and substantial weight for a premium layer.",
+      "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Everyday Pullover Hoodie",
+      "category": "Hoodies",
+      "price": 1699,
+      "oldPrice": 1899,
+      "stock": 30,
+      "badge": "NEW",
+      "fabric": "380 GSM Cotton Blend",
+      "description": "A premium relaxed hoodie with a deep hood and heavyweight hand feel.",
+      "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Minimal Logo Tee",
+      "category": "Oversized",
+      "price": 949,
+      "oldPrice": 1099,
+      "stock": 50,
+      "badge": "",
+      "fabric": "240 GSM Cotton",
+      "description": "A refined oversized tee with subtle ENYTM identity.",
+      "image": "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ]
+    },
+    {
+      "name": "Acid Wash t-shirt",
+      "category": "Oversized",
+      "price": 1299,
+      "oldPrice": 1199,
+      "stock": 20,
+      "fabric": "240 GSM Premium Cotton",
+      "badge": "NEW",
+      "description": "",
+      "image": "blob:http://localhost:5173/56947565-5a70-4d23-88bb-115e5790a429",
+      "image2": "",
+      "image3": "",
+      "video": "",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "id": 1791106367401
+    }
+  ],
+  "orders": [
+    {
+      "id": "9bfd370b-84cb-4445-80b0-cc3994bb1a77",
+      "receipt": "ENYTM-1791480795215",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 3,
+          "name": "Organic Signature Polo",
+          "price": 899,
+          "qty": 1,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "9850372047",
+        "address": "Janki appartment agrasen Chowk near police station khamgaon",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "444303",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 899,
+      "shipping": 99,
+      "codFee": 0,
+      "total": 998,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": "online",
+      "paymentId": null,
+      "razorpayOrderId": "order_TlUvFqro0n4GhV",
+      "createdAt": 1791480795346,
+      "updatedAt": 1791480795346
+    },
+    {
+      "id": "8bfeb02e-29e1-45a7-85c3-f223186eae1d",
+      "receipt": "ENYTM-1791479258629",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "9850372047",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "codFee": 0,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": "online",
+      "paymentId": null,
+      "razorpayOrderId": "order_TlUUCiM49BKo7i",
+      "createdAt": 1791479258901,
+      "updatedAt": 1791479258901
+    },
+    {
+      "id": "ec8f851b-14e7-4b0b-9e4b-b598431e028f",
+      "receipt": "ENYTM-1791478635244",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "9850372047",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "codFee": 0,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": "online",
+      "paymentId": null,
+      "razorpayOrderId": "order_TlUJE61jUR60AU",
+      "createdAt": 1791478635344,
+      "updatedAt": 1791478635344
+    },
+    {
+      "id": "f9f3dac3-694d-4efe-bb0a-081deddd45ca",
+      "receipt": "ENYTM-1791478400376",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "9850372047",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "codFee": 0,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": "online",
+      "paymentId": null,
+      "razorpayOrderId": "order_TlUF5qcsmxn2fr",
+      "createdAt": 1791478400595,
+      "updatedAt": 1791478400595
+    },
+    {
+      "id": "d23a7a88-5d69-46db-bf85-e148754d26b4",
+      "receipt": "ENYTM-1791225689515",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "7503720470",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TkKTyZlK1poqRP",
+      "createdAt": 1791225689618,
+      "updatedAt": 1791225689618
+    },
+    {
+      "id": "45a32334-d2f0-440f-ace1-83cb454061db",
+      "receipt": "ENYTM-1791224947690",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "50372047",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TkKGutQBfLnXdO",
+      "createdAt": 1791224947840,
+      "updatedAt": 1791224947840
+    },
+    {
+      "id": "fb63ac1b-8bc2-4b02-b4f5-6a6d33574640",
+      "receipt": "ENYTM-1791223480151",
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 4,
+          "size": "M",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Mrunal Pimpalkar",
+        "phone": "09850372047",
+        "address": "Narayan Baug sciety , hadapsar, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "pincode": "411028",
+        "email": "mrunal.pimpalkar.mp@gmail.com"
+      },
+      "subtotal": 2596,
+      "shipping": 99,
+      "total": 2695,
+      "status": "payment_pending",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TkJr54REwrJ0qd",
+      "createdAt": 1791223480377,
+      "updatedAt": 1791223480377
+    }
+  ],
+  "carts": [
+    {
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        {
+          "id": 1,
+          "name": "Essential Oversized Tee",
+          "category": "Oversized",
+          "price": 649,
+          "oldPrice": 1649,
+          "stock": 4,
+          "badge": "NEW",
+          "fabric": "240 GSM Premium Cotton",
+          "description": "A structured oversized silhouette made for everyday movement.",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          "sizes": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ],
+          "image2": "",
+          "image3": "",
+          "video": "",
+          "size": "M",
+          "qty": 1,
+          "key": "1-M"
+        }
+      ],
+      "updatedAt": 1792329882375,
+      "remindedAt": null
+    }
+  ],
+  "wishlists": [
+    {
+      "userId": "ddb3258e-9e39-4431-9df5-536b2d66d0c6",
+      "items": [
+        1
+      ],
+      "updatedAt": 1792329882442,
+      "remindedAt": null
+    }
+  ],
+  "coupons": [],
+  "settings": {
+    "storeName": "ENYTM APPARELS",
+    "tagline": "more than a moment",
+    "whatsapp": "",
+    "supportEmail": "",
+    "shippingFreeAbove": "1499",
+    "shippingCharge": 99
+  },
+  "pendingOtps": [
+    {
+      "id": "73f2feeb-5218-4e6e-a859-a356600ffedb",
+      "name": "Shreya Dipke",
+      "email": "sobarapparels@gmail.com",
+      "phone": "+919356979469",
+      "password": "Mrunal@2002",
+      "emailOtpHash": "9849c5a06fe681ea0833cd4b5827c8dd705bcd493b7fedd3772a4d1305843bce",
+      "emailVerified": false,
+      "phoneVerified": false,
+      "attempts": 0,
+      "createdAt": 1792175219939,
+      "expiresAt": 1792175819939
+    }
+  ],
+  "passwordResetOtps": [
+    {
+      "id": "b2a7cd75-5dcf-4fb3-bd2a-20b1b93cd691",
+      "email": "mrunal.pimpalkar.mp@gmail.com",
+      "codeHash": "c7888b1cda8d9788b6d5349f3a4506af4d9beaf72e70cf499e6bb8191ad387e4",
+      "attempts": 0,
+      "createdAt": 1792001611579,
+      "expiresAt": 1792002211579
+    }
+  ]
+}
