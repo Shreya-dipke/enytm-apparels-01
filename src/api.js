@@ -1,4 +1,5 @@
-export const API = "/api";
+const BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, "") : "";
+export const API = BASE_URL ? `${BASE_URL}/api` : "/api";
 
 export async function api(path, options = {}) {
   const isAdmin = path.startsWith("/admin");
