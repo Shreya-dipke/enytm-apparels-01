@@ -33,6 +33,7 @@ import {useCart} from "./context/CartContext";
 import {api} from "./api";
 import {fallbackProducts} from "./data/products";
 import "./index.css";
+import "./ENYTM-address-ui.css";
 
 function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
 function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
@@ -254,21 +255,66 @@ function Auth({register=false}){
  {register?<p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>:<p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>}</div></main>
 }
 
-function AddressLookupFields({form,setForm,setError,compact=false}){
- const[cityOptions,setCityOptions]=useState([]);const[lookupBusy,setLookupBusy]=useState(false);const[pincodeBusy,setPincodeBusy]=useState(false);const[lookupMessage,setLookupMessage]=useState("");
+function AddressLookupFields({form,setForm,setError,compact=false,showLabel=false}){
+ const [cityOptions,setCityOptions]=useState([]);
+ const [officeOptions,setOfficeOptions]=useState([]);
+ const [lookupBusy,setLookupBusy]=useState(false);
+ const [pincodeBusy,setPincodeBusy]=useState(false);
+ const [lookupMessage,setLookupMessage]=useState("");
+ const requestRef=useRef(0);
  const update=(key,value)=>setForm(f=>({...f,[key]:value}));
- const lookupPincode=async value=>{const pin=String(value||"").replace(/\D/g,"").slice(0,6);update("pincode",pin);setLookupMessage("");if(pin.length!==6)return;setPincodeBusy(true);try{const d=await api(`/pincode/${pin}`);if(!d.valid)throw new Error(d.message||"Pincode not found.");setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||""}));setLookupMessage(`✓ ${d.city||d.district||"Location found"}, ${d.state||""}`)}catch(e){setLookupMessage(e.message||"Could not find this pincode.")}finally{setPincodeBusy(false)}};
- const lookupCity=async()=>{const city=String(form.city||"").trim();if(city.length<2){setLookupMessage("Enter a city name first.");return}setLookupBusy(true);setLookupMessage("");try{const d=await api(`/pincode/city/${encodeURIComponent(city)}`);const list=Array.isArray(d.pincodes)?d.pincodes:[];setCityOptions(list);if(list.length===1){await lookupPincode(list[0].pincode)}else if(list.length){setLookupMessage(`${list.length} pincodes found. Select one.`)}else setLookupMessage("No pincode found for this city.")}catch(e){setLookupMessage(e.message||"Could not find pincodes for this city.")}finally{setLookupBusy(false)}};
+ const lookupPincode=async value=>{
+  const pin=String(value||"").replace(/\D/g,"").slice(0,6);
+  const requestId=++requestRef.current;
+  setForm(f=>({...f,pincode:pin,...(pin.length<6?{city:"",state:"",district:"",postOffice:""}:{})}));
+  setLookupMessage("");
+  setOfficeOptions([]);
+  if(pin.length!==6){setPincodeBusy(false);return;}
+  setPincodeBusy(true);
+  try{
+   const d=await api(`/pincode/${pin}`);
+   if(requestId!==requestRef.current)return;
+   if(!d.valid)throw new Error(d.message||"Pincode not found. Check the six digits and try again.");
+   const offices=Array.isArray(d.offices)?d.offices:[];
+   setOfficeOptions(offices);
+   setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||offices[0]?.name||""}));
+   setLookupMessage(`Location found: ${d.city||d.district||"Area"}${d.district&&d.district!==d.city?`, ${d.district}`:""}, ${d.state||"India"}. Please confirm your area.`);
+  }catch(e){
+   if(requestId!==requestRef.current)return;
+   setLookupMessage(e.message||"Location lookup failed. You can enter city and state manually.");
+  }finally{if(requestId===requestRef.current)setPincodeBusy(false);}
+ };
+ const lookupCity=async()=>{
+  const city=String(form.city||"").trim();
+  if(city.length<2){setLookupMessage("Enter at least two letters of your city or locality.");return;}
+  setLookupBusy(true);setLookupMessage("");
+  try{
+   const d=await api(`/pincode/city/${encodeURIComponent(city)}`);
+   const list=Array.isArray(d.pincodes)?d.pincodes:[];
+   setCityOptions(list);
+   if(list.length===1){await lookupPincode(list[0].pincode);}
+   else if(list.length){setLookupMessage(`${list.length} matching postal areas found. Choose the correct pincode below.`);}
+   else setLookupMessage("No matching pincode found. Try a nearby locality or enter the pincode directly.");
+  }catch(e){setLookupMessage(e.message||"Could not search by city. Enter the pincode directly.");}
+  finally{setLookupBusy(false);}
+ };
+ const chooseCityPincode=value=>{
+  const selected=cityOptions.find(x=>String(x.pincode)===String(value));
+  if(selected){setForm(f=>({...f,city:selected.city||selected.district||f.city,state:selected.state||f.state,postOffice:selected.postOffice||"",pincode:String(selected.pincode)}));}
+  lookupPincode(value);
+ };
  return <>
-  <input required placeholder="Full name" value={form.name||""} onChange={e=>update("name",e.target.value)}/>
-  <input required inputMode="tel" placeholder="Phone" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(-10))}/>
-  <input required className="wide" placeholder="Flat / House / Street / Area" value={form.address||""} onChange={e=>update("address",e.target.value)}/>
-  <div className="address-city-row"><input required placeholder="City" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("")}} onBlur={lookupCity}/><button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING...":"FIND PINCODE"}</button></div>
-  <input required placeholder="State" value={form.state||""} onChange={e=>update("state",e.target.value)}/>
-  <div className="pincode-control"><input required inputMode="numeric" maxLength="6" placeholder="6-digit Pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div>
-  {cityOptions.length>1&&<select className="wide address-select" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city||"").toUpperCase()}</option>{cityOptions.map(x=><option key={x.pincode} value={x.pincode}>{x.pincode} — {x.postOffice}{x.district?` · ${x.district}`:""}</option>)}</select>}
-  {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("✓")?"success":""}`}>{lookupMessage}</div>}
- </>
+  <label className="address-field"><span>FULL NAME</span><input required autoComplete="name" placeholder="Name on delivery" value={form.name||""} onChange={e=>update("name",e.target.value)}/></label>
+  <label className="address-field"><span>MOBILE NUMBER</span><input required inputMode="tel" autoComplete="tel" maxLength="10" pattern="[0-9]{10}" placeholder="10-digit mobile number" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(0,10))}/></label>
+  <label className="address-field address-field-wide"><span>FLAT, HOUSE NO. & STREET</span><input required autoComplete="street-address" placeholder="Building, street, landmark" value={form.address||""} onChange={e=>update("address",e.target.value)}/></label>
+  <div className="address-field address-field-city"><label className="address-field"><span>CITY / TOWN</span><input required autoComplete="address-level2" placeholder="Enter city or locality" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("");}} onBlur={()=>{if(String(form.city||"").trim().length>=2)lookupCity();}} /></label><button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING…":"FIND PINCODE"}</button></div>
+  <label className="address-field"><span>STATE</span><input required autoComplete="address-level1" placeholder="Auto-filled from pincode" value={form.state||""} onChange={e=>update("state",e.target.value)}/></label>
+  <label className="address-field"><span>PINCODE</span><div className="pincode-control"><input required inputMode="numeric" autoComplete="postal-code" maxLength="6" pattern="[0-9]{6}" placeholder="6-digit pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div></label>
+  {officeOptions.length>1&&<label className="address-field address-field-wide"><span>POST OFFICE / LOCALITY</span><select className="address-select" value={form.postOffice||""} onChange={e=>update("postOffice",e.target.value)}><option value="">Choose your nearest post office</option>{officeOptions.map(x=><option key={`${x.name}-${x.pincode}`} value={x.name}>{x.name}{x.block?` · ${x.block}`:""}</option>)}</select></label>}
+  {cityOptions.length>1&&<label className="address-field address-field-wide"><span>SELECT MATCHING AREA</span><select className="address-select" value={form.pincode||""} onChange={e=>chooseCityPincode(e.target.value)}><option value="">Choose a pincode for {String(form.city||"")}</option>{cityOptions.map((x,i)=><option key={`${x.pincode}-${x.postOffice||i}`} value={x.pincode}>{x.pincode} — {x.postOffice||x.city||"Post office"}{x.district?` · ${x.district}`:""}</option>)}</select></label>}
+  {showLabel&&<label className="address-field"><span>SAVE ADDRESS AS</span><select value={form.label||"Home"} onChange={e=>update("label",e.target.value)}><option value="Home">Home</option><option value="Work">Work</option><option value="Other">Other</option></select></label>}
+  {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("Location found:")?"success":""}`} role="status">{lookupMessage}</div>}
+ </>;
 }
 
 function Checkout(){const{cart,subtotal,shipping,total,clearCart}=useCart();const nav=useNavigate();const[user,setUser]=useState(null);const[loading,setLoading]=useState(true);const[form,setForm]=useState({name:"",phone:"",address:"",city:"",state:"",pincode:""});const[error,setError]=useState("");useEffect(()=>{let alive=true;(async()=>{if(!localStorage.getItem("enytm-token")){sessionStorage.setItem("enytm-after-login","/checkout");nav("/login");return}try{const u=await api("/auth/me");if(!alive)return;setUser(u);const a=Array.isArray(u.addresses)?u.addresses.find(x=>x.isDefault)||u.addresses[0]:u.address;setForm({name:a?.name||u.name||"",phone:a?.phone||u.phone||"",address:a?.address||"",city:a?.city||"",state:a?.state||"",pincode:a?.pincode||""})}catch(e){if(alive)setError(e.message||"Could not load your account.")}finally{if(alive)setLoading(false)}})();return()=>{alive=false}},[nav]);const pay=async e=>{e.preventDefault();setError("");try{const data=await api("/checkout/order",{method:"POST",body:JSON.stringify({items:cart,shippingAddress:form})});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const digits=String(form.phone||"").replace(/\D/g,"").slice(-10);if(digits.length!==10)throw new Error("Please enter a valid 10-digit mobile number.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM order",order_id:data.razorpayOrderId,prefill:{name:form.name,email:user?.email,contact:digits},theme:{color:"#111111"},modal:{ondismiss:()=>{}},handler:async response=>{await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});clearCart();nav(`/order-success/${data.orderId}`)}});rzp.on("payment.failed",r=>setError(r.error?.description||"Payment failed. Please try again."));rzp.open()}catch(err){setError(err.message||"Could not start payment.")}};if(loading)return <main className="empty loading-page"><p className="eyebrow">SECURE CHECKOUT</p><h1>LOADING CHECKOUT...</h1></main>;if(!user)return <main className="empty"><p className="eyebrow">SECURE CHECKOUT</p><h1>CHECKOUT UNAVAILABLE</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/login">LOGIN AGAIN</Link></main>;return <main className="checkout-page"><div className="checkout-head"><p className="eyebrow">SECURE CHECKOUT</p><h1>COMPLETE YOUR ORDER</h1></div><div className="checkout-layout"><form className="checkout-form" onSubmit={pay}><h2>1. DELIVERY DETAILS</h2><div className="form-grid"><AddressLookupFields form={form} setForm={setForm} setError={setError}/></div><h2>2. PAYMENT</h2><div className="payment-box"><LockKeyhole/><div><b>Razorpay Secure Checkout</b><p>UPI · Cards · NetBanking · Wallets and available methods</p></div><span>SECURE</span></div>{error&&<div className="error">{error}</div>}<div className="preorder-payment-note"><b>ENYTM PRE-ORDER · LAUNCH 8 NOVEMBER 2026</b><p>Pay 30% now to confirm your pre-order. The remaining 70% must be paid online before dispatch. Cash on delivery is unavailable.</p><div><span>Advance due today (30%)</span><strong>₹{Math.ceil(total*0.30).toLocaleString("en-IN")}</strong></div><div><span>Balance before dispatch (70%)</span><strong>₹{(total-Math.ceil(total*0.30)).toLocaleString("en-IN")}</strong></div></div><button className="btn primary full">PAY ADVANCE ₹{Math.ceil(total*0.30).toLocaleString("en-IN")} <ArrowRight/></button><p className="tiny">Your payment is processed by Razorpay. ENYTM does not store your card/UPI credentials.</p></form><aside className="summary"><h2>YOUR BAG</h2>{cart.map(i=><div key={i.key} className="mini-item"><img src={i.image}/><span>{i.name}<small>{i.size} × {i.qty}</small></span><b>₹{(i.price*i.qty).toLocaleString("en-IN")}</b></div>)}<hr/><div><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{shipping?"₹"+shipping:"FREE"}</b></div><div className="total"><span>TOTAL</span><b>₹{total.toLocaleString("en-IN")}</b></div></aside></div></main>}
@@ -974,111 +1020,21 @@ function Account() {
         {showAddressForm && (
 
           <form
-            className="address-form"
+            className="address-form premium-address-form"
             onSubmit={saveAddress}
           >
 
-            <div className="form-grid">
-
-              <input
-                required
-                placeholder="Full name"
-                value={addressForm.name}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    name: e.target.value
-                  })
-                }
+            <div className="address-fields-grid">
+              <div className="address-form-intro">
+                <span className="address-form-step">01 / DELIVERY DETAILS</span>
+                <p>Enter a pincode or city to find the matching postal location automatically.</p>
+              </div>
+              <AddressLookupFields
+                form={addressForm}
+                setForm={setAddressForm}
+                setError={setAddressError}
+                showLabel
               />
-
-              <input
-                required
-                placeholder="Phone"
-                value={addressForm.phone}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    phone: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                className="wide"
-                placeholder="Complete address"
-                value={addressForm.address}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    address: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                placeholder="City"
-                value={addressForm.city}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    city: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                placeholder="State"
-                value={addressForm.state}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    state: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                inputMode="numeric"
-                maxLength="6"
-                placeholder="Pincode"
-                value={addressForm.pincode}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    pincode: e.target.value
-                      .replace(/\D/g, "")
-                      .slice(0, 6)
-                  })
-                }
-              />
-
-              <select
-                value={addressForm.label}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    label: e.target.value
-                  })
-                }
-              >
-                <option value="Home">
-                  Home
-                </option>
-
-                <option value="Work">
-                  Work
-                </option>
-
-                <option value="Other">
-                  Other
-                </option>
-              </select>
-
             </div>
 
             <label className="check">
