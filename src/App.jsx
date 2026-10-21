@@ -35,7 +35,7 @@ import {fallbackProducts} from "./data/products";
 import "./index.css";
 
 function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span style={{fontSize:10,fontWeight:800}}>₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
 function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const stock=Math.max(0,Number(product.stock||0));const outOfStock=stock<=0;const add=()=>{if(outOfStock)return;addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{outOfStock?<span className="product-stock-badge out">OUT OF STOCK</span>:stock<6?<span className="product-stock-badge low">{stock===1?"ONLY 1 LEFT":`ONLY ${stock} LEFT`}</span>:null}{product.badge&&!outOfStock&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
 <img
   src={product.image || ""}
@@ -391,7 +391,7 @@ function OrderDetails(){
   </section>
   <div className="order-detail-grid">
    <section className="order-detail-main">
-    <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p>{!shipped&&!cancelled&&<button className="order-action-link" onClick={()=>{setSizeItem(item);setSizeValue(item.size||"")}}>CHANGE SIZE</button>}</div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
+    <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p>{!shipped&&!cancelled&&<button type="button" className="order-action-link order-change-size-button" onClick={()=>{setSizeItem(item);setSizeValue(item.size||"")}}><Pencil size={13}/> CHANGE T-SHIRT SIZE</button>}</div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
     {order.tracking?.trackingNumber&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK SHIPMENT</h2><span>{order.tracking.courier}</span></div><div className="tracking-row"><Package size={22}/><div><b>{order.tracking.trackingNumber}</b><small>Tracking number</small></div>{order.tracking.trackingUrl&&<a className="btn outline" href={order.tracking.trackingUrl} target="_blank" rel="noreferrer">TRACK NOW <ArrowRight size={15}/></a>}</div></div>}
     {!order.tracking?.trackingNumber&&!cancelled&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK YOUR ORDER</h2><span>LIVE STATUS</span></div><div className="tracking-placeholder"><Truck size={24}/><div><b>Tracking details will appear after dispatch.</b><small>You can follow every delivery stage above.</small></div></div></div>}
     <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18}/></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
@@ -443,6 +443,10 @@ function Account() {
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileForm, setProfileForm] = useState({ name: "", phone: "", whatsappOptIn: false, emailOptIn: true });
 
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -502,6 +506,7 @@ function Account() {
       }
 
       setUser(accountUser);
+      setProfileForm({ name: accountUser.name || "", phone: accountUser.phone || "", whatsappOptIn: Boolean(accountUser.whatsappOptIn), emailOptIn: accountUser.emailOptIn !== false });
 
       // ORDERS
       if (ordersResult.status === "fulfilled") {
@@ -570,6 +575,24 @@ function Account() {
   useEffect(() => {
     loadAccount();
   }, []);
+
+  const saveProfile = async (event) => {
+    event.preventDefault();
+    setProfileSaving(true);
+    setProfileMessage("");
+    try {
+      const updated = await api("/auth/profile", { method: "PUT", body: JSON.stringify({
+        name: profileForm.name.trim(), phone: profileForm.phone.trim(),
+        whatsappOptIn: profileForm.whatsappOptIn, emailOptIn: profileForm.emailOptIn
+      }) });
+      setUser(updated);
+      setProfileForm({ name: updated.name || "", phone: updated.phone || "", whatsappOptIn: Boolean(updated.whatsappOptIn), emailOptIn: updated.emailOptIn !== false });
+      setProfileEditing(false);
+      setProfileMessage("Profile updated successfully.");
+    } catch (error) {
+      setProfileMessage(error.message || "Could not update your profile.");
+    } finally { setProfileSaving(false); }
+  };
 
   const startAddAddress = () => {
     setEditingId(null);
@@ -854,6 +877,18 @@ function Account() {
           <p>
             {user.phone || "No phone added"}
           </p>
+
+          <button type="button" className="btn outline profile-edit-trigger" onClick={() => { setProfileMessage(""); setProfileEditing(v => !v); }}>
+            <Pencil size={14} /> {profileEditing ? "CLOSE EDIT" : "EDIT PROFILE"}
+          </button>
+          {profileMessage && <p className="profile-feedback" role="status">{profileMessage}</p>}
+          {profileEditing && <form className="profile-edit-form" onSubmit={saveProfile}>
+            <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({...v, name:e.target.value}))} /></label>
+            <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({...v, phone:e.target.value}))} /></label>
+            <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({...v, whatsappOptIn:e.target.checked}))} /> Receive order updates on WhatsApp</label>
+            <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({...v, emailOptIn:e.target.checked}))} /> Receive order updates by email</label>
+            <button className="btn primary full" type="submit" disabled={profileSaving}>{profileSaving ? "SAVING PROFILE..." : "SAVE PROFILE"}</button>
+          </form>}
 
           <div className="profile-preferences">
 
