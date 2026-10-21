@@ -35,8 +35,8 @@ import {fallbackProducts} from "./data/products";
 import "./index.css";
 
 function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
-function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const add=()=>{addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{product.badge&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span style={{fontSize:10,fontWeight:800}}>₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
+function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const stock=Math.max(0,Number(product.stock||0));const outOfStock=stock<=0;const add=()=>{if(outOfStock)return;addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{outOfStock?<span className="product-stock-badge out">OUT OF STOCK</span>:stock<6?<span className="product-stock-badge low">{stock===1?"ONLY 1 LEFT":`ONLY ${stock} LEFT`}</span>:null}{product.badge&&!outOfStock&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
 <img
   src={product.image || ""}
   alt={product.name}
@@ -58,7 +58,7 @@ function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart
       "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
   }}
 />
-</Link><button className="quick-add" onClick={add}>{added?<>ADDED TO BAG <CheckCircle size={15}/></>:<>QUICK ADD <Plus size={15}/></>}</button>{added&&<div className="added-toast"><CheckCircle size={16}/><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8,flexWrap:"wrap",whiteSpace:"nowrap"}}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount&&<del style={{color:"#a7a19a",fontSize:"0.9em",fontWeight:400}}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount&&<span style={{fontSize:"10px",letterSpacing:".04em",color:"#c8b69a",fontWeight:700}}>{Math.round((Number(product.oldPrice)-Number(product.price))/Number(product.oldPrice)*100)}% OFF</span>}</div></div></article>}
+</Link><button className="quick-add" onClick={add} disabled={outOfStock}>{outOfStock?"OUT OF STOCK":added?<>ADDED TO BAG <CheckCircle size={15}/></>:<>QUICK ADD <Plus size={15}/></>}</button>{added&&<div className="added-toast"><CheckCircle size={16}/><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8,flexWrap:"wrap",whiteSpace:"nowrap"}}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount&&<del style={{color:"#a7a19a",fontSize:"0.9em",fontWeight:400}}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount&&<span style={{fontSize:"10px",letterSpacing:".04em",color:"#c8b69a",fontWeight:700}}>{Math.round((Number(product.oldPrice)-Number(product.price))/Number(product.oldPrice)*100)}% OFF</span>}</div></div></article>}
 function PrelaunchHome(){
   return <main className="enytm-prelaunch-home">
     <style>{`
@@ -153,6 +153,8 @@ function ProductPage(){
  const[active,setActive]=useState(0);
  const[videoBlocked,setVideoBlocked]=useState(false);
  const liked=wishlist.includes(product.id);
+ const stock=Math.max(0,Number(product.stock||0));
+ const outOfStock=stock<=0;
  const videoRef=useRef(null);
  const gallery=[
   {type:"image",src:product.image,label:"01 / FRONT"},
@@ -163,7 +165,7 @@ function ProductPage(){
   product.video&&{type:"video",src:product.video,poster:product.image,label:"06 / MOTION"}
  ].filter(Boolean);
  const safeGallery=gallery.length?gallery:[{type:"image",src:product.image,label:"01 / FRONT"}];
- const add=()=>{for(let i=0;i<qty;i++)addToCart(product,size);setAdded(true);setTimeout(()=>setAdded(false),1800)};
+ const add=()=>{if(outOfStock)return;if(qty>stock){setQty(stock);return}for(let i=0;i<qty;i++)addToCart(product,size);setAdded(true);setTimeout(()=>setAdded(false),1800)};
  const activeMedia=safeGallery[Math.min(active,safeGallery.length-1)];
  const startVideo=()=>{
   const video=videoRef.current;
@@ -222,6 +224,7 @@ function ProductPage(){
    <h1>{product.name}</h1>
    <div className="rating"><span className="stars">★★★★★</span><span>4.9</span><a href="#reviews">28 reviews</a></div>
    <div className="price-row"><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{product.oldPrice&&<del>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}<span className="price-note">INCLUSIVE OF TAXES</span></div>
+   <p className={`product-stock-message ${outOfStock?"out":"low"}`}>{outOfStock?"OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE.":stock<6?`HURRY — ONLY ${stock} LEFT IN STOCK.`:"IN STOCK · READY TO ORDER"}</p>
    <p className="detail-copy">{product.description}</p>
    <div className="detail-highlights"><span>{product.fabric?.match(/\d+\s*GSM/i)?.[0]||"PREMIUM"}</span><span>PREMIUM COTTON</span><span>OVERSIZED FIT</span></div>
    <div className="spec"><span>FABRIC</span><b>{product.fabric}</b></div>
@@ -230,12 +233,12 @@ function ProductPage(){
     <div className="quantity-block">
       <span>QUANTITY</span>
       <div className="quantity-control">
-        <button type="button" onClick={()=>setQty(Math.max(1,qty-1))} aria-label="Decrease quantity"><Minus size={15}/></button>
+        <button type="button" onClick={()=>setQty(Math.max(1,qty-1))} aria-label="Decrease quantity" disabled={outOfStock||qty<=1}><Minus size={15}/></button>
         <strong>{qty}</strong>
-        <button type="button" onClick={()=>setQty(qty+1)} aria-label="Increase quantity"><Plus size={15}/></button>
+        <button type="button" onClick={()=>setQty(Math.min(stock,qty+1))} aria-label="Increase quantity" disabled={outOfStock||qty>=stock}><Plus size={15}/></button>
       </div>
     </div>
-    <button className="btn primary add-detail" onClick={add}>{added?<><CheckCircle size={18}/> ADDED TO BAG</>:<>ADD TO BAG <ShoppingBag size={18}/></>}</button>
+    <button className="btn primary add-detail" onClick={add} disabled={outOfStock}>{outOfStock?<>OUT OF STOCK</>:added?<><CheckCircle size={18}/> ADDED TO BAG</>:<>ADD TO BAG <ShoppingBag size={18}/></>}</button>
    </div>
    {added&&<div className="detail-added"><CheckCircle size={15}/><span>Added to your bag</span><Link to="/cart">VIEW BAG →</Link></div>}
    <div className="perks"><div><Truck/><span><b>FREE SHIPPING</b> ON ORDERS ₹1,999+</span></div><div><ShieldCheck/><span><b>SECURE PAYMENT</b> POWERED BY RAZORPAY</span></div><div><RotateCcw/><span><b>EASY RETURNS</b> WITHIN 48 HOURS</span></div></div>
@@ -279,18 +282,51 @@ function Auth({register=false}){
 }
 
 function AddressLookupFields({form,setForm,setError,compact=false}){
- const[cityOptions,setCityOptions]=useState([]);const[lookupBusy,setLookupBusy]=useState(false);const[pincodeBusy,setPincodeBusy]=useState(false);const[lookupMessage,setLookupMessage]=useState("");
+ const[cityOptions,setCityOptions]=useState([]);
+ const[lookupBusy,setLookupBusy]=useState(false);
+ const[pincodeBusy,setPincodeBusy]=useState(false);
+ const[lookupMessage,setLookupMessage]=useState("");
+ const cityTimer=useRef(null);
  const update=(key,value)=>setForm(f=>({...f,[key]:value}));
- const lookupPincode=async value=>{const pin=String(value||"").replace(/\D/g,"").slice(0,6);update("pincode",pin);setLookupMessage("");if(pin.length!==6)return;setPincodeBusy(true);try{const d=await api(`/pincode/${pin}`);if(!d.valid)throw new Error(d.message||"Pincode not found.");setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||""}));setLookupMessage(`✓ ${d.city||d.district||"Location found"}, ${d.state||""}`)}catch(e){setLookupMessage(e.message||"Could not find this pincode.")}finally{setPincodeBusy(false)}};
- const lookupCity=async()=>{const city=String(form.city||"").trim();if(city.length<2){setLookupMessage("Enter a city name first.");return}setLookupBusy(true);setLookupMessage("");try{const d=await api(`/pincode/city/${encodeURIComponent(city)}`);const list=Array.isArray(d.pincodes)?d.pincodes:[];setCityOptions(list);if(list.length===1){await lookupPincode(list[0].pincode)}else if(list.length){setLookupMessage(`${list.length} pincodes found. Select one.`)}else setLookupMessage("No pincode found for this city.")}catch(e){setLookupMessage(e.message||"Could not find pincodes for this city.")}finally{setLookupBusy(false)}};
+ const lookupPincode=async value=>{
+  const pin=String(value||"").replace(/\D/g,"").slice(0,6);
+  update("pincode",pin); setLookupMessage("");
+  if(pin.length!==6)return;
+  setPincodeBusy(true);
+  try{
+   const d=await api(`/pincode/${pin}`);
+   if(!d.valid)throw new Error(d.message||"Pincode not found. Enter the city and choose a PIN.");
+   setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||""}));
+   setLookupMessage(`✓ ${d.city||d.district||"Location found"}${d.state?`, ${d.state}`:""}`);
+  }catch(e){setLookupMessage(e.message||"Could not find this pincode. You can enter city/state manually.");}
+  finally{setPincodeBusy(false);}
+ };
+ const lookupCity=async()=>{
+  const city=String(form.city||"").trim();
+  if(city.length<2){setLookupMessage("Enter a city name first.");return;}
+  setLookupBusy(true);setLookupMessage("");
+  try{
+   const d=await api(`/pincode/city/${encodeURIComponent(city)}`);
+   const list=Array.isArray(d.pincodes)?d.pincodes:[];
+   setCityOptions(list);
+   if(list.length===1){await lookupPincode(list[0].pincode);}
+   else if(list.length>1){setLookupMessage(`${list.length} PIN codes found. Choose your locality below.`);}
+   else setLookupMessage("No PIN codes found. Check the city spelling or enter your PIN code manually.");
+  }catch(e){setLookupMessage(e.message||"PIN lookup is temporarily unavailable. Try again in a moment.");}
+  finally{setLookupBusy(false);}
+ };
+ useEffect(()=>()=>{if(cityTimer.current)clearTimeout(cityTimer.current)},[]);
  return <>
   <input required placeholder="Full name" value={form.name||""} onChange={e=>update("name",e.target.value)}/>
   <input required inputMode="tel" placeholder="Phone" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(-10))}/>
   <input required className="wide" placeholder="Flat / House / Street / Area" value={form.address||""} onChange={e=>update("address",e.target.value)}/>
-  <div className="address-city-row"><input required placeholder="City" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("")}} onBlur={lookupCity}/><button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING...":"FIND PINCODE"}</button></div>
+  <div className="address-city-row">
+   <input required placeholder="City" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("");if(cityTimer.current)clearTimeout(cityTimer.current);const val=e.target.value;if(val.trim().length>=3)cityTimer.current=setTimeout(()=>lookupCity(),650)}} onBlur={()=>{if(String(form.city||"").trim().length>=2)lookupCity()}}/>
+   <button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING...":"FIND PINCODE"}</button>
+  </div>
+  {cityOptions.length>1&&<select className="wide address-select" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city||"").toUpperCase()}</option>{cityOptions.map((x,i)=><option key={`${x.pincode}-${i}`} value={x.pincode}>{x.pincode}{x.postOffice?` — ${x.postOffice}`:""}{x.district?` · ${x.district}`:""}</option>)}</select>}
   <input required placeholder="State" value={form.state||""} onChange={e=>update("state",e.target.value)}/>
   <div className="pincode-control"><input required inputMode="numeric" maxLength="6" placeholder="6-digit Pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div>
-  {cityOptions.length>1&&<select className="wide address-select" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city||"").toUpperCase()}</option>{cityOptions.map(x=><option key={x.pincode} value={x.pincode}>{x.pincode} — {x.postOffice}{x.district?` · ${x.district}`:""}</option>)}</select>}
   {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("✓")?"success":""}`}>{lookupMessage}</div>}
  </>
 }
@@ -326,7 +362,7 @@ function OrderDetails(){
  const[sizeValue,setSizeValue]=useState("");
  const[message,setMessage]=useState("");
  const load=async()=>{setLoading(true);setError("");try{const o=await api(`/orders/${id}`);setOrder(o)}catch(e){setError(e.message||"Could not load this order.")}finally{setLoading(false)}};
- useEffect(()=>{if(!localStorage.getItem("enytm-token")){nav("/login");return}load()},[id]);
+ useEffect(()=>{if(!localStorage.getItem("enytm-token")){nav("/login");return}load();const refresh=window.setInterval(()=>{api(`/orders/${id}`).then(setOrder).catch(()=>{})},30000);return()=>window.clearInterval(refresh)},[id]);
  const status=String(order?.status||"payment_pending");
  const shipped=["shipped","out_for_delivery","delivered"].includes(status);
  const cancelled=status==="cancelled";
@@ -334,7 +370,7 @@ function OrderDetails(){
  const statusLabel=status==="payment_pending"?"PAYMENT PENDING":status.replace(/_/g," ").toUpperCase();
  const deliveryDate=order?.estimatedDeliveryDate?new Date(order.estimatedDeliveryDate):null;
  const formatDate=d=>d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
- const cancelOrder=async()=>{if(!window.confirm("Cancel this order? This action cannot be undone."))return;setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/cancel`,{method:"POST"});setOrder(o);setMessage(o.refundStatus==="initiated"?"Order cancelled. Your refund has been initiated.":"Order cancelled successfully.")}catch(e){setMessage(e.message||"Could not cancel the order.")}finally{setActionBusy(false)}};
+ const cancelOrder=async()=>{if(!window.confirm("Cancel this order? You will be asked to choose where an eligible refund should go."))return;const paid=Number(order?.advancePaid||0)+Number(order?.balancePaid||0);let refundTo="original";if(paid>0){const choice=window.prompt("Refund preference: type WALLET to refund to your ENYTM wallet, or ORIGINAL to refund to the original payment method.","ORIGINAL");if(choice===null)return;const normalized=choice.trim().toLowerCase();if(!["wallet","original"].includes(normalized)){setMessage("Please type WALLET or ORIGINAL. No cancellation was made.");return;}refundTo=normalized;}setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/cancel`,{method:"POST",body:JSON.stringify({refundTo})});setOrder(o);setMessage(o.refundStatus==="initiated"?"Order cancelled. Your refund has been initiated.":o.refundStatus==="wallet_credited"?"Order cancelled and eligible refund credited to your ENYTM wallet.":"Order cancelled successfully.")}catch(e){setMessage(e.message||"Could not cancel the order.")}finally{setActionBusy(false)}};
  const payBalance=async()=>{setActionBusy(true);setMessage("");try{const data=await api(`/orders/${id}/balance/order`,{method:"POST"});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM pre-order balance",order_id:data.razorpayOrderId,theme:{color:"#111111"},handler:async response=>{try{const result=await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});setOrder(result.order);setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch.");}catch(e){setMessage(e.message||"Payment verification is pending. Refresh the order shortly.");}},modal:{ondismiss:()=>setActionBusy(false)}});rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Balance payment failed. Please try again.");setActionBusy(false)});rzp.open();}catch(e){setMessage(e.message||"Could not start balance payment.");setActionBusy(false)}};
  const changeSize=async()=>{if(!sizeItem||!sizeValue)return;setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/change-size`,{method:"POST",body:JSON.stringify({productId:sizeItem.productId,size:sizeValue})});setOrder(o);setSizeItem(null);setSizeValue("");setMessage("Size updated successfully.")}catch(e){setMessage(e.message||"Could not change the size.")}finally{setActionBusy(false)}};
  if(loading)return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
@@ -1305,6 +1341,30 @@ function Footer(){const whatsappLink="https://wa.me/message/5KFLGKP4XCG7C1";retu
   />
 </svg>
 </a><footer><div className="footer-main"><div><Link className="logo footer-logo" to="/">ENYTM<span>™</span></Link></div><div className="footer-col"><h4>SHOP</h4><Link to="/shop">All Products</Link><Link to="/shop?category=Oversized">Oversized</Link><Link to="/shop?category=Polos">Polos</Link><Link to="/shop?category=Hoodies">Hoodies</Link></div><div className="footer-col"><h4>HELP</h4><a href={whatsappLink} target="_blank" rel="noreferrer">WhatsApp</a></div><div className="footer-col"><h4>FOLLOW</h4><a href="https://instagram.com/enytmapparels" target="_blank" rel="noreferrer"><Instagram size={17}/> Instagram</a></div></div><div className="footer-bottom"><span>© 2026 ENYTM APPARELS. ALL RIGHTS RESERVED.</span><span>CHAROLI, PUNE · INDIA</span></div></footer></>}function SearchOverlay({close}){const[q,setQ]=useState("");const products=useProducts();const results=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));return <div className="search-overlay"><button className="close-search" onClick={close}><X/></button><div className="search-inner"><p className="eyebrow">SEARCH ENYTM</p><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="What are you looking for?"/><div className="search-results">{q&&results.map(p=><Link key={p.id} to={`/product/${p.id}`} onClick={close}><img src={p.image}/><span>{p.name}<small>₹{p.price.toLocaleString("en-IN")}</small></span><ArrowRight/></Link>)}</div></div></div>}
+function WalletPage(){
+ const [wallet,setWallet]=useState({balance:0,transactions:[]});
+ const [amount,setAmount]=useState("500");
+ const [busy,setBusy]=useState(false);
+ const [message,setMessage]=useState("");
+ const load=async()=>{try{setWallet(await api("/wallet"));}catch(e){setMessage(e.message||"Could not load wallet.");}};
+ useEffect(()=>{load()},[]);
+ const addMoney=async()=>{
+  const rupees=Number(amount);
+  if(!Number.isFinite(rupees)||rupees<100||rupees>50000){setMessage("Enter an amount from ₹100 to ₹50,000.");return;}
+  setBusy(true);setMessage("");
+  try{
+   const data=await api("/wallet/topup/order",{method:"POST",body:JSON.stringify({amount:rupees})});
+   if(!window.Razorpay)throw new Error("Payment checkout could not load. Please try again.");
+   const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:"INR",name:"ENYTM APPARELS",description:"Add money to ENYTM Wallet",order_id:data.razorpayOrderId,theme:{color:"#c8b69a"},handler:async response=>{
+    try{await api("/wallet/topup/verify",{method:"POST",body:JSON.stringify({...response,topupId:data.topupId})});await load();setMessage("Wallet credited successfully.");}
+    catch(e){setMessage(e.message||"Payment verification pending. Refresh wallet shortly.");}
+   },modal:{ondismiss:()=>setBusy(false)}});
+   rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Payment failed.");setBusy(false)});rzp.open();
+  }catch(e){setMessage(e.message||"Unable to start wallet top-up.");setBusy(false);}
+ };
+ return <main className="account-page"><div className="page-heading compact"><p className="eyebrow">ENYTM MEMBERS</p><h1>MY WALLET</h1><p>Your balance and wallet activity.</p></div><section className="account-card wallet-card"><p className="eyebrow">AVAILABLE BALANCE</p><h2 style={{fontSize:42,margin:"8px 0 24px"}}>₹{Number(wallet.balance||0).toLocaleString("en-IN")}</h2><div className="wallet-topup"><label htmlFor="wallet-add-amount">ADD MONEY (₹100–₹50,000)</label><input id="wallet-add-amount" inputMode="numeric" value={amount} onChange={e=>setAmount(e.target.value.replace(/\D/g,""))}/><button className="btn primary" disabled={busy} onClick={addMoney}>{busy?"PROCESSING...":"ADD MONEY SECURELY"}</button></div>{message&&<p className="order-action-message">{message}</p>}<h2>WALLET ACTIVITY</h2>{wallet.transactions?.length?wallet.transactions.map((t,i)=><div className="wallet-transaction" key={t.id||i}><span>{t.description||t.type||"Wallet transaction"}<small>{t.createdAt?new Date(t.createdAt).toLocaleString("en-IN"):""}</small></span><b>{t.amount>=0?"+":"−"}₹{Math.abs(Number(t.amount||0)).toLocaleString("en-IN")}</b></div>):<p className="muted">No wallet transactions yet.</p>}</section></main>
+}
+
 function Admin(){
  const[logged,setLogged]=useState(!!localStorage.getItem("enytm-admin"));
  const[tab,setTab]=useState("dashboard");
@@ -1328,12 +1388,30 @@ function Admin(){
   finally{setBusy(false)}
  };
  if(!logged)return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>{error&&<div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy?"CHECKING...":"LOGIN"}</button></div></main>;
- return <main className="admin-page"><aside className="admin-side"><div className="logo">ENYTM<span>™</span></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
-function AdminOrders({ orders }) {
+ return <main className="admin-page"><aside className="admin-side"><div className="logo">ENYTM<span>™</span></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders} reload={load}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
+function AdminOrders({ orders, reload }) {
  const [selected, setSelected] = useState(null);
+ const [status, setStatus] = useState("confirmed");
+ const [courier, setCourier] = useState("");
+ const [trackingNumber, setTrackingNumber] = useState("");
+ const [trackingUrl, setTrackingUrl] = useState("");
+ const [saving, setSaving] = useState(false);
+ const [message, setMessage] = useState("");
  const money = value => `₹${Number(value || 0).toLocaleString("en-IN")}`;
  const date = value => value ? new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
  const field = (label, value) => <div className="order-detail-field" key={label}><span>{label}</span><strong>{value || "—"}</strong></div>;
+ const openOrder = order => { setSelected(order); setStatus(order.status || "confirmed"); setCourier(order.tracking?.courier || ""); setTrackingNumber(order.tracking?.trackingNumber || ""); setTrackingUrl(order.tracking?.trackingUrl || ""); setMessage(""); };
+ const saveDelivery = async () => {
+  if (!selected) return;
+  setSaving(true); setMessage("");
+  try {
+   const updated = await api(`/admin/orders/${selected.id}/status`, { method: "PUT", body: JSON.stringify({ status, tracking: { courier: courier.trim(), trackingNumber: trackingNumber.trim(), trackingUrl: trackingUrl.trim() } }) });
+   setSelected(updated); setStatus(updated.status || status); setCourier(updated.tracking?.courier || ""); setTrackingNumber(updated.tracking?.trackingNumber || ""); setTrackingUrl(updated.tracking?.trackingUrl || "");
+   setMessage("Delivery details saved. The customer order page will reflect the updated status.");
+   if (reload) await reload();
+  } catch (e) { setMessage(e.message || "Could not update delivery details."); }
+  finally { setSaving(false); }
+ };
  if (selected) {
   const order = selected;
   const customer = order.customer || {};
@@ -1341,6 +1419,15 @@ function AdminOrders({ orders }) {
   return <section className="admin-order-detail">
    <div className="admin-order-detail-head"><button className="btn outline" onClick={() => setSelected(null)}>← BACK TO ORDERS</button><div><p className="eyebrow">ORDER DETAILS</p><h2>{order.receipt || order.id}</h2><p className="admin-order-muted">Placed {date(order.createdAt)}</p></div><button className="btn outline" onClick={() => window.print()}>PRINT ORDER</button></div>
    <div className="admin-order-badges"><span>ORDER: {String(order.status || "unknown").replaceAll("_", " ")}</span><span>PAYMENT: {String(order.paymentStatus || "unknown").replaceAll("_", " ")}</span></div>
+   <section className="admin-order-card admin-delivery-editor"><p className="eyebrow">DELIVERY & CUSTOMER TRACKING</p><h3>Update order progress</h3><p className="admin-order-muted">Save changes here to update the status shown in the customer's order details. Add courier tracking details when available.</p>
+    <div className="admin-delivery-form">
+     <label>ORDER STATUS<select value={status} onChange={e=>setStatus(e.target.value)}>{[["payment_pending","Payment pending"],["confirmed","Order confirmed"],["processing","Processing"],["packed","Packed"],["shipped","Shipped"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+     <label>COURIER PARTNER<input value={courier} onChange={e=>setCourier(e.target.value)} placeholder="e.g. Delhivery, Shiprocket"/></label>
+     <label>TRACKING / AWB NUMBER<input value={trackingNumber} onChange={e=>setTrackingNumber(e.target.value)} placeholder="Enter AWB or tracking number"/></label>
+     <label>TRACKING URL<input type="url" value={trackingUrl} onChange={e=>setTrackingUrl(e.target.value)} placeholder="https://courier-tracking-link"/></label>
+    </div>
+    <button className="btn primary" disabled={saving} onClick={saveDelivery}>{saving?"SAVING...":"SAVE DELIVERY UPDATE"}</button>{message&&<p className="admin-save-message">{message}</p>}
+   </section>
    <div className="admin-order-detail-grid">
     <section className="admin-order-card"><p className="eyebrow">CUSTOMER & DELIVERY</p><h3>{customer.name || "Customer details unavailable"}</h3><div className="admin-order-fields">{field("Email", customer.email)}{field("Phone", customer.phone)}{field("Address", customer.address)}{field("City", customer.city)}{field("State", customer.state)}{field("PIN code", customer.pincode)}{field("Landmark", customer.landmark)}</div></section>
     <section className="admin-order-card"><p className="eyebrow">PAYMENT INFORMATION</p><div className="admin-order-fields">{field("Payment status", order.paymentStatus)}{field("Payment method", order.paymentMethod)}{field("Payment ID", order.paymentId)}{field("Gateway order ID", order.razorpayOrderId)}{field("Order ID", order.receipt || order.id)}{field("Last updated", date(order.updatedAt))}</div></section>
@@ -1350,7 +1437,7 @@ function AdminOrders({ orders }) {
    <p className="admin-order-note">Details are shown from the order record saved by your store. Fields that were not collected at checkout appear as “—”.</p>
   </section>;
  }
- return <div className="admin-table-wrap admin-orders-table"><table><thead><tr>{["ORDER ID · CLICK TO OPEN","CUSTOMER","PHONE","TOTAL","PAYMENT","ORDER STATUS","DATE"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{orders.map(order=><tr key={order.id || order.receipt}><td><button className="admin-order-link" onClick={() => setSelected(order)}>{order.receipt || order.id}</button></td><td>{order.customer?.name || "—"}</td><td>{order.customer?.phone || "—"}</td><td>{money(order.total)}</td><td>{order.paymentStatus || "—"}</td><td>{order.status || "—"}</td><td>{date(order.createdAt)}</td></tr>)}</tbody></table>{!orders.length&&<p className="admin-order-muted">No orders found.</p>}</div>;
+ return <div className="admin-table-wrap admin-orders-table"><table><thead><tr>{["ORDER ID · CLICK TO OPEN","CUSTOMER","PHONE","TOTAL","PAYMENT","ORDER STATUS","DATE"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{orders.map(order=><tr key={order.id || order.receipt}><td><button className="admin-order-link" onClick={() => openOrder(order)}>{order.receipt || order.id}</button></td><td>{order.customer?.name || "—"}</td><td>{order.customer?.phone || "—"}</td><td>{money(order.total)}</td><td>{order.paymentStatus || "—"}</td><td>{String(order.status || "—").replaceAll("_", " ")}</td><td>{date(order.createdAt)}</td></tr>)}</tbody></table>{!orders.length&&<p className="admin-order-muted">No orders found.</p>}</div>;
 }
 
 function AdminTable({headers,rows}){return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>)}</tbody></table></div>}
@@ -1932,6 +2019,16 @@ function BrandIntro(){
   );
 }
 
+
+const enytmInventoryAndDeliveryStyles = `
+.product-stock-badge{position:absolute;z-index:3;top:12px;left:12px;padding:7px 9px;font-size:9px;letter-spacing:.12em;font-weight:800;background:#111;color:#fff}
+.product-stock-badge.low{background:#efe4cf;color:#241d12}.product-stock-badge.out{background:#eee;color:#555}
+.product-stock-message{font-size:11px;letter-spacing:.12em;font-weight:700;margin:10px 0 14px}.product-stock-message.low{color:#a77936}.product-stock-message.out{color:#a33}
+.quick-add:disabled,.add-detail:disabled{opacity:.5;cursor:not-allowed}
+.admin-delivery-editor{margin:20px 0}.admin-delivery-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.admin-delivery-form label{display:flex;flex-direction:column;gap:7px;font-size:10px;letter-spacing:.1em;font-weight:700}.admin-delivery-form input,.admin-delivery-form select{width:100%;min-width:0;padding:12px;border:1px solid #d7d2ca;background:#fff;color:#171717;font:inherit;letter-spacing:normal}.admin-delivery-editor .admin-save-message{margin-top:12px}.admin-delivery-editor button{margin-top:4px}
+@media(max-width:650px){.admin-delivery-form{grid-template-columns:1fr}}
+`;
+
 function ScrollToTopOnRouteChange(){const route=useLocation();useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[route.pathname,route.search]);return null;}
-function App(){const[search,setSearch]=useState(false);const route=useLocation();const immersive=route.pathname==="/"||route.pathname==="/launch";return <><BrandIntro/><ScrollToTopOnRouteChange/>{!immersive&&!route.pathname.startsWith("/admin")&&<Navbar onSearch={()=>setSearch(true)}/>}<Routes><Route path="/" element={<PrelaunchHome/>}/><Route path="/launch" element={<LaunchCountdown/>}/><Route path="/collection" element={<Home/>}/><Route path="/shop" element={<Shop/>}/><Route path="/product/:id" element={<ProductPage/>}/><Route path="/cart" element={<Cart/>}/><Route path="/checkout" element={<Checkout/>}/><Route path="/order/:id" element={<OrderDetails/>}/><Route path="/order-success/:id" element={<OrderSuccess/>}/><Route path="/wishlist" element={<Wishlist/>}/><Route path="/about" element={<About/>}/><Route path="/login" element={<Auth/>}/><Route path="/register" element={<Auth register/>}/><Route path="/account" element={<Account/>}/><Route path="/admin" element={<Admin/>}/><Route path="*" element={<Home/>}/></Routes>{!immersive&&!route.pathname.startsWith("/admin")&&<Footer/>}{search&&<SearchOverlay close={()=>setSearch(false)}/>}</>}
+function App(){const[search,setSearch]=useState(false);const route=useLocation();const immersive=route.pathname==="/"||route.pathname==="/launch";return <><style>{enytmInventoryAndDeliveryStyles}</style><BrandIntro/><ScrollToTopOnRouteChange/>{!immersive&&!route.pathname.startsWith("/admin")&&<Navbar onSearch={()=>setSearch(true)}/>}<Routes><Route path="/" element={<PrelaunchHome/>}/><Route path="/launch" element={<LaunchCountdown/>}/><Route path="/collection" element={<Home/>}/><Route path="/shop" element={<Shop/>}/><Route path="/product/:id" element={<ProductPage/>}/><Route path="/cart" element={<Cart/>}/><Route path="/checkout" element={<Checkout/>}/><Route path="/order/:id" element={<OrderDetails/>}/><Route path="/order-success/:id" element={<OrderSuccess/>}/><Route path="/wishlist" element={<Wishlist/>}/><Route path="/about" element={<About/>}/><Route path="/login" element={<Auth/>}/><Route path="/register" element={<Auth register/>}/><Route path="/account" element={<Account/>}/><Route path="/wallet" element={<WalletPage/>}/><Route path="/admin" element={<Admin/>}/><Route path="*" element={<Home/>}/></Routes>{!immersive&&!route.pathname.startsWith("/admin")&&<Footer/>}{search&&<SearchOverlay close={()=>setSearch(false)}/>}</>}
 export default App;
