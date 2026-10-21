@@ -33,7 +33,6 @@ import {useCart} from "./context/CartContext";
 import {api} from "./api";
 import {fallbackProducts} from "./data/products";
 import "./index.css";
-import "./ENYTM-address-ui.css";
 
 function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
 function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
@@ -133,15 +132,17 @@ function ProductPage(){
  const[videoBlocked,setVideoBlocked]=useState(false);
  const liked=wishlist.includes(product.id);
  const videoRef=useRef(null);
- const videoSource="https://videos.pexels.com/video-files/6321962/6321962-hd_1920_1080_30fps.mp4";
  const gallery=[
   {type:"image",src:product.image,label:"01 / FRONT"},
-  {type:"video",src:videoSource,poster:product.image,label:"02 / MOTION"},
-  {type:"image",src:"https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1600&q=90",label:"03 / DETAIL"},
-  {type:"image",src:product.image,label:"04 / SILHOUETTE"}
- ];
+  product.image2&&{type:"image",src:product.image2,label:"02 / BACK"},
+  product.image3&&{type:"image",src:product.image3,label:"03 / FABRIC"},
+  product.modelFront&&{type:"image",src:product.modelFront,label:"04 / MODEL FRONT"},
+  product.modelBack&&{type:"image",src:product.modelBack,label:"05 / MODEL BACK"},
+  product.video&&{type:"video",src:product.video,poster:product.image,label:"06 / MOTION"}
+ ].filter(Boolean);
+ const safeGallery=gallery.length?gallery:[{type:"image",src:product.image,label:"01 / FRONT"}];
  const add=()=>{for(let i=0;i<qty;i++)addToCart(product,size);setAdded(true);setTimeout(()=>setAdded(false),1800)};
- const activeMedia=gallery[active];
+ const activeMedia=safeGallery[Math.min(active,safeGallery.length-1)];
  const startVideo=()=>{
   const video=videoRef.current;
   if(!video) return;
@@ -177,7 +178,7 @@ function ProductPage(){
  },[active,activeMedia.type,activeMedia.src]);
  return <main className="product-page">
   <section className="product-gallery-wrap">
-   <div className="gallery-toolbar"><span>ENYTM / PRODUCT 0{product.id}</span><span>4 MEDIA</span></div>
+   <div className="gallery-toolbar"><span>ENYTM / PRODUCT 0{product.id}</span><span>{safeGallery.length} MEDIA</span></div>
    <div className="product-gallery-shell">
     <div className="product-main-media">
       {activeMedia.type==="video"?<div className="product-video-frame">
@@ -188,7 +189,7 @@ function ProductPage(){
       </div>:<img src={activeMedia.src} alt={`${product.name} ${activeMedia.label}`}/>}<span className="main-media-label">{activeMedia.label}</span>
     </div>
     <div className="product-thumbs">
-      {gallery.map((item,i)=><button key={item.label} className={`product-thumb ${active===i?"active":""}`} onClick={()=>setActive(i)} aria-label={`View ${item.label}`}>
+      {safeGallery.map((item,i)=><button key={item.label} className={`product-thumb ${active===i?"active":""}`} onClick={()=>setActive(i)} aria-label={`View ${item.label}`}>
        {item.type==="video"?<><video muted playsInline preload="metadata" poster={item.poster}><source src={item.src} type="video/mp4"/></video><span className="thumb-play"><Play size={15} fill="currentColor"/></span></>:<img src={item.src} alt={`${product.name} ${item.label}`}/>}<span>{item.label}</span>
       </button>)}
     </div>
@@ -255,69 +256,43 @@ function Auth({register=false}){
  {register?<p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>:<p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>}</div></main>
 }
 
-function AddressLookupFields({form,setForm,setError,compact=false,showLabel=false}){
- const [cityOptions,setCityOptions]=useState([]);
- const [officeOptions,setOfficeOptions]=useState([]);
- const [lookupBusy,setLookupBusy]=useState(false);
- const [pincodeBusy,setPincodeBusy]=useState(false);
- const [lookupMessage,setLookupMessage]=useState("");
- const requestRef=useRef(0);
+function AddressLookupFields({form,setForm,setError,compact=false}){
+ const[cityOptions,setCityOptions]=useState([]);const[lookupBusy,setLookupBusy]=useState(false);const[pincodeBusy,setPincodeBusy]=useState(false);const[lookupMessage,setLookupMessage]=useState("");
  const update=(key,value)=>setForm(f=>({...f,[key]:value}));
- const lookupPincode=async value=>{
-  const pin=String(value||"").replace(/\D/g,"").slice(0,6);
-  const requestId=++requestRef.current;
-  setForm(f=>({...f,pincode:pin,...(pin.length<6?{city:"",state:"",district:"",postOffice:""}:{})}));
-  setLookupMessage("");
-  setOfficeOptions([]);
-  if(pin.length!==6){setPincodeBusy(false);return;}
-  setPincodeBusy(true);
-  try{
-   const d=await api(`/pincode/${pin}`);
-   if(requestId!==requestRef.current)return;
-   if(!d.valid)throw new Error(d.message||"Pincode not found. Check the six digits and try again.");
-   const offices=Array.isArray(d.offices)?d.offices:[];
-   setOfficeOptions(offices);
-   setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||offices[0]?.name||""}));
-   setLookupMessage(`Location found: ${d.city||d.district||"Area"}${d.district&&d.district!==d.city?`, ${d.district}`:""}, ${d.state||"India"}. Please confirm your area.`);
-  }catch(e){
-   if(requestId!==requestRef.current)return;
-   setLookupMessage(e.message||"Location lookup failed. You can enter city and state manually.");
-  }finally{if(requestId===requestRef.current)setPincodeBusy(false);}
- };
- const lookupCity=async()=>{
-  const city=String(form.city||"").trim();
-  if(city.length<2){setLookupMessage("Enter at least two letters of your city or locality.");return;}
-  setLookupBusy(true);setLookupMessage("");
-  try{
-   const d=await api(`/pincode/city/${encodeURIComponent(city)}`);
-   const list=Array.isArray(d.pincodes)?d.pincodes:[];
-   setCityOptions(list);
-   if(list.length===1){await lookupPincode(list[0].pincode);}
-   else if(list.length){setLookupMessage(`${list.length} matching postal areas found. Choose the correct pincode below.`);}
-   else setLookupMessage("No matching pincode found. Try a nearby locality or enter the pincode directly.");
-  }catch(e){setLookupMessage(e.message||"Could not search by city. Enter the pincode directly.");}
-  finally{setLookupBusy(false);}
- };
- const chooseCityPincode=value=>{
-  const selected=cityOptions.find(x=>String(x.pincode)===String(value));
-  if(selected){setForm(f=>({...f,city:selected.city||selected.district||f.city,state:selected.state||f.state,postOffice:selected.postOffice||"",pincode:String(selected.pincode)}));}
-  lookupPincode(value);
- };
+ const lookupPincode=async value=>{const pin=String(value||"").replace(/\D/g,"").slice(0,6);update("pincode",pin);setLookupMessage("");if(pin.length!==6)return;setPincodeBusy(true);try{const d=await api(`/pincode/${pin}`);if(!d.valid)throw new Error(d.message||"Pincode not found.");setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||""}));setLookupMessage(`✓ ${d.city||d.district||"Location found"}, ${d.state||""}`)}catch(e){setLookupMessage(e.message||"Could not find this pincode.")}finally{setPincodeBusy(false)}};
+ const lookupCity=async()=>{const city=String(form.city||"").trim();if(city.length<2){setLookupMessage("Enter a city name first.");return}setLookupBusy(true);setLookupMessage("");try{const d=await api(`/pincode/city/${encodeURIComponent(city)}`);const list=Array.isArray(d.pincodes)?d.pincodes:[];setCityOptions(list);if(list.length===1){await lookupPincode(list[0].pincode)}else if(list.length){setLookupMessage(`${list.length} pincodes found. Select one.`)}else setLookupMessage("No pincode found for this city.")}catch(e){setLookupMessage(e.message||"Could not find pincodes for this city.")}finally{setLookupBusy(false)}};
  return <>
-  <label className="address-field"><span>FULL NAME</span><input required autoComplete="name" placeholder="Name on delivery" value={form.name||""} onChange={e=>update("name",e.target.value)}/></label>
-  <label className="address-field"><span>MOBILE NUMBER</span><input required inputMode="tel" autoComplete="tel" maxLength="10" pattern="[0-9]{10}" placeholder="10-digit mobile number" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(0,10))}/></label>
-  <label className="address-field address-field-wide"><span>FLAT, HOUSE NO. & STREET</span><input required autoComplete="street-address" placeholder="Building, street, landmark" value={form.address||""} onChange={e=>update("address",e.target.value)}/></label>
-  <div className="address-field address-field-city"><label className="address-field"><span>CITY / TOWN</span><input required autoComplete="address-level2" placeholder="Enter city or locality" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("");}} onBlur={()=>{if(String(form.city||"").trim().length>=2)lookupCity();}} /></label><button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING…":"FIND PINCODE"}</button></div>
-  <label className="address-field"><span>STATE</span><input required autoComplete="address-level1" placeholder="Auto-filled from pincode" value={form.state||""} onChange={e=>update("state",e.target.value)}/></label>
-  <label className="address-field"><span>PINCODE</span><div className="pincode-control"><input required inputMode="numeric" autoComplete="postal-code" maxLength="6" pattern="[0-9]{6}" placeholder="6-digit pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div></label>
-  {officeOptions.length>1&&<label className="address-field address-field-wide"><span>POST OFFICE / LOCALITY</span><select className="address-select" value={form.postOffice||""} onChange={e=>update("postOffice",e.target.value)}><option value="">Choose your nearest post office</option>{officeOptions.map(x=><option key={`${x.name}-${x.pincode}`} value={x.name}>{x.name}{x.block?` · ${x.block}`:""}</option>)}</select></label>}
-  {cityOptions.length>1&&<label className="address-field address-field-wide"><span>SELECT MATCHING AREA</span><select className="address-select" value={form.pincode||""} onChange={e=>chooseCityPincode(e.target.value)}><option value="">Choose a pincode for {String(form.city||"")}</option>{cityOptions.map((x,i)=><option key={`${x.pincode}-${x.postOffice||i}`} value={x.pincode}>{x.pincode} — {x.postOffice||x.city||"Post office"}{x.district?` · ${x.district}`:""}</option>)}</select></label>}
-  {showLabel&&<label className="address-field"><span>SAVE ADDRESS AS</span><select value={form.label||"Home"} onChange={e=>update("label",e.target.value)}><option value="Home">Home</option><option value="Work">Work</option><option value="Other">Other</option></select></label>}
-  {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("Location found:")?"success":""}`} role="status">{lookupMessage}</div>}
- </>;
+  <input required placeholder="Full name" value={form.name||""} onChange={e=>update("name",e.target.value)}/>
+  <input required inputMode="tel" placeholder="Phone" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(-10))}/>
+  <input required className="wide" placeholder="Flat / House / Street / Area" value={form.address||""} onChange={e=>update("address",e.target.value)}/>
+  <div className="address-city-row"><input required placeholder="City" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("")}} onBlur={lookupCity}/><button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING...":"FIND PINCODE"}</button></div>
+  <input required placeholder="State" value={form.state||""} onChange={e=>update("state",e.target.value)}/>
+  <div className="pincode-control"><input required inputMode="numeric" maxLength="6" placeholder="6-digit Pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div>
+  {cityOptions.length>1&&<select className="wide address-select" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city||"").toUpperCase()}</option>{cityOptions.map(x=><option key={x.pincode} value={x.pincode}>{x.pincode} — {x.postOffice}{x.district?` · ${x.district}`:""}</option>)}</select>}
+  {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("✓")?"success":""}`}>{lookupMessage}</div>}
+ </>
 }
 
-function Checkout(){const{cart,subtotal,shipping,total,clearCart}=useCart();const nav=useNavigate();const[user,setUser]=useState(null);const[loading,setLoading]=useState(true);const[form,setForm]=useState({name:"",phone:"",address:"",city:"",state:"",pincode:""});const[error,setError]=useState("");useEffect(()=>{let alive=true;(async()=>{if(!localStorage.getItem("enytm-token")){sessionStorage.setItem("enytm-after-login","/checkout");nav("/login");return}try{const u=await api("/auth/me");if(!alive)return;setUser(u);const a=Array.isArray(u.addresses)?u.addresses.find(x=>x.isDefault)||u.addresses[0]:u.address;setForm({name:a?.name||u.name||"",phone:a?.phone||u.phone||"",address:a?.address||"",city:a?.city||"",state:a?.state||"",pincode:a?.pincode||""})}catch(e){if(alive)setError(e.message||"Could not load your account.")}finally{if(alive)setLoading(false)}})();return()=>{alive=false}},[nav]);const pay=async e=>{e.preventDefault();setError("");try{const data=await api("/checkout/order",{method:"POST",body:JSON.stringify({items:cart,shippingAddress:form})});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const digits=String(form.phone||"").replace(/\D/g,"").slice(-10);if(digits.length!==10)throw new Error("Please enter a valid 10-digit mobile number.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM order",order_id:data.razorpayOrderId,prefill:{name:form.name,email:user?.email,contact:digits},theme:{color:"#111111"},modal:{ondismiss:()=>{}},handler:async response=>{await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});clearCart();nav(`/order-success/${data.orderId}`)}});rzp.on("payment.failed",r=>setError(r.error?.description||"Payment failed. Please try again."));rzp.open()}catch(err){setError(err.message||"Could not start payment.")}};if(loading)return <main className="empty loading-page"><p className="eyebrow">SECURE CHECKOUT</p><h1>LOADING CHECKOUT...</h1></main>;if(!user)return <main className="empty"><p className="eyebrow">SECURE CHECKOUT</p><h1>CHECKOUT UNAVAILABLE</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/login">LOGIN AGAIN</Link></main>;return <main className="checkout-page"><div className="checkout-head"><p className="eyebrow">SECURE CHECKOUT</p><h1>COMPLETE YOUR ORDER</h1></div><div className="checkout-layout"><form className="checkout-form" onSubmit={pay}><h2>1. DELIVERY DETAILS</h2><div className="form-grid"><AddressLookupFields form={form} setForm={setForm} setError={setError}/></div><h2>2. PAYMENT</h2><div className="payment-box"><LockKeyhole/><div><b>Razorpay Secure Checkout</b><p>UPI · Cards · NetBanking · Wallets and available methods</p></div><span>SECURE</span></div>{error&&<div className="error">{error}</div>}<div className="preorder-payment-note"><b>ENYTM PRE-ORDER · LAUNCH 8 NOVEMBER 2026</b><p>Pay 30% now to confirm your pre-order. The remaining 70% must be paid online before dispatch. Cash on delivery is unavailable.</p><div><span>Advance due today (30%)</span><strong>₹{Math.ceil(total*0.30).toLocaleString("en-IN")}</strong></div><div><span>Balance before dispatch (70%)</span><strong>₹{(total-Math.ceil(total*0.30)).toLocaleString("en-IN")}</strong></div></div><button className="btn primary full">PAY ADVANCE ₹{Math.ceil(total*0.30).toLocaleString("en-IN")} <ArrowRight/></button><p className="tiny">Your payment is processed by Razorpay. ENYTM does not store your card/UPI credentials.</p></form><aside className="summary"><h2>YOUR BAG</h2>{cart.map(i=><div key={i.key} className="mini-item"><img src={i.image}/><span>{i.name}<small>{i.size} × {i.qty}</small></span><b>₹{(i.price*i.qty).toLocaleString("en-IN")}</b></div>)}<hr/><div><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{shipping?"₹"+shipping:"FREE"}</b></div><div className="total"><span>TOTAL</span><b>₹{total.toLocaleString("en-IN")}</b></div></aside></div></main>}
+function Checkout(){
+ const{cart,subtotal,shipping,total,clearCart}=useCart();
+ const nav=useNavigate();
+ const[user,setUser]=useState(null);
+ const[loading,setLoading]=useState(true);
+ const[form,setForm]=useState({name:"",phone:"",address:"",city:"",state:"",pincode:""});
+ const[error,setError]=useState("");
+ const[couponCode,setCouponCode]=useState("");
+ const[appliedCoupon,setAppliedCoupon]=useState(null);
+ const[couponBusy,setCouponBusy]=useState(false);
+ const[finalTotal,setFinalTotal]=useState(total);
+ useEffect(()=>{let alive=true;(async()=>{if(!localStorage.getItem("enytm-token")){sessionStorage.setItem("enytm-after-login","/checkout");nav("/login");return}try{const u=await api("/auth/me");if(!alive)return;setUser(u);const a=Array.isArray(u.addresses)?u.addresses.find(x=>x.isDefault)||u.addresses[0]:u.address;setForm({name:a?.name||u.name||"",phone:a?.phone||u.phone||"",address:a?.address||"",city:a?.city||"",state:a?.state||"",pincode:a?.pincode||""})}catch(e){if(alive)setError(e.message||"Could not load your account.")}finally{if(alive)setLoading(false)}})();return()=>{alive=false}},[nav]);
+ useEffect(()=>{setFinalTotal(Math.max(0,total-Number(appliedCoupon?.discount||0)))},[total,appliedCoupon]);
+ const applyCoupon=async()=>{setCouponBusy(true);setError("");try{const result=await api("/coupons/validate",{method:"POST",body:JSON.stringify({code:couponCode,items:cart})});setAppliedCoupon(result);setCouponCode(result.code);setError("");}catch(e){setAppliedCoupon(null);setError(e.message||"Could not apply coupon.")}finally{setCouponBusy(false)}};
+ const removeCoupon=()=>{setAppliedCoupon(null);setCouponCode("");setError("")};
+ const pay=async e=>{e.preventDefault();setError("");try{const data=await api("/checkout/order",{method:"POST",body:JSON.stringify({items:cart,shippingAddress:form,couponCode:appliedCoupon?.code||""})});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const digits=String(form.phone||"").replace(/\\D/g,"").slice(-10);if(digits.length!==10)throw new Error("Please enter a valid 10-digit mobile number.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM order",order_id:data.razorpayOrderId,prefill:{name:form.name,email:user?.email,contact:digits},theme:{color:"#111111"},modal:{ondismiss:()=>{}},handler:async response=>{await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});clearCart();nav(`/order-success/${data.orderId}`)}});rzp.on("payment.failed",r=>setError(r.error?.description||"Payment failed. Please try again."));rzp.open()}catch(err){setError(err.message||"Could not start payment.")}};
+ if(loading)return <main className="empty loading-page"><p className="eyebrow">SECURE CHECKOUT</p><h1>LOADING CHECKOUT...</h1></main>;
+ if(!user)return <main className="empty"><p className="eyebrow">SECURE CHECKOUT</p><h1>CHECKOUT UNAVAILABLE</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/login">LOGIN AGAIN</Link></main>;
+ return <main className="checkout-page"><div className="checkout-head"><p className="eyebrow">SECURE CHECKOUT</p><h1>COMPLETE YOUR ORDER</h1></div><div className="checkout-layout"><form className="checkout-form" onSubmit={pay}><h2>1. DELIVERY DETAILS</h2><div className="form-grid"><AddressLookupFields form={form} setForm={setForm} setError={setError}/></div><h2>2. COUPON CODE</h2><div className="checkout-coupon-row"><input aria-label="Coupon code" placeholder="Enter coupon code" value={couponCode} onChange={e=>setCouponCode(e.target.value.toUpperCase())} disabled={!!appliedCoupon}/>{appliedCoupon?<button type="button" className="btn outline" onClick={removeCoupon}>REMOVE</button>:<button type="button" className="btn outline" disabled={couponBusy||!couponCode.trim()} onClick={applyCoupon}>{couponBusy?"CHECKING...":"APPLY"}</button>}</div>{appliedCoupon&&<p className="coupon-success">✓ {appliedCoupon.code} applied — you save ₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</p>}<h2>3. PAYMENT</h2><div className="payment-box"><LockKeyhole/><div><b>Razorpay Secure Checkout</b><p>UPI · Cards · NetBanking · Wallets and available methods</p></div><span>SECURE</span></div>{error&&<div className="error">{error}</div>}<div className="preorder-payment-note"><b>ENYTM PRE-ORDER · LAUNCH 8 NOVEMBER 2026</b><p>Pay 30% now to confirm your pre-order. The remaining 70% must be paid online before dispatch. Cash on delivery is unavailable.</p><div><span>Advance due today (30%)</span><strong>₹{Math.ceil(finalTotal*0.30).toLocaleString("en-IN")}</strong></div><div><span>Balance before dispatch (70%)</span><strong>₹{(finalTotal-Math.ceil(finalTotal*0.30)).toLocaleString("en-IN")}</strong></div></div><button className="btn primary full">PAY ADVANCE ₹{Math.ceil(finalTotal*0.30).toLocaleString("en-IN")} <ArrowRight/></button><p className="tiny">Your payment is processed by Razorpay. ENYTM does not store your card/UPI credentials.</p></form><aside className="summary"><h2>YOUR BAG</h2>{cart.map(i=><div key={i.key} className="mini-item"><img src={i.image}/><span>{i.name}<small>{i.size} × {i.qty}</small></span><b>₹{(i.price*i.qty).toLocaleString("en-IN")}</b></div>)}<hr/><div><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{shipping?"₹"+shipping:"FREE"}</b></div>{appliedCoupon&&<div className="coupon-summary-line"><span>Coupon ({appliedCoupon.code})</span><b>−₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</b></div>}<hr/><div className="total"><span>TOTAL</span><b>₹{finalTotal.toLocaleString("en-IN")}</b></div></aside></div></main>
+}
 function OrderDetails(){
  const id=useLocation().pathname.split("/").pop();
  const nav=useNavigate();
@@ -1020,21 +995,111 @@ function Account() {
         {showAddressForm && (
 
           <form
-            className="address-form premium-address-form"
+            className="address-form"
             onSubmit={saveAddress}
           >
 
-            <div className="address-fields-grid">
-              <div className="address-form-intro">
-                <span className="address-form-step">01 / DELIVERY DETAILS</span>
-                <p>Enter a pincode or city to find the matching postal location automatically.</p>
-              </div>
-              <AddressLookupFields
-                form={addressForm}
-                setForm={setAddressForm}
-                setError={setAddressError}
-                showLabel
+            <div className="form-grid">
+
+              <input
+                required
+                placeholder="Full name"
+                value={addressForm.name}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    name: e.target.value
+                  })
+                }
               />
+
+              <input
+                required
+                placeholder="Phone"
+                value={addressForm.phone}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    phone: e.target.value
+                  })
+                }
+              />
+
+              <input
+                required
+                className="wide"
+                placeholder="Complete address"
+                value={addressForm.address}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    address: e.target.value
+                  })
+                }
+              />
+
+              <input
+                required
+                placeholder="City"
+                value={addressForm.city}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    city: e.target.value
+                  })
+                }
+              />
+
+              <input
+                required
+                placeholder="State"
+                value={addressForm.state}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    state: e.target.value
+                  })
+                }
+              />
+
+              <input
+                required
+                inputMode="numeric"
+                maxLength="6"
+                placeholder="Pincode"
+                value={addressForm.pincode}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    pincode: e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 6)
+                  })
+                }
+              />
+
+              <select
+                value={addressForm.label}
+                onChange={e =>
+                  setAddressForm({
+                    ...addressForm,
+                    label: e.target.value
+                  })
+                }
+              >
+                <option value="Home">
+                  Home
+                </option>
+
+                <option value="Work">
+                  Work
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
+              </select>
+
             </div>
 
             <label className="check">
@@ -1241,7 +1306,7 @@ function Admin(){
   finally{setBusy(false)}
  };
  if(!logged)return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>{error&&<div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy?"CHECKING...":"LOGIN"}</button></div></main>;
- return <main className="admin-page"><aside className="admin-side"><div className="logo">ENYTM<span>™</span></div>{["dashboard","orders","customers","products","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
+ return <main className="admin-page"><aside className="admin-side"><div className="logo">ENYTM<span>™</span></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
 function AdminOrders({ orders }) {
  const [selected, setSelected] = useState(null);
  const money = value => `₹${Number(value || 0).toLocaleString("en-IN")}`;
@@ -1267,6 +1332,37 @@ function AdminOrders({ orders }) {
 }
 
 function AdminTable({headers,rows}){return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>)}</tbody></table></div>}
+function AdminMediaUpload({fieldKey,label,hint,value,onUploaded,video=false}){
+ const[busy,setBusy]=useState(false);const[error,setError]=useState("");
+ const upload=async file=>{if(!file)return;setBusy(true);setError("");try{const form=new FormData();form.append(video?"video":"image",file);const result=await api(video?"/admin/upload-video":"/admin/upload-image",{method:"POST",body:form});onUploaded(result.url)}catch(e){setError(e.message||"Upload failed.")}finally{setBusy(false)}};
+ return <div className="admin-media-upload"><div className="admin-media-preview">{value?(video?<video src={value} controls/>:<img src={value} alt={label}/>):<div className="admin-media-empty"><Package size={23}/><span>{video?"VIDEO":"IMAGE"}</span></div>}</div><div className="admin-media-meta"><strong>{label}</strong><small>{hint}</small><label className="admin-upload-button">{busy?"UPLOADING...":value?"REPLACE FILE":"CHOOSE FILE"}<input type="file" accept={video?"video/mp4,video/webm,video/quicktime":"image/jpeg,image/png,image/webp"} disabled={busy} onChange={e=>{upload(e.target.files?.[0]);e.target.value=""}}/></label>{value&&<button type="button" className="admin-media-remove" onClick={()=>onUploaded("")}>REMOVE</button>}{error&&<small className="admin-media-error">{error}</small>}</div></div>
+}
+function AdminCoupons({products}){
+ const empty={code:"",title:"",discountType:"percentage",discountValue:10,maxDiscount:0,minOrderValue:0,usageLimit:0,perCustomerLimit:1,startsAt:"",expiresAt:"",categories:[],productIds:[],active:true};
+ const[coupon,setCoupon]=useState(empty);const[list,setList]=useState([]);const[editing,setEditing]=useState(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
+ const load=async()=>{try{setList(await api("/admin/coupons"))}catch(e){setMessage(e.message||"Could not load coupons.")}};
+ useEffect(()=>{load()},[]);
+ const save=async()=>{setBusy(true);setMessage("");try{await api("/admin/coupons",{method:"POST",body:JSON.stringify({...coupon,id:editing||undefined,code:coupon.code.toUpperCase(),startsAt:coupon.startsAt?new Date(coupon.startsAt).toISOString():"",expiresAt:coupon.expiresAt?new Date(coupon.expiresAt).toISOString():""})});setCoupon(empty);setEditing(null);setMessage("Coupon saved.");await load()}catch(e){setMessage(e.message||"Could not save coupon.")}finally{setBusy(false)}};
+ const edit=c=>{setEditing(c.id);setCoupon({...empty,...c,startsAt:c.startsAt?new Date(c.startsAt).toISOString().slice(0,16):"",expiresAt:c.expiresAt?new Date(c.expiresAt).toISOString().slice(0,16):""});setMessage("")};
+ const remove=async c=>{if(!window.confirm(`Delete coupon ${c.code}?`))return;try{await api(`/admin/coupons/${c.id}`,{method:"DELETE"});await load()}catch(e){setMessage(e.message||"Could not delete coupon.")}};
+ const toggleCategory=(value,checked)=>setCoupon(c=>({...c,categories:checked?[...c.categories,value]:c.categories.filter(x=>x!==value)}));
+ return <div className="admin-coupons"><section className="admin-product-editor"><div className="admin-editor-head"><div><p className="eyebrow">{editing?"EDIT COUPON":"PROMOTIONS"}</p><h2>{editing?"Update coupon":"Create a coupon code"}</h2><p className="muted">Build seasonal offers, influencer codes and customer promotions without editing code.</p></div>{editing&&<button className="admin-text-btn" onClick={()=>{setEditing(null);setCoupon(empty)}}>CANCEL</button>}</div><div className="admin-product-form">
+ <label className="admin-product-field"><span>COUPON CODE</span><input value={coupon.code} placeholder="DIWALI20" onChange={e=>setCoupon(c=>({...c,code:e.target.value.toUpperCase().replace(/\s/g,"")}))}/></label>
+ <label className="admin-product-field"><span>CAMPAIGN / CREATOR NAME</span><input value={coupon.title} placeholder="Diwali campaign or creator name" onChange={e=>setCoupon(c=>({...c,title:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>DISCOUNT TYPE</span><select value={coupon.discountType} onChange={e=>setCoupon(c=>({...c,discountType:e.target.value}))}><option value="percentage">Percentage (%)</option><option value="fixed">Fixed amount (₹)</option></select></label>
+ <label className="admin-product-field"><span>DISCOUNT VALUE</span><input type="number" min="1" max={coupon.discountType==="percentage"?100:undefined} value={coupon.discountValue} onChange={e=>setCoupon(c=>({...c,discountValue:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>MAX DISCOUNT (₹, 0 = NONE)</span><input type="number" min="0" value={coupon.maxDiscount} onChange={e=>setCoupon(c=>({...c,maxDiscount:e.target.value}))} disabled={coupon.discountType==="fixed"}/></label>
+ <label className="admin-product-field"><span>MINIMUM ORDER VALUE (₹)</span><input type="number" min="0" value={coupon.minOrderValue} onChange={e=>setCoupon(c=>({...c,minOrderValue:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>TOTAL USAGE LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.usageLimit} onChange={e=>setCoupon(c=>({...c,usageLimit:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>PER CUSTOMER LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.perCustomerLimit} onChange={e=>setCoupon(c=>({...c,perCustomerLimit:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>START DATE / TIME</span><input type="datetime-local" value={coupon.startsAt} onChange={e=>setCoupon(c=>({...c,startsAt:e.target.value}))}/></label>
+ <label className="admin-product-field"><span>EXPIRY DATE / TIME</span><input type="datetime-local" value={coupon.expiresAt} onChange={e=>setCoupon(c=>({...c,expiresAt:e.target.value}))}/></label>
+ <div className="admin-product-field admin-product-wide"><span>APPLIES TO CATEGORIES (NONE = ALL)</span><div className="admin-coupon-checks">{["Oversized","Polos","Hoodies","Sweatshirts"].map(cat=><label key={cat}><input type="checkbox" checked={coupon.categories.includes(cat)} onChange={e=>toggleCategory(cat,e.target.checked)}/>{cat}</label>)}</div></div>
+ <div className="admin-product-field admin-product-wide"><span>SPECIFIC PRODUCTS (NONE = ALL)</span><select multiple value={coupon.productIds.map(String)} onChange={e=>setCoupon(c=>({...c,productIds:[...e.target.selectedOptions].map(o=>Number(o.value))}))}>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+ <label className="admin-coupon-active admin-product-wide"><input type="checkbox" checked={coupon.active} onChange={e=>setCoupon(c=>({...c,active:e.target.checked}))}/> Coupon is active and can be used at checkout</label>
+ </div><div className="admin-editor-actions"><button className="btn primary" disabled={busy} onClick={save}>{busy?"SAVING...":editing?"SAVE COUPON":"CREATE COUPON"}</button>{editing&&<button className="btn outline" onClick={()=>{setEditing(null);setCoupon(empty)}}>CANCEL</button>}</div>{message&&<div className="admin-save-message">{message}</div>}</section>
+ <div className="admin-product-list-head"><div><p className="eyebrow">CAMPAIGN LIBRARY</p><h2>{list.length} COUPONS</h2></div></div><div className="admin-table-wrap"><table><thead><tr>{["CODE","CAMPAIGN","OFFER","USAGE","VALID UNTIL","STATUS","ACTIONS"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{list.map(c=><tr key={c.id}><td><strong>{c.code}</strong></td><td>{c.title||"—"}</td><td>{c.discountType==="fixed"?`₹${c.discountValue} off`:`${c.discountValue}% off`}{c.maxDiscount>0&&c.discountType==="percentage"?` (max ₹${c.maxDiscount})`:""}</td><td>{c.usageCount||0}{c.usageLimit?` / ${c.usageLimit}`:" / ∞"}</td><td>{c.expiresAt?new Date(c.expiresAt).toLocaleString("en-IN"):"No expiry"}</td><td>{c.active?"ACTIVE":"INACTIVE"}</td><td><div className="admin-actions"><button className="admin-icon-btn" title="Edit" onClick={()=>edit(c)}><Pencil size={17}/></button><button className="admin-icon-btn admin-delete-icon" title="Delete" onClick={()=>remove(c)}><Trash2 size={17}/></button></div></td></tr>)}</tbody></table>{!list.length&&<p className="admin-order-muted">No coupons yet. Create your first campaign above.</p>}</div></div>
+}
 function AdminProducts({ products, reload }) {
   const empty = {
     name: "",
@@ -1280,7 +1376,10 @@ function AdminProducts({ products, reload }) {
     image: "",
     image2: "",
     image3: "",
+    modelFront: "",
+    modelBack: "",
     video: "",
+    sizes: ["S","M","L","XL","XXL"],
   };
 
   const [p, setP] = useState(empty);
@@ -1478,6 +1577,10 @@ function AdminProducts({ products, reload }) {
               <option>
                 Hoodies
               </option>
+
+              <option>
+                Sweatshirts
+              </option>
             </select>
           </label>
 
@@ -1509,25 +1612,16 @@ function AdminProducts({ products, reload }) {
             "FABRIC"
           )}
 
-          {field(
-            "image",
-            "MAIN PHOTO URL"
-          )}
-
-          {field(
-            "image2",
-            "DETAIL PHOTO URL"
-          )}
-
-          {field(
-            "image3",
-            "SILHOUETTE PHOTO URL"
-          )}
-
-          {field(
-            "video",
-            "PRODUCT VIDEO URL"
-          )}
+          <div className="admin-media-upload-grid admin-product-wide">
+            {[
+              ["image","FRONT VIEW","Upload the primary product photo"],
+              ["image2","BACK VIEW","Product back view"],
+              ["image3","FABRIC DETAIL","Close-up of fabric and texture"],
+              ["modelFront","MODEL FRONT","Front view worn by a model"],
+              ["modelBack","MODEL BACK","Back view worn by a model"]
+            ].map(([key,label,hint])=><AdminMediaUpload key={key} fieldKey={key} label={label} hint={hint} value={p[key]} onUploaded={url=>setP(current=>({...current,[key]:url}))}/>)}
+            <AdminMediaUpload fieldKey="video" label="PRODUCT VIDEO (OPTIONAL)" hint="MP4, WEBM or MOV · up to 100 MB" value={p.video} video onUploaded={url=>setP(current=>({...current,video:url}))}/>
+          </div>
 
           <label className="admin-product-field admin-product-wide">
             <span>
