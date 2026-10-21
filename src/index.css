@@ -2214,16 +2214,50 @@ a.btn.outline {
   border-color: #555 !important;
 }
 
-/* ================= ENYTM AUTH & LOGIN MOBILE RESPONSIVE ================= */
+/* ================= ENYTM GLOBAL ANNOUNCEMENT & TICKER FIX ================= */
+.announcement {
+  height: 32px !important;
+  background: #0d0c0b !important;
+  color: #c8b69a !important;
+  border-bottom: 1px solid #1f1d1a !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+  font-size: 9px !important;
+  letter-spacing: .12em !important;
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+.announcement .announcement-ticker-track {
+  display: flex !important;
+  align-items: center !important;
+  gap: 32px !important;
+  min-width: max-content !important;
+  animation: enytmTicker 26s linear infinite !important;
+  padding-left: 0 !important;
+}
+
+.announcement .announcement-ticker-track b {
+  color: #c8b69a !important;
+  margin: 0 4px !important;
+}
+
+/* ================= ENYTM AUTH & LOGIN RESPONSIVE SYSTEM ================= */
 .auth-page,
 .admin-login {
-  min-height: calc(100vh - 106px) !important;
+  min-height: calc(100vh - 108px) !important;
+  min-height: calc(100dvh - 108px) !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
-  padding: clamp(32px, 6vw, 64px) 16px !important;
-  background: radial-gradient(circle at 50% 20%, #171513 0%, #080808 65%) !important;
+  padding: 48px 20px !important;
+  background: radial-gradient(circle at 50% 25%, #151310 0%, #080808 70%) !important;
   box-sizing: border-box !important;
   width: 100% !important;
 }
@@ -2231,39 +2265,40 @@ a.btn.outline {
 .auth-card {
   width: 100% !important;
   max-width: 440px !important;
-  background: linear-gradient(180deg, #121110 0%, #0a0a09 100%) !important;
-  border: 1px solid #2b2823 !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(200, 182, 154, 0.08) !important;
-  padding: clamp(28px, 6vw, 42px) clamp(18px, 5.5vw, 36px) !important;
+  background: linear-gradient(180deg, #131211 0%, #0c0b0a 100%) !important;
+  border: 1px solid #2e2a24 !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(200, 182, 154, 0.08) !important;
+  padding: 42px 36px !important;
   box-sizing: border-box !important;
   position: relative !important;
-  border-radius: 3px !important;
+  border-radius: 4px !important;
 }
 
 .auth-card .eyebrow {
-  font-size: 10px !important;
-  letter-spacing: 0.22em !important;
+  font-size: 11px !important;
+  letter-spacing: 0.24em !important;
   font-weight: 800 !important;
   color: #c8b69a !important;
-  margin: 0 0 12px !important;
+  margin: 0 0 10px !important;
   text-transform: uppercase !important;
 }
 
 .auth-card h1 {
-  font-size: clamp(24px, 6.2vw, 34px) !important;
-  line-height: 1.12 !important;
+  font-size: clamp(26px, 3.5vw, 36px) !important;
+  line-height: 1.1 !important;
   letter-spacing: -0.035em !important;
   margin: 0 0 10px !important;
-  color: #f5f2ed !important;
+  color: #f7f5f0 !important;
+  font-weight: 900 !important;
   word-break: break-word !important;
   overflow-wrap: break-word !important;
 }
 
 .auth-card .muted {
-  font-size: clamp(12px, 3.4vw, 13px) !important;
+  font-size: 13px !important;
   line-height: 1.55 !important;
-  color: #8f8c85 !important;
-  margin: 0 0 20px !important;
+  color: #9c9890 !important;
+  margin: 0 0 22px !important;
 }
 
 .auth-card form,
@@ -2271,40 +2306,41 @@ a.btn.outline {
   display: flex !important;
   flex-direction: column !important;
   gap: 14px !important;
-  margin-top: 18px !important;
+  margin-top: 14px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* Ensure inputs never trigger iOS Safari zoom (>= 16px) */
+/* Auth inputs */
 .auth-card input:not([type="checkbox"]):not([type="radio"]),
 .auth-input {
   width: 100% !important;
-  min-height: 48px !important;
-  height: 48px !important;
-  padding: 0 14px !important;
+  min-height: 50px !important;
+  height: 50px !important;
+  padding: 0 16px !important;
   font-size: 16px !important;
-  line-height: 48px !important;
-  color: #f5f2ed !important;
-  background: #090909 !important;
-  border: 1px solid #332f28 !important;
-  border-radius: 2px !important;
+  line-height: 50px !important;
+  color: #f7f5f0 !important;
+  background: #11100f !important;
+  border: 1px solid #36322b !important;
+  border-radius: 4px !important;
   box-sizing: border-box !important;
   outline: none !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
-  -webkit-appearance: none;
-  appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
 }
 
 .auth-card input:not([type="checkbox"]):not([type="radio"]):focus,
 .auth-input:focus {
   border-color: #c8b69a !important;
-  box-shadow: 0 0 0 1px rgba(200, 182, 154, 0.3) !important;
+  box-shadow: 0 0 0 1px #c8b69a !important;
+  background: #151412 !important;
 }
 
 .auth-card input::placeholder,
 .auth-input::placeholder {
-  color: #6d6a64 !important;
+  color: #7d7870 !important;
   font-size: 14px !important;
 }
 
@@ -2312,9 +2348,9 @@ a.btn.outline {
 .auth-card input:-webkit-autofill,
 .auth-card input:-webkit-autofill:hover,
 .auth-card input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f5f2ed !important;
-  -webkit-box-shadow: 0 0 0px 1000px #090909 inset !important;
-  box-shadow: 0 0 0px 1000px #090909 inset !important;
+  -webkit-text-fill-color: #f7f5f0 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #11100f inset !important;
+  box-shadow: 0 0 0px 1000px #11100f inset !important;
   transition: background-color 5000s ease-in-out 0s !important;
 }
 
@@ -2336,7 +2372,7 @@ a.btn.outline {
   top: 0 !important;
   bottom: 0 !important;
   width: 48px !important;
-  min-height: 48px !important;
+  min-height: 50px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2361,7 +2397,7 @@ a.btn.outline {
 .auth-forgot-row {
   display: flex !important;
   justify-content: flex-end !important;
-  margin: -4px 0 4px !important;
+  margin: -4px 0 2px !important;
 }
 
 .auth-card .text-link {
@@ -2386,12 +2422,12 @@ a.btn.outline {
   text-underline-offset: 3px !important;
 }
 
-/* Checkbox alignment and tap targets */
+/* Custom dark luxury checkboxes - Eliminates browser default white boxes */
 .auth-card .check,
 .auth-check {
   font-size: 12px !important;
   line-height: 1.45 !important;
-  color: #9e9b94 !important;
+  color: #a5a29c !important;
   display: flex !important;
   align-items: flex-start !important;
   gap: 10px !important;
@@ -2400,16 +2436,53 @@ a.btn.outline {
   padding: 4px 0 !important;
 }
 
-.auth-card .check input[type="checkbox"],
-.auth-check input[type="checkbox"] {
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  min-height: 18px !important;
-  margin-top: 2px !important;
-  accent-color: #c8b69a !important;
+.auth-card input[type="checkbox"],
+.auth-check input[type="checkbox"],
+.check input[type="checkbox"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #141311 !important;
+  border: 1px solid #4a453d !important;
+  border-radius: 3px !important;
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  min-height: 19px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   cursor: pointer !important;
+  margin: 1px 0 0 0 !important;
+  position: relative !important;
+  vertical-align: middle !important;
   padding: 0 !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-card input[type="checkbox"]:focus-visible,
+.auth-check input[type="checkbox"]:focus-visible {
+  border-color: #c8b69a !important;
+  box-shadow: 0 0 0 2px rgba(200, 182, 154, 0.25) !important;
+}
+
+.auth-card input[type="checkbox"]:checked,
+.auth-check input[type="checkbox"]:checked,
+.check input[type="checkbox"]:checked {
+  background: #c8b69a !important;
+  border-color: #c8b69a !important;
+}
+
+.auth-card input[type="checkbox"]:checked::after,
+.auth-check input[type="checkbox"]:checked::after,
+.check input[type="checkbox"]:checked::after {
+  content: "" !important;
+  display: block !important;
+  width: 5px !important;
+  height: 9px !important;
+  border: solid #080808 !important;
+  border-width: 0 2px 2px 0 !important;
+  transform: rotate(45deg) translate(-1px, -1px) !important;
 }
 
 .auth-card .check span,
@@ -2422,8 +2495,8 @@ a.btn.outline {
 .auth-card button[type="submit"],
 .auth-submit-btn {
   width: 100% !important;
-  min-height: 50px !important;
-  height: 50px !important;
+  min-height: 52px !important;
+  height: 52px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2431,11 +2504,11 @@ a.btn.outline {
   background: #c8b69a !important;
   color: #080808 !important;
   border: 1px solid #c8b69a !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
   letter-spacing: 0.16em !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
-  border-radius: 2px !important;
+  border-radius: 4px !important;
   margin-top: 6px !important;
   cursor: pointer !important;
   transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease !important;
@@ -2450,19 +2523,19 @@ a.btn.outline {
 .auth-card .btn.outline,
 .auth-secondary-btn {
   width: 100% !important;
-  min-height: 48px !important;
+  min-height: 50px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
   background: transparent !important;
-  color: #f5f2ed !important;
+  color: #f7f5f0 !important;
   border: 1px solid #3c3933 !important;
   font-size: 11px !important;
   letter-spacing: 0.14em !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
-  border-radius: 2px !important;
+  border-radius: 4px !important;
   margin-top: 4px !important;
   cursor: pointer !important;
   transition: border-color 0.2s ease, color 0.2s ease !important;
@@ -2482,13 +2555,13 @@ a.btn.outline {
 
 /* OTP Verification Note & Input */
 .auth-card .otp-note {
-  border: 1px solid #342e24 !important;
+  border: 1px solid #363024 !important;
   background: #13110d !important;
   color: #d8caa7 !important;
-  padding: 12px 14px !important;
+  padding: 14px 16px !important;
   font-size: 12px !important;
-  line-height: 1.5 !important;
-  border-radius: 2px !important;
+  line-height: 1.55 !important;
+  border-radius: 4px !important;
   margin-bottom: 4px !important;
 }
 
@@ -2507,10 +2580,10 @@ a.btn.outline {
   background: #241212 !important;
   border: 1px solid #5a2525 !important;
   color: #ffb8b8 !important;
-  padding: 12px 14px !important;
+  padding: 13px 15px !important;
   font-size: 12px !important;
   line-height: 1.45 !important;
-  border-radius: 2px !important;
+  border-radius: 4px !important;
   margin: 10px 0 !important;
   word-break: break-word !important;
 }
@@ -2519,10 +2592,10 @@ a.btn.outline {
   background: #112213 !important;
   border: 1px solid #235828 !important;
   color: #a7f3b5 !important;
-  padding: 12px 14px !important;
+  padding: 13px 15px !important;
   font-size: 12px !important;
   line-height: 1.45 !important;
-  border-radius: 2px !important;
+  border-radius: 4px !important;
   margin: 10px 0 !important;
   word-break: break-word !important;
 }
@@ -2531,10 +2604,10 @@ a.btn.outline {
 .auth-switch {
   text-align: center !important;
   color: #8c8983 !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   margin-top: 24px !important;
-  padding-top: 18px !important;
-  border-top: 1px solid #22201c !important;
+  padding-top: 20px !important;
+  border-top: 1px solid #201e1a !important;
   line-height: 1.5 !important;
 }
 
@@ -2549,92 +2622,118 @@ a.btn.outline {
 }
 
 .auth-switch a:hover {
-  color: #f5f2ed !important;
+  color: #f7f5f0 !important;
 }
 
-/* Mobile Media Queries */
-@media (max-width: 600px) {
+/* ================= MOBILE-SPECIFIC SEAMLESS LUXURY EXPERIENCE ================= */
+@media (max-width: 640px) {
   .auth-page,
   .admin-login {
-    padding: 24px 14px 44px !important;
-    min-height: calc(100vh - 106px) !important;
-    justify-content: flex-start !important;
-    padding-top: 24px !important;
+    min-height: calc(100vh - 108px) !important;
+    min-height: calc(100dvh - 108px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 24px 20px 48px !important;
+    background: #080808 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
   }
 
+  /* Seamless edge-to-edge layout on mobile: removes clunky box borders */
   .auth-card {
-    padding: 24px 16px !important;
-    border-radius: 3px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
     margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
   }
 
   .auth-card h1 {
-    font-size: 26px !important;
+    font-size: clamp(26px, 7vw, 32px) !important;
     letter-spacing: -0.03em !important;
-    margin-bottom: 8px !important;
+    margin: 0 0 8px !important;
+    line-height: 1.1 !important;
   }
 
   .auth-card .eyebrow {
-    margin-bottom: 8px !important;
+    font-size: 10px !important;
+    margin: 0 0 8px !important;
   }
 
   .auth-card .muted {
-    font-size: 12px !important;
-    margin-bottom: 16px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 20px !important;
   }
 
   .auth-card form,
   .auth-form {
-    gap: 12px !important;
-    margin-top: 12px !important;
+    gap: 13px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
   }
 
   .auth-card input:not([type="checkbox"]):not([type="radio"]),
   .auth-input {
-    min-height: 46px !important;
-    height: 46px !important;
-    padding: 0 12px !important;
+    min-height: 50px !important;
+    height: 50px !important;
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    padding: 0 16px !important;
+    border-radius: 4px !important;
+    background: #11100f !important;
+    border: 1px solid #36322b !important;
   }
 
   .auth-card .btn.primary,
   .auth-card button[type="submit"],
   .auth-submit-btn {
-    min-height: 48px !important;
-    height: 48px !important;
-    font-size: 11px !important;
+    min-height: 52px !important;
+    height: 52px !important;
+    font-size: 12px !important;
+    border-radius: 4px !important;
+    margin-top: 8px !important;
   }
 
   .auth-card .btn.outline,
   .auth-secondary-btn {
-    min-height: 46px !important;
+    min-height: 50px !important;
     font-size: 11px !important;
+    border-radius: 4px !important;
   }
 
   .auth-card .check,
   .auth-check {
-    font-size: 11px !important;
-    gap: 8px !important;
+    font-size: 12px !important;
+    gap: 10px !important;
+    padding: 4px 0 !important;
   }
 
   .auth-switch {
-    margin-top: 20px !important;
-    padding-top: 16px !important;
-    font-size: 12px !important;
+    margin-top: 22px !important;
+    padding-top: 18px !important;
+    font-size: 13px !important;
+    border-top: 1px solid #1c1b18 !important;
+  }
+
+  /* Ensure footer doesn't collide with WhatsApp floating bubble on mobile */
+  footer {
+    padding-bottom: 85px !important;
   }
 }
 
 @media (max-width: 360px) {
   .auth-page,
   .admin-login {
-    padding: 16px 10px 32px !important;
-  }
-
-  .auth-card {
-    padding: 20px 12px !important;
+    padding: 16px 14px 36px !important;
   }
 
   .auth-card h1 {
-    font-size: 22px !important;
+    font-size: 24px !important;
   }
 }
 
