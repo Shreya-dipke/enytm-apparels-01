@@ -1015,7 +1015,7 @@ app.post("/api/admin/upload-image", adminAuth, (req, res) => {
 
     res.json({
       success: true,
-      url: `/uploads/${req.file.filename}`,
+      const url = `${process.env.PUBLIC_BACKEND_URL.replace(/\/+$/, "")}/uploads/${encodeURIComponent(req.file.filename)}`;  res.json({   success: true,   url,   filename: req.file.filename, });,
       filename: req.file.filename,
     });
   });
@@ -1024,7 +1024,7 @@ app.post("/api/admin/upload-video", adminAuth, (req, res) => {
   uploadVideoFile.single("video")(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message || "Video upload failed." });
     if (!req.file) return res.status(400).json({ message: "No video selected." });
-    res.json({ success: true, url: `/uploads/${req.file.filename}`, filename: req.file.filename });
+    res.json({ success: true, const url = `${process.env.PUBLIC_BACKEND_URL.replace(/\/+$/, "")}/uploads/${encodeURIComponent(req.file.filename)}`;  res.json({   success: true,   url,   filename: req.file.filename, });, filename: req.file.filename });
   });
 });
 app.post("/api/admin/products", adminAuth, async (req,res) => {
