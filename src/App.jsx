@@ -36,7 +36,29 @@ import "./index.css";
 
 function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
 function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
-function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const add=()=>{addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{product.badge&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}><img src={product.image} alt={product.name}/></Link><button className="quick-add" onClick={add}>{added?<>ADDED TO BAG <CheckCircle size={15}/></>:<>QUICK ADD <Plus size={15}/></>}</button>{added&&<div className="added-toast"><CheckCircle size={16}/><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8,flexWrap:"wrap",whiteSpace:"nowrap"}}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount&&<del style={{color:"#a7a19a",fontSize:"0.9em",fontWeight:400}}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount&&<span style={{fontSize:"10px",letterSpacing:".04em",color:"#c8b69a",fontWeight:700}}>{Math.round((Number(product.oldPrice)-Number(product.price))/Number(product.oldPrice)*100)}% OFF</span>}</div></div></article>}
+function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const add=()=>{addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{product.badge&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
+<img
+  src={product.image || ""}
+  alt={product.name}
+  loading="lazy"
+  onError={(e) => {
+    const img = e.currentTarget;
+
+    // Prevent repeated fallback attempts.
+    if (img.dataset.fallbackApplied === "true") return;
+    img.dataset.fallbackApplied = "true";
+
+    const fallbackImages = {
+      1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+      3: "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
+    };
+
+    img.src =
+      fallbackImages[product.id] ||
+      "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+  }}
+/>
+</Link><button className="quick-add" onClick={add}>{added?<>ADDED TO BAG <CheckCircle size={15}/></>:<>QUICK ADD <Plus size={15}/></>}</button>{added&&<div className="added-toast"><CheckCircle size={16}/><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8,flexWrap:"wrap",whiteSpace:"nowrap"}}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount&&<del style={{color:"#a7a19a",fontSize:"0.9em",fontWeight:400}}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount&&<span style={{fontSize:"10px",letterSpacing:".04em",color:"#c8b69a",fontWeight:700}}>{Math.round((Number(product.oldPrice)-Number(product.price))/Number(product.oldPrice)*100)}% OFF</span>}</div></div></article>}
 function PrelaunchHome(){
   return <main className="enytm-prelaunch-home">
     <style>{`
