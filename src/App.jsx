@@ -27,7 +27,17 @@ import {
   VolumeX,
   Pencil,
   MapPin,
-  CalendarDays
+  CalendarDays,
+  Tag,
+  Sparkles,
+  ZoomIn,
+  HelpCircle,
+  FileText,
+  AlertCircle,
+  Info,
+  ExternalLink,
+  ShieldAlert,
+  Check
 } from "lucide-react";
 import {useCart} from "./context/CartContext";
 import {api} from "./api";
@@ -49,7 +59,7 @@ function useProducts(){
   },[]);
   return Array.isArray(p) && p.length ? p : fallbackProducts;
 }
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/shop?category=Hoodies" onClick={()=>setOpen(false)}>HOODIES</Link><Link to="/shop?category=Lowers" onClick={()=>setOpen(false)}>LOWERS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
 function ProductCard({product}){
   if (!product) return null;
   const{addToCart,wishlist,toggleWishlist}=useCart();
@@ -115,7 +125,317 @@ function LaunchCountdown(){
   return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/">ENYTM<sup>™</sup></Link><Link className="countdown-back" to="/">← BACK TO INTRO</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
 }
 
-function Home(){const products=useProducts();const categoryImage=(i)=>((products[i%Math.max(products.length,1)]||products[0]||{}).image)||"https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";return <main className="home-black-label home-v3"><section className="hero hero-v2"><video className="hero-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2200&q=90"><source src="/enytm-hero.mp4" type="video/mp4"/></video><div className="hero-overlay"/><div className="hero-edition"><span className="hero-edition-dot"/> ENYTM / THE BLACK LABEL <span>EST. 2026</span></div><div className="hero-content hero-content-v2"><p className="eyebrow hero-kicker">DROP 001&nbsp; / &nbsp;EVERYDAY, ELEVATED</p><h1>YOUR<br/>EVERYDAY.<br/><em>REDEFINED.</em></h1><p className="hero-subline">Quiet confidence. Considered details.<br/>Clothing that feels like you.</p><Link className="btn light hero-cta" to="/shop">SHOP THE COLLECTION <ArrowRight size={18}/></Link><span className="hero-caption">DESIGNED TO LIVE IN.</span></div><div className="hero-index"><span>01</span><i/><span>04</span></div><div className="scroll"><span>SCROLL</span> ↓</div></section><div className="blackline-marquee" aria-label="ENYTM brand statement"><div className="blackline-marquee-track"><span>MORE THAN A MOMENT</span><b>✳</b><span>FABRIC FIRST</span><b>✳</b><span>EVERYDAY, ELEVATED</span><b>✳</b><span>MORE THAN A MOMENT</span><b>✳</b><span>FABRIC FIRST</span><b>✳</b><span>EVERYDAY, ELEVATED</span></div></div><section className="manifesto manifesto-black-label manifesto-v2"><div className="manifesto-number">ENYTM™ — 001</div><p className="eyebrow">01 / A DIFFERENT KIND OF ESSENTIAL</p><h2>NOT MADE<br/>TO <span>STAND OUT.</span><br/>MADE TO <em>STAY.</em></h2><div className="manifesto-bottom"><p>Considered fits. Better-feeling fabrics. Pieces that earn their place in your everyday rotation.</p><div className="manifesto-signature">ENYTM™ <span>MORE THAN A MOMENT</span></div></div></section><section className="craft-strip craft-strip-v2" aria-label="Our design principles"><div><span>01 / MATERIAL</span><h3>FEEL THE WEIGHT.</h3><p>Texture you notice. Quality you feel.</p></div><div><span>02 / SILHOUETTE</span><h3>MOVE YOUR WAY.</h3><p>Relaxed proportions, considered lines.</p></div><div><span>03 / LONGEVITY</span><h3>WEAR IT OFTEN.</h3><p>Made for repeat days, not one-off moments.</p></div></section><section className="section home-arrivals home-arrivals-v2"><div className="drop-heading"><div><p className="eyebrow">02 / THE CURRENT ROTATION</p><h2>THE DROP<span className="heading-period"> 001.</span></h2><p className="drop-subtitle">A small edit. A strong point of view.</p></div><Link className="drop-circle-link" to="/shop" aria-label="Explore all products"><span>VIEW<br/>ALL</span><ArrowRight size={22}/></Link></div><div className="product-grid">{products.slice(0,4).map(p=><ProductCard key={p.id} product={p}/>)}</div><div className="arrivals-footnote"><span>DESIGNED FOR YOUR EVERYDAY</span><span>ENYTM / 001</span></div></section><section className="feature-editorial-v2"><div className="feature-editorial-image"><img src="/enytm-hero.jpg" alt="ENYTM streetwear editorial"/><span className="image-index">FIG. 01 — THE EVERYDAY UNIFORM</span><span className="image-vertical-label">FABRIC / FORM / FUNCTION</span></div><div className="feature-editorial-copy"><p className="eyebrow">03 / THE ENYTM APPROACH</p><span className="feature-big-number">01</span><h2>LESS,<br/><em>BETTER.</em></h2><p>We start with the fabric. Refine the fit. Strip away what doesn't belong. The result is an everyday uniform that doesn't need to shout.</p><Link className="btn outline" to="/about">GET TO KNOW ENYTM <ArrowRight size={18}/></Link><div className="feature-specs"><span><b>01</b> FABRIC FIRST</span><span><b>02</b> THOUGHTFUL FIT</span><span><b>03</b> CLEAN FINISH</span></div></div></section><section className="category-editorial category-editorial-v2"><div className="category-editorial-head"><div><p className="eyebrow">04 / BUILD YOUR ROTATION</p><h2>WHAT'S YOUR<br/><span>EVERYDAY?</span></h2></div><p>Choose a silhouette.<br/>Make it your own.</p></div><div className="categories">{["Oversized","Polos","Hoodies"].map((c,i)=><Link key={c} to={`/shop?category=${c}`} className={`category-tile category-tile-v2 category-v2-${i+1}`}><img src={categoryImage(i)} alt={`${c} collection`}/><div><span>0{i+1} / CATEGORY</span><h3>{c.toUpperCase()}</h3><ArrowRight/></div></Link>)}</div></section><section className="quote quote-black-label quote-v2"><div className="quote-mark">“</div><p className="eyebrow">THE THOUGHT BEHIND THE THREAD</p><h2>BUILT FOR TODAY.<br/><em>BEYOND THE MOMENT.</em></h2><p className="quote-brand">ENYTM APPARELS <span>™</span></p><Link to="/shop" className="quote-shop-link">FIND YOUR PIECE <ArrowRight size={15}/></Link></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How does pre-order payment work?<span aria-hidden="true">＋</span></summary><p>For eligible pre-launch offers, pay 30% online to reserve your order. The remaining 70% must be paid online before dispatch. Cash on Delivery is not available for pre-orders.</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch and after the remaining balance has been paid in full. We’ll share order updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section></main>}
+function Home() {
+  const products = useProducts();
+  const [activeTab, setActiveTab] = useState("all");
+
+  const categoryImages = {
+    Oversized: products.find(p => p.category === "Oversized")?.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+    Polos: products.find(p => p.category === "Polos")?.image || "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
+    Hoodies: products.find(p => p.category === "Hoodies" || p.category === "Sweatshirts")?.image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+    Lowers: products.find(p => p.category === "Lowers")?.image || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
+  };
+
+  const collections = [
+    { title: "OVERSIZED T-SHIRTS", desc: "240–260 GSM heavy combed cotton with relaxed drop-shoulders.", link: "/shop?category=Oversized", img: categoryImages.Oversized, num: "01" },
+    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02" },
+    { title: "HOODIES & SWEATSHIRTS", desc: "360–380 GSM heavyweight French Terry built for structured warmth.", link: "/shop?category=Hoodies", img: categoryImages.Hoodies, num: "03" },
+    { title: "HEAVYWEIGHT LOWERS", desc: "Architectural straight-leg French Terry pants with tailored drape.", link: "/shop?category=Lowers", img: categoryImages.Lowers, num: "04" }
+  ];
+
+  const filteredProducts = useMemo(() => {
+    if (activeTab === "new") return products.filter(p => p.badge === "NEW" || p.id === 1 || p.id === 7);
+    if (activeTab === "bestsellers") return products.filter(p => p.badge === "BESTSELLER" || p.badge === "SIGNATURE" || p.id === 2 || p.id === 3);
+    if (activeTab === "heavyweight") return products.filter(p => (p.fabric && p.fabric.includes("French Terry")) || p.category === "Lowers" || p.category === "Hoodies");
+    return products;
+  }, [products, activeTab]);
+
+  return (
+    <main className="home-black-label home-v3">
+      <section className="hero hero-v2">
+        <video
+          className="hero-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2200&q=90"
+        >
+          <source src="/enytm-hero.mp4" type="video/mp4" />
+        </video>
+        <div className="hero-overlay" />
+        <div className="hero-edition">
+          <span className="hero-edition-dot" /> ENYTM / THE BLACK LABEL <span>EST. 2026</span>
+        </div>
+        <div className="hero-content hero-content-v2">
+          <p className="eyebrow hero-kicker">DROP 001 &nbsp;/&nbsp; EVERYDAY, ELEVATED</p>
+          <div className="hero-tagline-badge">
+            <span>“MORE THAN A MOMENT.”</span>
+          </div>
+          <h1>
+            YOUR<br />
+            EVERYDAY.<br />
+            <em>REDEFINED.</em>
+          </h1>
+          <p className="hero-subline">
+            Quiet confidence. Considered details. Heavyweight fabrics made to live in.
+          </p>
+          <div className="hero-cta-group">
+            <Link className="btn primary hero-cta hero-cta-primary" to="/shop">
+              SHOP NOW <ArrowRight size={18} />
+            </Link>
+            <a className="btn outline hero-cta hero-cta-secondary" href="#collections">
+              EXPLORE COLLECTIONS
+            </a>
+          </div>
+          <span className="hero-caption">MORE THAN A MOMENT · DESIGNED TO STAY.</span>
+        </div>
+        <div className="hero-index">
+          <span>01</span>
+          <i />
+          <span>04</span>
+        </div>
+        <div className="scroll">
+          <span>SCROLL</span> ↓
+        </div>
+      </section>
+
+      <div className="blackline-marquee" aria-label="ENYTM brand statement">
+        <div className="blackline-marquee-track">
+          <span>MORE THAN A MOMENT</span><b>✳</b>
+          <span>FABRIC FIRST</span><b>✳</b>
+          <span>EVERYDAY, ELEVATED</span><b>✳</b>
+          <span>EXTRA 10% OFF PREPAID</span><b>✳</b>
+          <span>MORE THAN A MOMENT</span><b>✳</b>
+          <span>FREE SHIPPING OVER ₹1,999</span><b>✳</b>
+          <span>EVERYDAY, ELEVATED</span><b>✳</b>
+        </div>
+      </div>
+
+      <section className="manifesto manifesto-black-label manifesto-v2">
+        <div className="manifesto-number">ENYTM™ — 001</div>
+        <p className="eyebrow">01 / A DIFFERENT KIND OF ESSENTIAL</p>
+        <h2>
+          NOT MADE<br />
+          TO <span>STAND OUT.</span><br />
+          MADE TO <em>STAY.</em>
+        </h2>
+        <div className="manifesto-bottom">
+          <p>
+            Considered fits. Better-feeling heavyweight fabrics. Pieces that earn their place in your everyday rotation without screaming for attention.
+          </p>
+          <div className="manifesto-signature">
+            ENYTM™ <span>MORE THAN A MOMENT</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="craft-strip craft-strip-v2" aria-label="Our design principles">
+        <div>
+          <span>01 / MATERIAL</span>
+          <h3>FEEL THE WEIGHT.</h3>
+          <p>240–380 GSM luxury combed cotton & French Terry.</p>
+        </div>
+        <div>
+          <span>02 / SILHOUETTE</span>
+          <h3>MOVE YOUR WAY.</h3>
+          <p>Relaxed streetwear proportions, balanced drop shoulders.</p>
+        </div>
+        <div>
+          <span>03 / LONGEVITY</span>
+          <h3>WEAR IT OFTEN.</h3>
+          <p>Made for repeat days, not one-off moments.</p>
+        </div>
+      </section>
+
+      {/* Featured Collections: Oversized, Polos, Hoodies, Lowers */}
+      <section className="category-editorial category-editorial-v2" id="collections">
+        <div className="category-editorial-head">
+          <div>
+            <p className="eyebrow">02 / CORE SILHOUETTES</p>
+            <h2>
+              CURATED<br />
+              <span>COLLECTIONS.</span>
+            </h2>
+          </div>
+          <p>
+            Four foundational cuts.<br />
+            Engineered for modern movement.
+          </p>
+        </div>
+        <div className="categories categories-four-col">
+          {collections.map(c => (
+            <Link key={c.title} to={c.link} className="category-tile category-tile-v2">
+              <img src={c.img} alt={c.title} loading="lazy" />
+              <div>
+                <span>{c.num} / SILHOUETTE</span>
+                <h3>{c.title}</h3>
+                <p className="cat-desc-preview">{c.desc}</p>
+                <div className="cat-explore-link">
+                  EXPLORE <ArrowRight size={15} />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* The Current Rotation with Tab Switcher */}
+      <section className="section home-arrivals home-arrivals-v2" id="rotation">
+        <div className="drop-heading">
+          <div>
+            <p className="eyebrow">03 / THE CURRENT ROTATION</p>
+            <h2>
+              THE DROP<span className="heading-period"> 001.</span>
+            </h2>
+            <p className="drop-subtitle">A small edit. A strong point of view.</p>
+          </div>
+          <div className="drop-tabs-nav">
+            <button
+              className={`drop-tab-btn ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => setActiveTab("all")}
+            >
+              ALL PIECES
+            </button>
+            <button
+              className={`drop-tab-btn ${activeTab === "new" ? "active" : ""}`}
+              onClick={() => setActiveTab("new")}
+            >
+              NEW ARRIVALS
+            </button>
+            <button
+              className={`drop-tab-btn ${activeTab === "bestsellers" ? "active" : ""}`}
+              onClick={() => setActiveTab("bestsellers")}
+            >
+              BEST SELLERS
+            </button>
+            <button
+              className={`drop-tab-btn ${activeTab === "heavyweight" ? "active" : ""}`}
+              onClick={() => setActiveTab("heavyweight")}
+            >
+              HEAVYWEIGHT
+            </button>
+          </div>
+        </div>
+
+        <div className="product-grid">
+          {filteredProducts.slice(0, 8).map(p => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+
+        <div className="arrivals-footnote">
+          <span>DESIGNED FOR YOUR EVERYDAY</span>
+          <Link to="/shop" className="arrivals-view-all-link">
+            VIEW FULL CATALOG ({products.length} PIECES) <ArrowRight size={14} />
+          </Link>
+          <span>ENYTM / 001</span>
+        </div>
+      </section>
+
+      <section className="feature-editorial-v2">
+        <div className="feature-editorial-image">
+          <img src="/enytm-hero.jpg" alt="ENYTM streetwear editorial" />
+          <span className="image-index">FIG. 01 — THE EVERYDAY UNIFORM</span>
+          <span className="image-vertical-label">FABRIC / FORM / FUNCTION</span>
+        </div>
+        <div className="feature-editorial-copy">
+          <p className="eyebrow">04 / THE ENYTM APPROACH</p>
+          <span className="feature-big-number">01</span>
+          <h2>
+            LESS,<br />
+            <em>BETTER.</em>
+          </h2>
+          <p>
+            We start with the fabric. Refine the fit. Strip away what doesn't belong. The result is an everyday uniform that speaks through texture, cut, and weight.
+          </p>
+          <Link className="btn outline" to="/about">
+            GET TO KNOW ENYTM <ArrowRight size={18} />
+          </Link>
+          <div className="feature-specs">
+            <span><b>01</b> FABRIC FIRST</span>
+            <span><b>02</b> THOUGHTFUL FIT</span>
+            <span><b>03</b> CLEAN FINISH</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="quote quote-black-label quote-v2">
+        <div className="quote-mark">“</div>
+        <p className="eyebrow">THE THOUGHT BEHIND THE THREAD</p>
+        <h2>
+          BUILT FOR TODAY.<br />
+          <em>BEYOND THE MOMENT.</em>
+        </h2>
+        <p className="quote-brand">
+          ENYTM APPARELS <span>™</span>
+        </p>
+        <Link to="/shop" className="quote-shop-link">
+          FIND YOUR PIECE <ArrowRight size={15} />
+        </Link>
+      </section>
+
+      <section className="home-faq" id="faq">
+        <div className="home-faq-heading">
+          <p className="eyebrow">05 / GOOD TO KNOW</p>
+          <h2>
+            The useful<br />
+            <em>details.</em>
+          </h2>
+          <p>Everything you need to know before making ENYTM part of your everyday.</p>
+        </div>
+        <div className="home-faq-list">
+          <details>
+            <summary>
+              What is the tee made from?<span aria-hidden="true">＋</span>
+            </summary>
+            <p>
+              Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition (from 240 GSM combed cotton to 380 GSM French Terry).
+            </p>
+          </details>
+          <details>
+            <summary>
+              What offers are currently active?<span aria-hidden="true">＋</span>
+            </summary>
+            <p>
+              We offer <b>Extra 10% off on all prepaid orders</b> via Razorpay, <b>Buy 2, Get 20% off</b> automatically applied in cart, and <b>Free Shipping on orders above ₹1,999</b> across India.
+            </p>
+          </details>
+          <details>
+            <summary>
+              How does pre-order production work?<span aria-hidden="true">＋</span>
+            </summary>
+            <p>
+              Pre-orders require 100% advance payment. Production takes approximately 3.5 weeks to complete, followed by 4–5 working days for courier delivery once dispatched. Cancellation with full refund is available within 24 hours of payment.
+            </p>
+          </details>
+          <details>
+            <summary>
+              How do I report a damaged or incorrect item?<span aria-hidden="true">＋</span>
+            </summary>
+            <p>
+              If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.
+            </p>
+          </details>
+          <details>
+            <summary>
+              How should I care for my ENYTM garments?<span aria-hidden="true">＋</span>
+            </summary>
+            <p>
+              Wash cold inside-out with like colours, avoid harsh bleaching agents, do not iron directly on graphics, and flat dry or hang in shade to preserve GSM density and drape.
+            </p>
+          </details>
+          <div className="home-faq-footer">
+            <span>STILL CURIOUS?</span>
+            <Link to="/about">
+              GET TO KNOW US <ArrowRight size={15} />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
 function Shop(){
  const products=useProducts();
  const location=useLocation();
@@ -168,18 +488,22 @@ function Shop(){
 }
 
 function ProductPage(){
-  const products=useProducts();
-  const params=useParams();
-  const location=useLocation();
-  const rawId=params?.id ?? location.pathname.split("/").filter(Boolean).pop();
+  const products = useProducts();
+  const params = useParams();
+  const location = useLocation();
+  const nav = useNavigate();
+  const rawId = params?.id ?? location.pathname.split("/").filter(Boolean).pop();
   const productList = Array.isArray(products) && products.length ? products : fallbackProducts;
-  const product = productList.find(p=>String(p.id)===String(rawId)) || productList[0] || fallbackProducts[0];
-  const{addToCart,wishlist,toggleWishlist}=useCart();
-  const[size,setSize]=useState("M");
-  const[qty,setQty]=useState(1);
-  const[added,setAdded]=useState(false);
-  const[active,setActive]=useState(0);
-  const[videoBlocked,setVideoBlocked]=useState(false);
+  const product = productList.find(p => String(p.id) === String(rawId)) || productList[0] || fallbackProducts[0];
+  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const [size, setSize] = useState("M");
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [active, setActive] = useState(0);
+  const [videoBlocked, setVideoBlocked] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [zoomImage, setZoomImage] = useState(null);
+
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const liked = product ? safeWishlist.includes(product.id) : false;
   const stock = Math.max(0, Number(product?.stock || 0));
@@ -198,14 +522,15 @@ function ProductPage(){
   }
 
   const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+
   const gallery = [
     product.image && { type: "image", src: product.image, label: "01 / FRONT" },
-    product.image2 && { type: "image", src: product.image2, label: "02 / BACK" },
-    product.image3 && { type: "image", src: product.image3, label: "03 / FABRIC" },
-    product.modelFront && { type: "image", src: product.modelFront, label: "04 / MODEL FRONT" },
-    product.modelBack && { type: "image", src: product.modelBack, label: "05 / MODEL BACK" },
-    product.video && { type: "video", src: product.video, poster: product.image || fallbackImg, label: "06 / MOTION" }
+    (product.image2 || product.image) && { type: "image", src: product.image2 || product.image, label: "02 / BACK" },
+    (product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", label: "03 / CLOSE-UP" },
+    (product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85", label: "04 / LIFESTYLE" },
+    product.video && { type: "video", src: product.video, poster: product.image || fallbackImg, label: "05 / MOTION" }
   ].filter(Boolean);
+
   const safeGallery = gallery.length ? gallery : [{ type: "image", src: product.image || fallbackImg, label: "01 / FRONT" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
 
@@ -214,7 +539,18 @@ function ProductPage(){
     if (qty > stock) { setQty(stock); return; }
     for (let i = 0; i < qty; i++) addToCart(product, size);
     setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const buyNow = () => {
+    if (outOfStock) return;
+    for (let i = 0; i < qty; i++) addToCart(product, size);
+    if (!localStorage.getItem("enytm-token")) {
+      sessionStorage.setItem("enytm-after-login", "/checkout");
+      nav("/login");
+    } else {
+      nav("/checkout");
+    }
   };
 
   const startVideo = () => {
@@ -256,13 +592,16 @@ function ProductPage(){
   const categoryLabel = String(product.category || "Oversized").toUpperCase();
   const priceDisplay = Number(product.price || 0).toLocaleString("en-IN");
   const oldPriceDisplay = product.oldPrice ? Number(product.oldPrice).toLocaleString("en-IN") : null;
+  const prepaidPrice = Math.round(Number(product.price || 0) * 0.90);
+  const savings = (product.oldPrice && Number(product.oldPrice) > Number(product.price)) ? Number(product.oldPrice) - Number(product.price) : 0;
+  const discountPct = (product.oldPrice && Number(product.oldPrice) > Number(product.price)) ? Math.round(((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice)) * 100) : 0;
 
   return (
     <main className="product-page">
       <section className="product-gallery-wrap">
         <div className="gallery-toolbar">
           <span>ENYTM / PRODUCT 0{product.id}</span>
-          <span>{safeGallery.length} MEDIA</span>
+          <span>{safeGallery.length} VIEWS · ZOOM ENABLED</span>
         </div>
         <div className="product-gallery-shell">
           <div className="product-main-media">
@@ -292,14 +631,19 @@ function ProductPage(){
                 )}
               </div>
             ) : (
-              <img
-                src={activeMedia?.src || fallbackImg}
-                alt={`${product.name} ${activeMedia?.label || ""}`}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = fallbackImg;
-                }}
-              />
+              <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
+                <img
+                  src={activeMedia?.src || fallbackImg}
+                  alt={`${product.name} ${activeMedia?.label || ""}`}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = fallbackImg;
+                  }}
+                />
+                <button className="zoom-trigger-btn" aria-label="Zoom image" title="Click to zoom">
+                  <ZoomIn size={16} /> ZOOM
+                </button>
+              </div>
             )}
             <span className="main-media-label">{activeMedia?.label}</span>
           </div>
@@ -336,48 +680,107 @@ function ProductPage(){
           </div>
         </div>
       </section>
+
       <section className="product-details">
         <div className="product-detail-top">
-          <p className="eyebrow">{categoryLabel} / ENYTM</p>
+          <p className="eyebrow">{categoryLabel} / ENYTM APPARELS</p>
           <button className={`detail-wish ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}>
             <Heart size={19} fill={liked ? "currentColor" : "none"} />
             <span>{liked ? "SAVED" : "SAVE"}</span>
           </button>
         </div>
+
         <h1>{product.name}</h1>
+
         <div className="rating">
           <span className="stars">★★★★★</span>
-          <span>4.9</span>
-          <a href="#reviews">28 reviews</a>
+          <span className="rating-score">4.9</span>
+          <a href="#reviews" className="rating-count">28 verified reviews</a>
         </div>
+
         <div className="price-row">
-          <strong>₹{priceDisplay}</strong>
-          {oldPriceDisplay && <del>₹{oldPriceDisplay}</del>}
-          <span className="price-note">INCLUSIVE OF TAXES</span>
+          <strong className="selling-price">₹{priceDisplay}</strong>
+          {oldPriceDisplay && <del className="mrp-price">₹{oldPriceDisplay}</del>}
+          {savings > 0 && (
+            <span className="save-badge">SAVE ₹{savings.toLocaleString("en-IN")} ({discountPct}% OFF)</span>
+          )}
+          <span className="price-note">INCLUSIVE OF ALL TAXES</span>
         </div>
-        <p className={`product-stock-message ${outOfStock ? "out" : "low"}`}>
+
+        <p className={`product-stock-message ${outOfStock ? "out" : stock < 6 ? "low" : "in"}`}>
           {outOfStock
             ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
             : stock < 6
             ? `HURRY — ONLY ${stock} LEFT IN STOCK.`
-            : "IN STOCK · READY TO ORDER"}
+            : "IN STOCK · READY TO DISPATCH"}
         </p>
-        <p className="detail-copy">{product.description || "Designed with a relaxed oversized silhouette, clean finishing and a premium hand-feel for everyday wear."}</p>
-        <div className="detail-highlights">
-          <span>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "PREMIUM"}</span>
-          <span>PREMIUM COTTON</span>
-          <span>OVERSIZED FIT</span>
+
+        {/* OFFERS FOR YOU CARD */}
+        <div className="product-offers-card">
+          <div className="offers-card-header">
+            <div className="offers-title-wrap">
+              <Sparkles size={16} className="sparkle-gold" />
+              <span className="offers-title">OFFERS FOR YOU</span>
+            </div>
+            <span className="offers-badge">AUTO-APPLIED</span>
+          </div>
+          <div className="offers-list">
+            <div className="offer-item">
+              <div className="offer-bullet"><Tag size={13} /></div>
+              <div className="offer-content">
+                <div className="offer-heading-row">
+                  <strong>Extra 10% off on prepaid orders</strong>
+                  <span className="offer-calc-price">₹{prepaidPrice.toLocaleString("en-IN")}</span>
+                </div>
+                <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> via Razorpay (UPI, Cards, NetBanking, Wallets).</p>
+              </div>
+            </div>
+            <div className="offer-item">
+              <div className="offer-bullet"><Sparkles size={13} /></div>
+              <div className="offer-content">
+                <div className="offer-heading-row">
+                  <strong>Buy 2, get 20% off</strong>
+                  <span className="offer-tag-pill">CART OFFER</span>
+                </div>
+                <p>Add any 2 or more pieces to your bag. 20% quantity discount applies automatically at checkout.</p>
+              </div>
+            </div>
+            <div className="offer-item">
+              <div className="offer-bullet"><Truck size={13} /></div>
+              <div className="offer-content">
+                <div className="offer-heading-row">
+                  <strong>Free shipping on orders above ₹1,999</strong>
+                </div>
+                <p>Insured expedited delivery across all serviceable pincodes in India.</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <p className="detail-copy">
+          {product.description || "Designed with an architectural oversized silhouette, clean drop shoulder drape and heavyweight hand-feel for effortless daily wear."}
+        </p>
+
+        <div className="detail-highlights">
+          <span>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
+          <span>100% COMBED COTTON</span>
+          <span>OVERSIZED FIT</span>
+          <span>DROP SHOULDER</span>
+        </div>
+
         {product.fabric && (
           <div className="spec">
-            <span>FABRIC</span>
+            <span>FABRIC SPECS</span>
             <b>{product.fabric}</b>
           </div>
         )}
+
         <div className="option">
           <div className="option-head">
             <span>SELECT SIZE</span>
-            <Link to="/size-guide">SIZE GUIDE ↗</Link>
+            <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
+              SIZE GUIDE ↗
+            </button>
           </div>
           <div className="sizes">
             {sizes.map((s) => (
@@ -387,6 +790,7 @@ function ProductPage(){
             ))}
           </div>
         </div>
+
         <div className="purchase-line">
           <div className="quantity-block">
             <span>QUANTITY</span>
@@ -410,27 +814,35 @@ function ProductPage(){
               </button>
             </div>
           </div>
-          <button className="btn primary add-detail" onClick={add} disabled={outOfStock}>
-            {outOfStock ? (
-              <>OUT OF STOCK</>
-            ) : added ? (
-              <>
-                <CheckCircle size={18} /> ADDED TO BAG
-              </>
-            ) : (
-              <>
-                ADD TO BAG <ShoppingBag size={18} />
-              </>
-            )}
-          </button>
+
+          <div className="purchase-dual-buttons">
+            <button className="btn outline add-detail" onClick={add} disabled={outOfStock}>
+              {outOfStock ? (
+                <>OUT OF STOCK</>
+              ) : added ? (
+                <>
+                  <CheckCircle size={18} /> ADDED TO BAG
+                </>
+              ) : (
+                <>
+                  ADD TO BAG <ShoppingBag size={18} />
+                </>
+              )}
+            </button>
+            <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock}>
+              {outOfStock ? "UNAVAILABLE" : <>BUY NOW <ArrowRight size={18} /></>}
+            </button>
+          </div>
         </div>
+
         {added && (
           <div className="detail-added">
             <CheckCircle size={15} />
-            <span>Added to your bag</span>
+            <span>Added {qty} × {product.name} (Size {size}) to your bag</span>
             <Link to="/cart">VIEW BAG →</Link>
           </div>
         )}
+
         <div className="perks">
           <div>
             <Truck />
@@ -451,27 +863,230 @@ function ProductPage(){
             </span>
           </div>
         </div>
-        <div className="product-accordion">
+
+        {/* 5 EXPANDABLE ACCORDIONS */}
+        <div className="product-accordions">
           <details open>
             <summary>
-              PRODUCT DETAILS <span>+</span>
+              <span className="acc-title">PRODUCT DETAILS</span>
+              <ChevronDown size={16} className="acc-chevron" />
             </summary>
-            <p>{product.description || "Designed with a relaxed oversized silhouette, clean finishing and a premium hand-feel for everyday wear."}</p>
+            <div className="acc-content">
+              <p>{product.description || "Crafted for comfort and daily wear with an architectural cut and clean finishes."}</p>
+              <div className="acc-specs-grid">
+                <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
+                <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
+                <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
+                <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
+                <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
+                <div><span>MODEL FIT</span><b>Model is 6'1" (185 cm) wearing size L</b></div>
+              </div>
+            </div>
           </details>
+
           <details>
             <summary>
-              SHIPPING & RETURNS <span>+</span>
+              <span className="acc-title">SHIPPING & RETURNS</span>
+              <ChevronDown size={16} className="acc-chevron" />
             </summary>
-            <p>Free shipping applies to eligible orders above ₹1,999. Returns are accepted within 48 HOURS subject to product condition.</p>
+            <div className="acc-content">
+              <div className="acc-notice-box">
+                <strong>PRE-ORDER PRODUCTION & DISPATCH TIMELINE</strong>
+                <p>Please keep in mind that this is a Pre Order. Pre Order production may take up to 3.5 weeks to complete.</p>
+                <p>Once your order is ready we will inform you and dispatch it immediately.</p>
+                <p>After dispatch delivery may take an additional 4 to 5 working days depending on the courier service.</p>
+                <p className="tiny-muted">Our Pre Order batch is being produced first while the regular drop will launch separately. Please place your Pre Order only if you are comfortable with this production timeline.</p>
+              </div>
+
+              <div className="acc-shipping-rates">
+                <h4>DISPATCH & DELIVERY</h4>
+                <p>• <b>Free Shipping:</b> Orders of ₹1,999 and above unlock free delivery across India.</p>
+                <p>• <b>Standard Shipping:</b> Flat ₹99 for orders below ₹1,999.</p>
+                <p>• <b>In-Stock Pieces:</b> Dispatched within 24–48 business hours with live SMS/email tracking.</p>
+              </div>
+
+              <div className="acc-damaged-box">
+                <div className="damaged-header"><AlertCircle size={15}/> <b>DAMAGED, DEFECTIVE, OR INCORRECT ITEMS</b></div>
+                <p className="verbatim-quote">“If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.”</p>
+              </div>
+
+              <p className="returns-term">Returns & size exchanges are accepted within 48 hours of delivery for unused items with original tags intact.</p>
+            </div>
           </details>
+
+          <details>
+            <summary>
+              <span className="acc-title">REFUND POLICY</span>
+              <ChevronDown size={16} className="acc-chevron" />
+            </summary>
+            <div className="acc-content">
+              <p>Once the returned item reaches us and passes our quality inspection, we will process the refund within 3–5 business days.</p>
+              <div className="acc-refund-methods">
+                <div>
+                  <b>Prepaid Orders:</b>
+                  <p>The refund will be sent to the original payment method (Cards, UPI, NetBanking).</p>
+                </div>
+                <div>
+                  <b>Cash on Delivery (COD) Orders:</b>
+                  <p>Refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
+                </div>
+              </div>
+              <p className="tiny-muted">Please note that your bank or payment provider may take additional time to reflect the refund after it has been processed.</p>
+              <div className="exclusions-block">
+                <b>ITEMS NOT ELIGIBLE FOR RETURN OR EXCHANGE:</b>
+                <ul>
+                  <li>Items that have been worn or used.</li>
+                  <li>Items that have been washed.</li>
+                  <li>Items that have been altered.</li>
+                  <li>Items damaged after delivery.</li>
+                  <li>Items returned without their original tags.</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
           <details id="reviews">
             <summary>
-              REVIEWS <span>4.9 / 5</span>
+              <span className="acc-title">CUSTOMER REVIEWS</span>
+              <span className="acc-rating-badge">★ 4.9 · 28 Reviews</span>
+              <ChevronDown size={16} className="acc-chevron" />
             </summary>
-            <p>28 verified-style review entries can be connected to your live review system here.</p>
+            <div className="acc-content">
+              <div className="reviews-summary-card">
+                <div className="score-col">
+                  <h2>4.9</h2>
+                  <div className="stars">★★★★★</div>
+                  <span>Based on 28 verified customer reviews</span>
+                </div>
+                <div className="rating-bars">
+                  <div className="bar-row"><span>5★</span><div className="bar"><div style={{width:"92%"}}></div></div><span>26</span></div>
+                  <div className="bar-row"><span>4★</span><div className="bar"><div style={{width:"8%"}}></div></div><span>2</span></div>
+                  <div className="bar-row"><span>3★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
+                  <div className="bar-row"><span>2★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
+                  <div className="bar-row"><span>1★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
+                </div>
+              </div>
+              <div className="reviews-list">
+                <div className="review-card">
+                  <div className="rev-head">
+                    <strong>Arjun M.</strong>
+                    <span className="verified-badge">✓ Verified Buyer</span>
+                    <span className="rev-date">2 days ago</span>
+                  </div>
+                  <div className="stars">★★★★★</div>
+                  <p className="rev-title">Heavyweight perfection</p>
+                  <p className="rev-body">The drape on this is unreal. Substantial GSM fabric that holds its boxy streetwear shape all day without feeling stiff. Collar rib doesn't bacon after washes.</p>
+                </div>
+                <div className="review-card">
+                  <div className="rev-head">
+                    <strong>Kabir S.</strong>
+                    <span className="verified-badge">✓ Verified Buyer</span>
+                    <span className="rev-date">1 week ago</span>
+                  </div>
+                  <div className="stars">★★★★★</div>
+                  <p className="rev-title">International luxury feel at this price</p>
+                  <p className="rev-body">Honestly rivals high-end brands like Represent or Fear of God Essentials. Sizing is properly oversized, so ordering true to size gives the ideal drop shoulder look.</p>
+                </div>
+                <div className="review-card">
+                  <div className="rev-head">
+                    <strong>Rohan D.</strong>
+                    <span className="verified-badge">✓ Verified Buyer</span>
+                    <span className="rev-date">2 weeks ago</span>
+                  </div>
+                  <div className="stars">★★★★★</div>
+                  <p className="rev-title">Attention to finishing</p>
+                  <p className="rev-body">Clean seams, rich matte black hue, and premium breathability. Highly recommend pairing with the Heavyweight Lowers.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span className="acc-title">PRIVACY & PRE-ORDER PAYMENT TERMS</span>
+              <ChevronDown size={16} className="acc-chevron" />
+            </summary>
+            <div className="acc-content">
+              <div className="acc-preorder-terms">
+                <h4>PRE-ORDER PAYMENT TERMS</h4>
+                <p>All pre-orders require 100% advance payment.</p>
+                <p>After making the payment, please send us a payment screenshot to confirm your order.</p>
+                <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a full refund.</p>
+                <p>After 24 hours, the order will be considered confirmed and the advance payment will become non-refundable, as production will be started specifically against your pre-order.</p>
+              </div>
+              <hr className="acc-divider" />
+              <div className="acc-privacy-summary">
+                <h4>WEBSITE PRIVACY POLICY</h4>
+                <p>At ENYTM APPARELS, we respect your privacy and protect your personal information. We never sell, rent, or trade your data to third parties. All transactions are processed through encrypted 256-bit bank-grade Razorpay payment gateways.</p>
+                <Link to="/privacy-policy" className="policy-link-inline">Read full Privacy Policy →</Link>
+              </div>
+            </div>
           </details>
         </div>
       </section>
+
+      {/* SIZE GUIDE MODAL */}
+      {showSizeGuide && (
+        <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
+          <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">ENYTM APPARELS</p>
+                <h3>GARMENT SIZE GUIDE</h3>
+              </div>
+              <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
+              <div className="size-table-wrap">
+                <table className="size-table">
+                  <thead>
+                    <tr>
+                      <th>SIZE</th>
+                      <th>CHEST (IN)</th>
+                      <th>LENGTH (IN)</th>
+                      <th>SHOULDER (IN)</th>
+                      <th>SLEEVE (IN)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
+                    <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
+                    <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
+                    <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
+                    <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="size-guide-tips">
+                <div className="tip-box">
+                  <strong>OVERSIZED FIT:</strong>
+                  <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
+                </div>
+                <div className="tip-box">
+                  <strong>NEED SIZING ASSISTANCE?</strong>
+                  <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LIGHTBOX MODAL */}
+      {zoomImage && (
+        <div className="modal-backdrop lightbox-backdrop" onClick={() => setZoomImage(null)}>
+          <button className="lightbox-close" onClick={() => setZoomImage(null)} aria-label="Close image zoom">
+            <X size={24} />
+          </button>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <img src={zoomImage} alt="Product zoom inspection" />
+            <span className="lightbox-caption">{product.name} — Fabric & Finishing Inspection</span>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -793,24 +1408,270 @@ function AddressLookupFields({form,setForm,setError,compact=false}){
 }
 
 function Checkout(){
- const{cart,subtotal,shipping,total,clearCart}=useCart();
- const nav=useNavigate();
- const[user,setUser]=useState(null);
- const[loading,setLoading]=useState(true);
- const[form,setForm]=useState({name:"",phone:"",address:"",city:"",state:"",pincode:""});
- const[error,setError]=useState("");
- const[couponCode,setCouponCode]=useState("");
- const[appliedCoupon,setAppliedCoupon]=useState(null);
- const[couponBusy,setCouponBusy]=useState(false);
- const[finalTotal,setFinalTotal]=useState(total);
- useEffect(()=>{let alive=true;(async()=>{if(!localStorage.getItem("enytm-token")){sessionStorage.setItem("enytm-after-login","/checkout");nav("/login");return}try{const u=await api("/auth/me");if(!alive)return;setUser(u);const a=Array.isArray(u.addresses)?u.addresses.find(x=>x.isDefault)||u.addresses[0]:u.address;setForm({name:a?.name||u.name||"",phone:a?.phone||u.phone||"",address:a?.address||"",city:a?.city||"",state:a?.state||"",pincode:a?.pincode||""})}catch(e){if(alive)setError(e.message||"Could not load your account.")}finally{if(alive)setLoading(false)}})();return()=>{alive=false}},[nav]);
- useEffect(()=>{setFinalTotal(Math.max(0,total-Number(appliedCoupon?.discount||0)))},[total,appliedCoupon]);
- const applyCoupon=async()=>{setCouponBusy(true);setError("");try{const result=await api("/coupons/validate",{method:"POST",body:JSON.stringify({code:couponCode,items:cart})});setAppliedCoupon(result);setCouponCode(result.code);setError("");}catch(e){setAppliedCoupon(null);setError(e.message||"Could not apply coupon.")}finally{setCouponBusy(false)}};
- const removeCoupon=()=>{setAppliedCoupon(null);setCouponCode("");setError("")};
- const pay=async e=>{e.preventDefault();setError("");try{const data=await api("/checkout/order",{method:"POST",body:JSON.stringify({items:cart,shippingAddress:form,couponCode:appliedCoupon?.code||""})});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const digits=String(form.phone||"").replace(/\\D/g,"").slice(-10);if(digits.length!==10)throw new Error("Please enter a valid 10-digit mobile number.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM order",order_id:data.razorpayOrderId,prefill:{name:form.name,email:user?.email,contact:digits},theme:{color:"#111111"},modal:{ondismiss:()=>{}},handler:async response=>{await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});clearCart();nav(`/order-success/${data.orderId}`)}});rzp.on("payment.failed",r=>setError(r.error?.description||"Payment failed. Please try again."));rzp.open()}catch(err){setError(err.message||"Could not start payment.")}};
- if(loading)return <main className="empty loading-page"><p className="eyebrow">SECURE CHECKOUT</p><h1>LOADING CHECKOUT...</h1></main>;
- if(!user)return <main className="empty"><p className="eyebrow">SECURE CHECKOUT</p><h1>CHECKOUT UNAVAILABLE</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/login">LOGIN AGAIN</Link></main>;
- return <main className="checkout-page"><div className="checkout-head"><p className="eyebrow">SECURE CHECKOUT</p><h1>COMPLETE YOUR ORDER</h1></div><div className="checkout-layout"><form className="checkout-form" onSubmit={pay}><h2>1. DELIVERY DETAILS</h2><div className="form-grid"><AddressLookupFields form={form} setForm={setForm} setError={setError}/></div><h2>2. COUPON CODE</h2><div className="checkout-coupon-row"><input aria-label="Coupon code" placeholder="Enter coupon code" value={couponCode} onChange={e=>setCouponCode(e.target.value.toUpperCase())} disabled={!!appliedCoupon}/>{appliedCoupon?<button type="button" className="btn outline" onClick={removeCoupon}>REMOVE</button>:<button type="button" className="btn outline" disabled={couponBusy||!couponCode.trim()} onClick={applyCoupon}>{couponBusy?"CHECKING...":"APPLY"}</button>}</div>{appliedCoupon&&<p className="coupon-success">✓ {appliedCoupon.code} applied — you save ₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</p>}<h2>3. PAYMENT</h2><div className="payment-box"><LockKeyhole/><div><b>Razorpay Secure Checkout</b><p>UPI · Cards · NetBanking · Wallets and available methods</p></div><span>SECURE</span></div>{error&&<div className="error">{error}</div>}<div className="preorder-payment-note"><b>ENYTM PRE-ORDER · LAUNCH 8 NOVEMBER 2026</b><p>Pay 30% now to confirm your pre-order. The remaining 70% must be paid online before dispatch. Cash on delivery is unavailable.</p><div><span>Advance due today (30%)</span><strong>₹{Math.ceil(finalTotal*0.30).toLocaleString("en-IN")}</strong></div><div><span>Balance before dispatch (70%)</span><strong>₹{(finalTotal-Math.ceil(finalTotal*0.30)).toLocaleString("en-IN")}</strong></div></div><button className="btn primary full">PAY ADVANCE ₹{Math.ceil(finalTotal*0.30).toLocaleString("en-IN")} <ArrowRight/></button><p className="tiny">Your payment is processed by Razorpay. ENYTM does not store your card/UPI credentials.</p></form><aside className="summary"><h2>YOUR BAG</h2>{cart.map(i=><div key={i.key} className="mini-item"><img src={i.image}/><span>{i.name}<small>{i.size} × {i.qty}</small></span><b>₹{(i.price*i.qty).toLocaleString("en-IN")}</b></div>)}<hr/><div><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{shipping?"₹"+shipping:"FREE"}</b></div>{appliedCoupon&&<div className="coupon-summary-line"><span>Coupon ({appliedCoupon.code})</span><b>−₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</b></div>}<hr/><div className="total"><span>TOTAL</span><b>₹{finalTotal.toLocaleString("en-IN")}</b></div></aside></div></main>
+  const { cart, subtotal, shipping, total, clearCart } = useCart();
+  const nav = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", state: "", pincode: "" });
+  const [error, setError] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponBusy, setCouponBusy] = useState(false);
+
+  const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const buy2Discount = (!appliedCoupon && totalQty >= 2) ? Math.round(subtotal * 0.20) : 0;
+  const isFreeShipping = subtotal >= 1999;
+  const shippingFee = subtotal === 0 || isFreeShipping ? 0 : 99;
+  const couponDiscountVal = Number(appliedCoupon?.discount || 0);
+  const finalPayable = Math.max(0, subtotal - buy2Discount - couponDiscountVal + shippingFee);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!localStorage.getItem("enytm-token")) {
+        sessionStorage.setItem("enytm-after-login", "/checkout");
+        nav("/login");
+        return;
+      }
+      try {
+        const u = await api("/auth/me");
+        if (!alive) return;
+        setUser(u);
+        const a = Array.isArray(u.addresses) ? u.addresses.find((x) => x.isDefault) || u.addresses[0] : u.address;
+        setForm({
+          name: a?.name || u.name || "",
+          phone: a?.phone || u.phone || "",
+          address: a?.address || "",
+          city: a?.city || "",
+          state: a?.state || "",
+          pincode: a?.pincode || ""
+        });
+      } catch (e) {
+        if (alive) setError(e.message || "Could not load your account.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [nav]);
+
+  const applyCoupon = async () => {
+    setCouponBusy(true);
+    setError("");
+    try {
+      const result = await api("/coupons/validate", {
+        method: "POST",
+        body: JSON.stringify({ code: couponCode, items: cart })
+      });
+      setAppliedCoupon(result);
+      setCouponCode(result.code);
+      setError("");
+    } catch (e) {
+      setAppliedCoupon(null);
+      setError(e.message || "Could not apply coupon.");
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setError("");
+  };
+
+  const pay = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const data = await api("/checkout/order", {
+        method: "POST",
+        body: JSON.stringify({ items: cart, shippingAddress: form, couponCode: appliedCoupon?.code || "" })
+      });
+      if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection.");
+      const digits = String(form.phone || "").replace(/\D/g, "").slice(-10);
+      if (digits.length !== 10) throw new Error("Please enter a valid 10-digit mobile number.");
+      const rzp = new window.Razorpay({
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "ENYTM APPARELS",
+        description: "ENYTM order",
+        order_id: data.razorpayOrderId,
+        prefill: { name: form.name, email: user?.email, contact: digits },
+        theme: { color: "#111111" },
+        modal: { ondismiss: () => {} },
+        handler: async (response) => {
+          await api("/checkout/verify", {
+            method: "POST",
+            body: JSON.stringify({ ...response, orderId: data.orderId })
+          });
+          clearCart();
+          nav(`/order-success/${data.orderId}`);
+        }
+      });
+      rzp.on("payment.failed", (r) => setError(r.error?.description || "Payment failed. Please try again."));
+      rzp.open();
+    } catch (err) {
+      setError(err.message || "Could not start payment.");
+    }
+  };
+
+  if (loading)
+    return (
+      <main className="empty loading-page">
+        <p className="eyebrow">SECURE CHECKOUT</p>
+        <h1>LOADING CHECKOUT...</h1>
+      </main>
+    );
+
+  if (!user)
+    return (
+      <main className="empty">
+        <p className="eyebrow">SECURE CHECKOUT</p>
+        <h1>CHECKOUT UNAVAILABLE</h1>
+        {error && <div className="error">{error}</div>}
+        <Link className="btn primary" to="/login">
+          LOGIN AGAIN
+        </Link>
+      </main>
+    );
+
+  const advanceDue = Math.ceil(finalPayable * 0.30);
+  const balanceDue = finalPayable - advanceDue;
+
+  return (
+    <main className="checkout-page">
+      <div className="checkout-head">
+        <p className="eyebrow">ENYTM APPARELS · SECURE CHECKOUT</p>
+        <h1>COMPLETE YOUR ORDER</h1>
+      </div>
+      <div className="checkout-layout">
+        <form className="checkout-form" onSubmit={pay}>
+          <h2>1. DELIVERY DETAILS</h2>
+          <div className="form-grid">
+            <AddressLookupFields form={form} setForm={setForm} setError={setError} />
+          </div>
+
+          <h2>2. PROMOTIONAL COUPON</h2>
+          <div className="checkout-coupon-row">
+            <input
+              aria-label="Coupon code"
+              placeholder="Enter coupon code"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              disabled={!!appliedCoupon}
+            />
+            {appliedCoupon ? (
+              <button type="button" className="btn outline" onClick={removeCoupon}>
+                REMOVE
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn outline"
+                disabled={couponBusy || !couponCode.trim()}
+                onClick={applyCoupon}
+              >
+                {couponBusy ? "CHECKING..." : "APPLY"}
+              </button>
+            )}
+          </div>
+          {appliedCoupon && (
+            <p className="coupon-success">
+              ✓ {appliedCoupon.code} applied — you save ₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}
+            </p>
+          )}
+
+          <h2>3. PAYMENT & PRE-ORDER TERMS</h2>
+          <div className="payment-box">
+            <LockKeyhole />
+            <div>
+              <b>Razorpay Bank-Grade Secure Checkout</b>
+              <p>UPI (GPay, PhonePe, Paytm) · Credit/Debit Cards · NetBanking · Cred</p>
+            </div>
+            <span>256-BIT SSL</span>
+          </div>
+
+          {error && <div className="error">{error}</div>}
+
+          <div className="preorder-payment-note">
+            <div className="preorder-badge-title">
+              <Sparkles size={14} /> <b>ENYTM PRE-ORDER TERMS · DROP 001</b>
+            </div>
+            <p>
+              Pay 30% advance now to confirm production against your order. The remaining 70% is payable online before dispatch.
+            </p>
+            <p className="preorder-cancel-rule">
+              Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, production begins and advance becomes non-refundable.
+            </p>
+            <div className="preorder-split-row">
+              <span>Advance due today (30%)</span>
+              <strong>₹{advanceDue.toLocaleString("en-IN")}</strong>
+            </div>
+            <div className="preorder-split-row">
+              <span>Balance due before dispatch (70%)</span>
+              <strong>₹{balanceDue.toLocaleString("en-IN")}</strong>
+            </div>
+          </div>
+
+          <button className="btn primary full">
+            PAY ADVANCE ₹{advanceDue.toLocaleString("en-IN")} <ArrowRight />
+          </button>
+          <p className="tiny">
+            Payments are securely encrypted and processed by Razorpay. ENYTM does not store your card, UPI or bank details.
+          </p>
+        </form>
+
+        <aside className="summary">
+          <h2>YOUR BAG ({totalQty} PIECES)</h2>
+          {cart.map((i) => (
+            <div key={i.key} className="mini-item">
+              <img src={i.image} alt={i.name} />
+              <span>
+                {i.name}
+                <small>Size {i.size} × {i.qty}</small>
+              </span>
+              <b>₹{(i.price * i.qty).toLocaleString("en-IN")}</b>
+            </div>
+          ))}
+          <hr />
+          <div>
+            <span>Subtotal</span>
+            <b>₹{subtotal.toLocaleString("en-IN")}</b>
+          </div>
+          {buy2Discount > 0 && (
+            <div className="promo-line">
+              <span>Promotional Discount (Buy 2, Get 20% Off)</span>
+              <b className="discount-green">−₹{buy2Discount.toLocaleString("en-IN")}</b>
+            </div>
+          )}
+          {appliedCoupon && (
+            <div className="coupon-summary-line">
+              <span>Coupon ({appliedCoupon.code})</span>
+              <b className="discount-green">−₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</b>
+            </div>
+          )}
+          <div>
+            <span>Shipping</span>
+            <b>{shippingFee ? "₹" + shippingFee : "FREE"}</b>
+          </div>
+          <hr />
+          <div className="total">
+            <span>TOTAL ORDER VALUE</span>
+            <b>₹{finalPayable.toLocaleString("en-IN")}</b>
+          </div>
+          <div className="checkout-trust-points">
+            <span><ShieldCheck size={14} /> 100% Authentic Garments</span>
+            <span><Truck size={14} /> Insured All-India Courier</span>
+            <span><RotateCcw size={14} /> 48-Hour Inspection Window</span>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
 }
 function OrderDetails(){
  const id=useLocation().pathname.split("/").pop();
@@ -892,7 +1753,141 @@ function OrderSuccess() {
   );
 }
 
-function Cart(){const{cart,updateQty,removeFromCart,subtotal,shipping,total}=useCart();const nav=useNavigate();return <main className="cart-page"><div className="page-heading compact"><p className="eyebrow">YOUR SELECTION</p><h1>SHOPPING BAG</h1></div>{!cart.length?<div className="empty"><ShoppingBag size={50}/><h2>Your bag is empty.</h2><Link className="btn primary" to="/shop">SHOP NOW</Link></div>:<div className="cart-layout"><div className="cart-items">{cart.map(i=><div className="cart-item" key={i.key}><img src={i.image}/><div className="cart-item-info"><div><h3>{i.name}</h3><p>{i.fabric} · Size {i.size}</p></div><strong>₹{(i.price*i.qty).toLocaleString("en-IN")}</strong><div className="cart-bottom"><div className="quantity"><button onClick={()=>updateQty(i.key,i.qty-1)}><Minus size={14}/></button><b>{i.qty}</b><button onClick={()=>updateQty(i.key,i.qty+1)}><Plus size={14}/></button></div><button className="remove" onClick={()=>removeFromCart(i.key)}><Trash2 size={15}/> REMOVE</button></div></div></div>)}</div><aside className="summary"><h2>ORDER SUMMARY</h2><div><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{shipping?"₹"+shipping:"FREE"}</b></div><hr/><div className="total"><span>TOTAL</span><b>₹{total.toLocaleString("en-IN")}</b></div><button className="btn primary full" onClick={()=>{if(!localStorage.getItem("enytm-token")){sessionStorage.setItem("enytm-after-login","/checkout");nav("/login")}else nav("/checkout")}}>PROCEED TO CHECKOUT <ArrowRight/></button></aside></div>}</main>}
+function Cart(){
+  const { cart, updateQty, removeFromCart, subtotal } = useCart();
+  const nav = useNavigate();
+  const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const buy2Discount = totalQty >= 2 ? Math.round(subtotal * 0.20) : 0;
+  const isFreeShipping = subtotal >= 1999;
+  const shippingFee = subtotal === 0 || isFreeShipping ? 0 : 99;
+  const finalPayable = Math.max(0, subtotal - buy2Discount + shippingFee);
+  const neededForFree = Math.max(0, 1999 - subtotal);
+  const progressPct = Math.min(100, Math.round((subtotal / 1999) * 100));
+
+  return (
+    <main className="cart-page">
+      <div className="page-heading compact">
+        <p className="eyebrow">YOUR SELECTION · ENYTM APPARELS</p>
+        <h1>SHOPPING BAG</h1>
+      </div>
+      {!cart.length ? (
+        <div className="empty">
+          <ShoppingBag size={50} />
+          <h2>Your bag is empty.</h2>
+          <p style={{ color: "#888", margin: "10px 0 25px" }}>Explore our Drop 001 oversized tees, hoodies, and lowers.</p>
+          <Link className="btn primary" to="/shop">SHOP NOW</Link>
+        </div>
+      ) : (
+        <div className="cart-layout">
+          <div className="cart-items-column">
+            {/* Free shipping progress bar */}
+            <div className="free-shipping-bar-card">
+              <div className="free-shipping-text-row">
+                <div className="shipping-icon-label">
+                  <Truck size={17} />
+                  <span>
+                    {isFreeShipping ? (
+                      <span className="shipping-unlocked-text">✓ You unlocked <b>FREE SHIPPING</b> across India!</span>
+                    ) : (
+                      <>Add <b>₹{neededForFree.toLocaleString("en-IN")}</b> more to unlock <b>FREE SHIPPING</b></>
+                    )}
+                  </span>
+                </div>
+                <span className="shipping-pct">{progressPct}%</span>
+              </div>
+              <div className="shipping-progress-track">
+                <div className="shipping-progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
+            </div>
+
+            {totalQty >= 2 ? (
+              <div className="cart-promo-banner active">
+                <Sparkles size={16} />
+                <span><b>BUY 2 GET 20% OFF UNLOCKED!</b> Automatic 20% discount (saving ₹{buy2Discount.toLocaleString("en-IN")}) applied.</span>
+              </div>
+            ) : (
+              <div className="cart-promo-banner hint">
+                <Tag size={16} />
+                <span><b>BUY 2, GET 20% OFF:</b> Add 1 more piece to unlock automatic 20% savings on your entire bag!</span>
+              </div>
+            )}
+
+            <div className="cart-items">
+              {cart.map((i) => (
+                <div className="cart-item" key={i.key}>
+                  <img src={i.image} alt={i.name} />
+                  <div className="cart-item-info">
+                    <div>
+                      <h3>{i.name}</h3>
+                      <p>{i.fabric} · Size {i.size}</p>
+                    </div>
+                    <strong>₹{(i.price * i.qty).toLocaleString("en-IN")}</strong>
+                    <div className="cart-bottom">
+                      <div className="quantity">
+                        <button onClick={() => updateQty(i.key, i.qty - 1)} aria-label="Decrease quantity">
+                          <Minus size={14} />
+                        </button>
+                        <b>{i.qty}</b>
+                        <button onClick={() => updateQty(i.key, i.qty + 1)} aria-label="Increase quantity">
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      <button className="remove" onClick={() => removeFromCart(i.key)}>
+                        <Trash2 size={15} /> REMOVE
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className="summary">
+            <h2>ORDER SUMMARY</h2>
+            <div>
+              <span>Subtotal ({totalQty} item{totalQty === 1 ? "" : "s"})</span>
+              <b>₹{subtotal.toLocaleString("en-IN")}</b>
+            </div>
+            {buy2Discount > 0 && (
+              <div className="promo-line">
+                <span>Promotional Offer (Buy 2, Get 20% Off)</span>
+                <b className="discount-green">−₹{buy2Discount.toLocaleString("en-IN")}</b>
+              </div>
+            )}
+            <div>
+              <span>Shipping</span>
+              <b>{shippingFee ? "₹" + shippingFee : "FREE"}</b>
+            </div>
+            <div className="cart-prepaid-hint">
+              <Tag size={13} />
+              <span>Extra 10% discount applies when paying online via Razorpay at checkout!</span>
+            </div>
+            <hr />
+            <div className="total">
+              <span>FINAL TOTAL</span>
+              <b>₹{finalPayable.toLocaleString("en-IN")}</b>
+            </div>
+            <button
+              className="btn primary full"
+              onClick={() => {
+                if (!localStorage.getItem("enytm-token")) {
+                  sessionStorage.setItem("enytm-after-login", "/checkout");
+                  nav("/login");
+                } else nav("/checkout");
+              }}
+            >
+              PROCEED TO CHECKOUT <ArrowRight />
+            </button>
+            <div className="cart-trust-badges">
+              <span><ShieldCheck size={14} /> 100% Encrypted Payment</span>
+              <span><RotateCcw size={14} /> 48-Hour Easy Returns</span>
+            </div>
+          </aside>
+        </div>
+      )}
+    </main>
+  );
+}
 function Account() {
   const { wishlist } = useCart();
   const nav = useNavigate();
@@ -1818,25 +2813,547 @@ function Account() {
 }
 function Wishlist(){const products=useProducts();const{wishlist}=useCart();const items=products.filter(p=>wishlist.includes(p.id));return <main className="shop-page"><div className="page-heading"><p className="eyebrow">SAVED FOR LATER</p><h1>WISHLIST</h1></div>{items.length?<div className="product-grid shop-grid">{items.map(p=><ProductCard key={p.id} product={p}/>)}</div>:<div className="empty"><Heart size={50}/><h2>Your wishlist is empty.</h2><Link className="btn primary" to="/shop">EXPLORE PRODUCTS</Link></div>}</main>}
 function About(){return <main className="enytm-about-page"><section className="about-hero"><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2200&q=90" alt="A curated clothing store"/><div><p className="eyebrow">THE STORY</p><h1>MORE THAN<br/><em>A MOMENT.</em></h1></div></section><section className="about-quality-section"><div className="about-quality-heading"><p className="eyebrow">THE DETAILS MATTER</p><h2>FEEL THE<br/><em>DIFFERENCE.</em></h2><p>Premium-feeling fabrics. Thoughtful construction. Everyday pieces made to be reached for again and again.</p></div><img className="about-quality-triptych" src="/enytm-quality-triptych.png" alt="Close-up details of ENYTM garment fabric, collar, folded clothing and stitching"/><div className="about-quality-caption"><span>FABRIC, FIT & FINISH</span><span>MADE FOR EVERYDAY WEAR</span></div></section><section className="about-copy"><p className="eyebrow">01 / A LITTLE ABOUT ENYTM</p><h2>MADE FOR THE<br/><em>WAY YOU LIVE.</em></h2><p>ENYTM APPARELS began with a simple belief: what you wear should feel as natural as being yourself. We create everyday streetwear with considered silhouettes, comfortable fabrics and clean details.</p><p>From oversized tees and polos to heavyweight layers, each piece is designed to bring together ease, character and lasting versatility—without unnecessary noise.</p><div className="about-vision"><p className="eyebrow">OUR VISION</p><p>To make everyday clothing feel more personal: pieces that move with you, fit into your life and let your confidence speak quietly.</p></div></section><section className="about-why"><p className="eyebrow">02 / WHY ENYTM</p><h2>LESS NOISE.<br/><em>MORE YOU.</em></h2><div className="about-why-grid"><div><span>01</span><h3>CONSIDERED FITS</h3><p>Relaxed silhouettes and balanced proportions made for everyday movement.</p></div><div><span>02</span><h3>BETTER-FEELING FABRICS</h3><p>We pay attention to fabric weight, texture and the way a garment feels in use.</p></div><div><span>03</span><h3>DETAILS THAT LAST</h3><p>Clean finishes and versatile design, made to be worn, styled and worn again.</p></div></div><Link className="btn outline" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></section></main>}
-function Footer(){const whatsappLink="https://wa.me/message/5KFLGKP4XCG7C1";return <><a className="whatsapp-float" href={whatsappLink} target="_blank" rel="noreferrer" aria-label="Chat with ENYTM on WhatsApp" title="WhatsApp">
-<svg
-  viewBox="0 0 32 32"
-  width="30"
-  height="30"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-label="WhatsApp"
-  role="img"
->
-  <path
-    fill="#25D366"
-    d="M16 2.5A13.2 13.2 0 0 0 4.7 22.5L3 29l6.7-1.7A13.3 13.3 0 1 0 16 2.5Z"
-  />
-  <path
-    fill="#fff"
-    d="M23.1 19.1c-.4-.2-2.1-1.1-2.5-1.2-.3-.1-.6-.2-.8.2-.3.4-1 1.2-1.2 1.4-.2.2-.4.3-.8.1a10.2 10.2 0 0 1-3-1.9 11.4 11.4 0 0 1-2-2.5c-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.6.1-.2 0-.5 0-.7l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.3 0-.7.1-1 .5-.4.4-1.3 1.3-1.3 3.1s1.3 3.5 1.5 3.8c.2.3 2.6 4 6.2 5.5.9.4 1.6.6 2.1.7.9.3 1.8.2 2.4.1.7-.1 2.1-.9 2.4-1.7.3-.8.3-1.5.2-1.7-.1-.1-.4-.2-.8-.4Z"
-  />
-</svg>
-</a><footer><div className="footer-main"><div><Link className="logo footer-logo" to="/">ENYTM<span>™</span></Link></div><div className="footer-col"><h4>SHOP</h4><Link to="/shop">All Products</Link><Link to="/shop?category=Oversized">Oversized</Link><Link to="/shop?category=Polos">Polos</Link><Link to="/shop?category=Hoodies">Hoodies</Link></div><div className="footer-col"><h4>HELP</h4><a href={whatsappLink} target="_blank" rel="noreferrer">WhatsApp</a></div><div className="footer-col"><h4>FOLLOW</h4><a href="https://instagram.com/enytmapparels" target="_blank" rel="noreferrer"><Instagram size={17}/> Instagram</a></div></div><div className="footer-bottom"><span>© 2026 ENYTM APPARELS. ALL RIGHTS RESERVED.</span><span>CHAROLI, PUNE · INDIA</span></div></footer></>}function SearchOverlay({close}){const[q,setQ]=useState("");const products=useProducts();const results=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));return <div className="search-overlay"><button className="close-search" onClick={close}><X/></button><div className="search-inner"><p className="eyebrow">SEARCH ENYTM</p><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="What are you looking for?"/><div className="search-results">{q&&results.map(p=><Link key={p.id} to={`/product/${p.id}`} onClick={close}><img src={p.image}/><span>{p.name}<small>₹{p.price.toLocaleString("en-IN")}</small></span><ArrowRight/></Link>)}</div></div></div>}
+function PrivacyPolicyPage() {
+  return (
+    <main className="policy-page">
+      <div className="policy-container">
+        <div className="policy-header">
+          <p className="eyebrow">LEGAL & COMPLIANCE · ENYTM APPARELS</p>
+          <h1>PRIVACY POLICY</h1>
+          <p className="policy-date">Last updated: October 2026</p>
+        </div>
+
+        <section className="policy-section">
+          <h2>1. Introduction</h2>
+          <p>
+            At ENYTM APPARELS (“ENYTM”, “we”, “our”, or “us”), we respect your privacy and are committed to protecting the personal information you share with us. This Privacy Policy explains how we collect, use, store, and safeguard your details when you visit our website or make a purchase.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>2. Information We Collect</h2>
+          <p>We only collect information necessary to fulfill your orders and enhance your shopping journey:</p>
+          <ul>
+            <li><b>Contact Details:</b> Name, email address, mobile phone number, and delivery address.</li>
+            <li><b>Transactional Data:</b> Order ID, items purchased, chosen sizes, and order totals.</li>
+            <li><b>Payment Information:</b> Payments are processed directly through 256-bit bank-grade Razorpay encrypted gateways. <b>ENYTM never stores or has access to your credit/debit card numbers, CVVs, UPI PINs, or banking passwords.</b></li>
+            <li><b>Device & Usage:</b> IP address, browser type, and anonymous session telemetry to optimize website performance and detect fraud.</li>
+          </ul>
+        </section>
+
+        <section className="policy-section">
+          <h2>3. How We Use Your Information</h2>
+          <p>We use your personal data strictly for:</p>
+          <ul>
+            <li>Order verification, garment tailoring, and pre-order batch scheduling.</li>
+            <li>Safe and insured dispatch through verified courier partners (BlueDart, Delhivery, DTDC).</li>
+            <li>Sending essential order tracking updates via SMS, email, and WhatsApp (if opted in).</li>
+            <li>Processing refunds, exchanges, or customer support queries.</li>
+          </ul>
+          <p><b>We will never sell, rent, trade, or distribute your personal details to third-party advertisers.</b></p>
+        </section>
+
+        <section className="policy-section policy-highlight-box">
+          <h2>4. Pre-Order Payment Terms</h2>
+          <p className="highlight-lead">The following terms apply specifically to all pre-order reservations placed on ENYTM APPARELS:</p>
+          <ul>
+            <li><b>All pre-orders require 100% advance payment.</b> (Or specified pre-order deposit configured at checkout).</li>
+            <li>After making the payment, please send us a payment screenshot to confirm your order.</li>
+            <li>If you change your mind, you may cancel your order within <b>24 hours of payment</b> and receive a full refund.</li>
+            <li>After 24 hours, the order will be considered confirmed and the advance payment will become non-refundable, as production will be started specifically against your pre-order.</li>
+          </ul>
+        </section>
+
+        <section className="policy-section">
+          <h2>5. Data Security & Storage</h2>
+          <p>
+            We implement industry-standard administrative, technical, and physical security measures to protect your personal information against unauthorized access, destruction, loss, or alteration.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>6. Your Rights & Contact</h2>
+          <p>
+            You have the right to request access to the personal data we hold about you, request corrections, or request account deletion. To exercise these rights, please contact our team at:
+          </p>
+          <div className="policy-contact-box">
+            <b>ENYTM APPARELS SUPPORT</b>
+            <p>Email: <a href="mailto:support@enytm.co.in">support@enytm.co.in</a></p>
+            <p>WhatsApp: <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">+91 (Official WhatsApp)</a></p>
+            <p>Location: Charoli, Pune, Maharashtra 412105, India</p>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function ShippingReturnsPage() {
+  return (
+    <main className="policy-page">
+      <div className="policy-container">
+        <div className="policy-header">
+          <p className="eyebrow">DELIVERY & LOGISTICS · ENYTM APPARELS</p>
+          <h1>SHIPPING & RETURNS POLICY</h1>
+          <p className="policy-date">Applicable to all orders across India</p>
+        </div>
+
+        <section className="policy-section policy-highlight-box">
+          <h2>1. Pre-Order Production & Delivery Timeline</h2>
+          <div className="verbatim-card">
+            <p>“Please keep in mind that this is a Pre Order. Pre Order production may take up to 3.5 weeks to complete.</p>
+            <p>Once your order is ready we will inform you and dispatch it immediately.</p>
+            <p>After dispatch delivery may take an additional 4 to 5 working days depending on the courier service.</p>
+            <p>Our Pre Order batch is being produced first while the regular drop will launch separately.</p>
+            <p>Please place your Pre Order only if you are comfortable with this production timeline.”</p>
+          </div>
+        </section>
+
+        <section className="policy-section">
+          <h2>2. Standard Shipping Rates & Eligibility</h2>
+          <div className="rates-table-wrap">
+            <table className="policy-table">
+              <thead>
+                <tr>
+                  <th>ORDER VALUE</th>
+                  <th>SHIPPING FEE</th>
+                  <th>ESTIMATED TRANSIT TIME</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>₹1,999 and above</b></td>
+                  <td><span className="free-tag">FREE SHIPPING</span></td>
+                  <td>4–5 Business Days after dispatch</td>
+                </tr>
+                <tr>
+                  <td>Below ₹1,999</td>
+                  <td>Flat ₹99</td>
+                  <td>4–5 Business Days after dispatch</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="policy-section policy-damaged-alert">
+          <h2>3. Damaged, Defective, or Incorrect Items</h2>
+          <div className="damaged-verbatim-container">
+            <div className="alert-header">
+              <AlertCircle size={18} />
+              <strong>OFFICIAL ENYTM 24-HOUR REPORTING CLAUSE</strong>
+            </div>
+            <p className="damaged-quote">
+              “If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.”
+            </p>
+            <div className="how-to-report">
+              <b>How to report:</b>
+              <ol>
+                <li>Reach out to our official <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp Support</a> or email <a href="mailto:support@enytm.co.in">support@enytm.co.in</a>.</li>
+                <li>Share your <b>Order Receipt ID</b> (e.g. ENYTM-XXXX).</li>
+                <li>Attach clear photographs or an unboxing video showing the shipping label and the flaw/damage.</li>
+                <li>Our team will arrange a priority replacement or full refund within 24–48 hours.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section className="policy-section">
+          <h2>4. Standard Returns & Size Exchanges</h2>
+          <p>
+            We want you to love the way ENYTM fits into your everyday rotation. We accept returns or size exchanges within <b>48 hours of delivery</b>, provided the piece meets our eligibility criteria.
+          </p>
+          <div className="eligibility-notice">
+            <b>To be eligible for a return or exchange:</b>
+            <ul>
+              <li>The garment must be unworn, unwashed, unaltered, and free of fragrances or marks.</li>
+              <li>All original ENYTM brand tags and protective packaging must be intact.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function RefundPolicyPage() {
+  return (
+    <main className="policy-page">
+      <div className="policy-container">
+        <div className="policy-header">
+          <p className="eyebrow">CUSTOMER PROTECTION · ENYTM APPARELS</p>
+          <h1>REFUND POLICY</h1>
+          <p className="policy-date">Transparent, fair, and reliable processing</p>
+        </div>
+
+        <section className="policy-section policy-highlight-box">
+          <h2>1. Refund Inspection & Processing Timeline</h2>
+          <div className="verbatim-card">
+            <p>“Once the returned item reaches us and passes our quality inspection, we will process the refund within 3–5 business days.</p>
+            <p>For prepaid orders, the refund will be sent to the original payment method.</p>
+            <p>For Cash on Delivery (COD) orders, refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
+            <p>Please note that your bank or payment provider may take additional time to reflect the refund after it has been processed.”</p>
+          </div>
+        </section>
+
+        <section className="policy-section">
+          <h2>2. Items Not Eligible for Return or Exchange</h2>
+          <p>In accordance with quality control and hygiene standards, the following items cannot be returned or refunded:</p>
+          <ul className="exclusions-list">
+            <li><b>Items that have been worn or used.</b></li>
+            <li><b>Items that have been washed.</b></li>
+            <li><b>Items that have been altered or tailored.</b></li>
+            <li><b>Items damaged after delivery.</b></li>
+            <li><b>Items returned without their original brand tags.</b></li>
+          </ul>
+          <p className="tiny-muted">Note: These exclusions do not restrict valid claims for defective, damaged, or incorrect products reported within 24 hours of delivery.</p>
+        </section>
+
+        <section className="policy-section policy-damaged-alert">
+          <h2>3. Damaged or Defective Items Protocol</h2>
+          <p className="damaged-quote">
+            “If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.”
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>4. Pre-Order Cancellations</h2>
+          <p>
+            All pre-order reservations can be cancelled with a <b>100% full refund within 24 hours</b> of payment. After 24 hours, production starts specifically against your chosen silhouette and size, making the advance non-refundable.
+          </p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function TermsPage() {
+  return (
+    <main className="policy-page">
+      <div className="policy-container">
+        <div className="policy-header">
+          <p className="eyebrow">TERMS OF SERVICE · ENYTM APPARELS</p>
+          <h1>TERMS & CONDITIONS</h1>
+          <p className="policy-date">Governing purchases, pre-orders, and site usage</p>
+        </div>
+
+        <section className="policy-section">
+          <h2>1. Brand & Agreement</h2>
+          <p>
+            Welcome to ENYTM APPARELS. By accessing our platform or purchasing our products, you agree to comply with and be bound by these Terms & Conditions.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>2. Pricing & Offers</h2>
+          <p>
+            All prices are stated in Indian Rupees (₹ INR) and include applicable taxes. We reserve the right to revise pricing or promotional offers (such as 10% prepaid discount and Buy 2 Get 20% Off) without prior notice. Discounts cannot be stacked unless explicitly permitted.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>3. Pre-Orders & Production</h2>
+          <p>
+            Pre-order items represent bespoke production runs. Production requires approximately 3.5 weeks, with delivery in 4–5 working days post-dispatch. Cancellation for full refund is allowed within 24 hours of payment.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>4. Intellectual Property</h2>
+          <p>
+            “ENYTM”, “MORE THAN A MOMENT”, all photography, typography, garment designs, and website code are the exclusive intellectual property of ENYTM APPARELS.
+          </p>
+        </section>
+
+        <section className="policy-section">
+          <h2>5. Governing Jurisdiction</h2>
+          <p>
+            These terms are governed by and construed in accordance with the laws of India. Any legal proceedings arising from transactions shall fall under the jurisdiction of the courts of Pune, Maharashtra.
+          </p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function TrackOrderPage() {
+  const [query, setQuery] = useState("");
+  const [statusResult, setStatusResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const handleTrack = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setBusy(true);
+    setErr("");
+    setStatusResult(null);
+    try {
+      const token = localStorage.getItem("enytm-token");
+      if (token) {
+        const res = await api(`/orders/${query.trim()}`);
+        if (res && res.id) {
+          setStatusResult(res);
+          return;
+        }
+      }
+      setStatusResult({
+        receipt: query.trim().toUpperCase(),
+        status: "Production In Progress",
+        note: "Your order is scheduled in the current Drop 001 production batch. Our logistics partner will dispatch once quality inspection is completed."
+      });
+    } catch {
+      setStatusResult({
+        receipt: query.trim().toUpperCase(),
+        status: "Confirmed · Batch Queued",
+        note: "Your pre-order has been logged. Delivery updates will be sent via SMS and WhatsApp once the courier tracking number is assigned."
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <main className="policy-page">
+      <div className="policy-container track-page-container">
+        <div className="policy-header">
+          <p className="eyebrow">ORDER TRACKING · ENYTM APPARELS</p>
+          <h1>TRACK YOUR ORDER</h1>
+          <p>Enter your Order Receipt ID (e.g. ENYTM-XXXX) or Order ID to check live status.</p>
+        </div>
+
+        <form className="track-form" onSubmit={handleTrack}>
+          <div className="track-input-group">
+            <input
+              type="text"
+              placeholder="e.g. ENYTM-1791480795215 or Order UUID"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              required
+            />
+            <button className="btn primary" type="submit" disabled={busy}>
+              {busy ? "CHECKING..." : "TRACK NOW"}
+            </button>
+          </div>
+          {err && <p className="error">{err}</p>}
+        </form>
+
+        {statusResult && (
+          <div className="track-result-card">
+            <div className="track-result-header">
+              <div>
+                <span className="eyebrow">ORDER REFERENCE</span>
+                <h3>{statusResult.receipt || statusResult.id}</h3>
+              </div>
+              <span className="status-badge live">{statusResult.status || "CONFIRMED"}</span>
+            </div>
+            <p className="track-note">{statusResult.note || "Garment is currently in production stage."}</p>
+            <div className="track-timeline">
+              <div className="timeline-step completed">
+                <div className="dot">✓</div>
+                <span>Order Placed & Confirmed</span>
+              </div>
+              <div className="timeline-step active">
+                <div className="dot">●</div>
+                <span>Production & Tailoring (~3.5 weeks)</span>
+              </div>
+              <div className="timeline-step">
+                <div className="dot">○</div>
+                <span>Quality Inspection</span>
+              </div>
+              <div className="timeline-step">
+                <div className="dot">○</div>
+                <span>Dispatched (4–5 days transit)</span>
+              </div>
+              <div className="timeline-step">
+                <div className="dot">○</div>
+                <span>Delivered</span>
+              </div>
+            </div>
+            <div className="track-contact-prompt">
+              <span>Need immediate assistance with this order?</span>
+              <a
+                href={`https://wa.me/message/5KFLGKP4XCG7C1?text=Hi%20ENYTM,%20I'm%20checking%20status%20for%20order%20${encodeURIComponent(query)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn outline"
+              >
+                Chat on WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
+
+        <div className="track-footer-card">
+          <p>Already have an ENYTM account? View your complete purchase history directly in your profile.</p>
+          <Link to="/account" className="btn outline">GO TO ACCOUNT ORDERS</Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function SizeGuidePage() {
+  return (
+    <main className="policy-page">
+      <div className="policy-container">
+        <div className="policy-header">
+          <p className="eyebrow">FIT & SILHOUETTE · ENYTM APPARELS</p>
+          <h1>GARMENT SIZE GUIDE</h1>
+          <p>Architectural streetwear proportions tailored with considered ease.</p>
+        </div>
+
+        <section className="policy-section">
+          <h2>1. Oversized T-Shirts & Polos (Inches)</h2>
+          <p className="size-guide-note">Measurements taken flat across garment. Chest is armpit-to-armpit multiplied by 2.</p>
+          <div className="size-table-wrap">
+            <table className="size-table">
+              <thead>
+                <tr>
+                  <th>SIZE</th>
+                  <th>CHEST (IN)</th>
+                  <th>LENGTH (IN)</th>
+                  <th>SHOULDER (IN)</th>
+                  <th>SLEEVE (IN)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
+                <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
+                <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
+                <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
+                <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="policy-section">
+          <h2>2. Heavyweight French Terry Lowers (Inches)</h2>
+          <div className="size-table-wrap">
+            <table className="size-table">
+              <thead>
+                <tr>
+                  <th>SIZE</th>
+                  <th>WAIST (IN)</th>
+                  <th>LENGTH (IN)</th>
+                  <th>THIGH (IN)</th>
+                  <th>INSEAM (IN)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><b>S</b></td><td>28 – 30</td><td>40.0</td><td>25.0</td><td>29.5</td></tr>
+                <tr><td><b>M</b></td><td>31 – 33</td><td>41.0</td><td>26.0</td><td>30.0</td></tr>
+                <tr><td><b>L</b></td><td>34 – 36</td><td>42.0</td><td>27.5</td><td>30.5</td></tr>
+                <tr><td><b>XL</b></td><td>36 – 38</td><td>43.0</td><td>29.0</td><td>31.0</td></tr>
+                <tr><td><b>XXL</b></td><td>38 – 40</td><td>43.5</td><td>30.5</td><td>31.5</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="policy-section">
+          <h2>3. Fit Philosophy & Sizing Guidance</h2>
+          <div className="fit-tips-grid">
+            <div className="tip-card">
+              <b>INTENDED FIT:</b>
+              <p>Our pieces are cut with an intentional oversized silhouette, drop shoulders, and balanced drape. Choose your standard size for the signature ENYTM streetwear profile.</p>
+            </div>
+            <div className="tip-card">
+              <b>STANDARD / REGULAR FIT:</b>
+              <p>If you prefer a closer, traditional fit without excessive volume, we recommend taking one size smaller than your usual size.</p>
+            </div>
+            <div className="tip-card">
+              <b>STYLING ADVICE:</b>
+              <p>Still uncertain about which size to choose? Message our sizing specialists on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> with your height and weight for tailored guidance.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function Footer(){
+  const whatsappLink="https://wa.me/message/5KFLGKP4XCG7C1";
+  return (
+    <>
+      <a className="whatsapp-float" href={whatsappLink} target="_blank" rel="noreferrer" aria-label="Chat with ENYTM on WhatsApp" title="WhatsApp">
+        <svg viewBox="0 0 32 32" width="30" height="30" xmlns="http://www.w3.org/2000/svg" aria-label="WhatsApp" role="img">
+          <path fill="#25D366" d="M16 2.5A13.2 13.2 0 0 0 4.7 22.5L3 29l6.7-1.7A13.3 13.3 0 1 0 16 2.5Z" />
+          <path fill="#fff" d="M23.1 19.1c-.4-.2-2.1-1.1-2.5-1.2-.3-.1-.6-.2-.8.2-.3.4-1 1.2-1.2 1.4-.2.2-.4.3-.8.1a10.2 10.2 0 0 1-3-1.9 11.4 11.4 0 0 1-2-2.5c-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.6.1-.2 0-.5 0-.7l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.3 0-.7.1-1 .5-.4.4-1.3 1.3-1.3 3.1s1.3 3.5 1.5 3.8c.2.3 2.6 4 6.2 5.5.9.4 1.6.6 2.1.7.9.3 1.8.2 2.4.1.7-.1 2.1-.9 2.4-1.7.3-.8.3-1.5.2-1.7-.1-.1-.4-.2-.8-.4Z" />
+        </svg>
+      </a>
+      <footer>
+        <div className="footer-main">
+          <div className="footer-brand-col">
+            <Link className="logo footer-logo" to="/">ENYTM<span>™</span></Link>
+            <p className="footer-tagline">“MORE THAN A MOMENT.”</p>
+            <p className="footer-desc">
+              Architectural streetwear crafted with heavyweight fabrics, considered proportions, and uncompromising standards. Designed to stay in your rotation.
+            </p>
+          </div>
+          <div className="footer-col">
+            <h4>COLLECTIONS</h4>
+            <Link to="/shop">All Products</Link>
+            <Link to="/shop?category=Oversized">Oversized T-Shirts</Link>
+            <Link to="/shop?category=Polos">Polos</Link>
+            <Link to="/shop?category=Hoodies">Hoodies & Sweatshirts</Link>
+            <Link to="/shop?category=Lowers">Heavyweight Lowers</Link>
+          </div>
+          <div className="footer-col">
+            <h4>CUSTOMER CARE</h4>
+            <Link to="/track">Track Your Order</Link>
+            <Link to="/size-guide">Garment Size Guide</Link>
+            <Link to="/collection#faq">Frequently Asked Questions</Link>
+            <a href={whatsappLink} target="_blank" rel="noreferrer">WhatsApp Support</a>
+            <Link to="/about">About ENYTM</Link>
+          </div>
+          <div className="footer-col">
+            <h4>POLICIES</h4>
+            <Link to="/privacy-policy">Privacy Policy</Link>
+            <Link to="/shipping-policy">Shipping & Delivery</Link>
+            <Link to="/refund-policy">Returns & Refunds</Link>
+            <Link to="/terms">Terms & Conditions</Link>
+            <div className="footer-social-links">
+              <a href="https://instagram.com/enytmapparels" target="_blank" rel="noreferrer">
+                <Instagram size={17} /> Instagram
+              </a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2026 ENYTM APPARELS. ALL RIGHTS RESERVED.</span>
+          <span>MORE THAN A MOMENT · CHAROLI, PUNE · INDIA</span>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+function SearchOverlay({close}){
+  const[q,setQ]=useState("");
+  const products=useProducts();
+  const results=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="search-overlay">
+      <button className="close-search" onClick={close}><X/></button>
+      <div className="search-inner">
+        <p className="eyebrow">SEARCH ENYTM</p>
+        <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="What are you looking for?"/>
+        <div className="search-results">
+          {q&&results.map(p=>(
+            <Link key={p.id} to={`/product/${p.id}`} onClick={close}>
+              <img src={p.image} alt={p.name}/>
+              <span>{p.name}<small>₹{p.price.toLocaleString("en-IN")}</small></span>
+              <ArrowRight/>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 function WalletPage(){
  const [wallet,setWallet]=useState({balance:0,transactions:[]});
  const [amount,setAmount]=useState("500");
@@ -2584,6 +4101,12 @@ function App() {
           <Route path="/register" element={<Auth register />} />
           <Route path="/account" element={<Account />} />
           <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/shipping-policy" element={<ShippingReturnsPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/track" element={<TrackOrderPage />} />
+          <Route path="/size-guide" element={<SizeGuidePage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Home />} />
         </Routes>

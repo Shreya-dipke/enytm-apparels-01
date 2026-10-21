@@ -156,6 +156,27 @@
         "XXL"
       ],
       "id": 1791106367401
+    },
+    {
+      "id": 7,
+      "name": "Heavyweight French Terry Lowers",
+      "category": "Lowers",
+      "price": 1499,
+      "oldPrice": 1899,
+      "stock": 35,
+      "badge": "NEW",
+      "fabric": "380 GSM Heavyweight Terry Cotton",
+      "description": "Architectural straight-leg sweatpants engineered with deep pockets, elasticated drawstring waistband, and a relaxed heavyweight drape.",
+      "image": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85",
+      "image2": "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=85",
+      "image3": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=1200&q=85",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ]
     }
   ],
   "orders": [
