@@ -2071,3 +2071,62 @@
 .coupon-success{color:#b7d9a9;font-size:11px;margin:8px 0 20px}
 .coupon-summary-line{color:#b7d9a9!important}
 @media(max-width:700px){.admin-media-upload-grid{grid-template-columns:1fr}.admin-media-upload{grid-template-columns:80px minmax(0,1fr)}.admin-media-preview{width:80px;height:100px}.checkout-coupon-row{flex-wrap:wrap}.checkout-coupon-row input{flex-basis:100%}}
+
+
+/* ENYTM accessibility hotfix: keep button labels readable on every screen. */
+:root { --btn-bg:#c8b69a; --btn-fg:#080808; --btn-border:#c8b69a; }
+button, .btn, input[type="button"], input[type="submit"], input[type="reset"] { color:var(--text); }
+.btn.primary, .btn.light, .btn.full.primary, button.btn.primary,
+.order-actions-panel .btn.primary, .order-modal .btn.primary,
+.checkout-form button[type="submit"], .auth-card button[type="submit"],
+button.quick-add, .available-offer button, .coupon-apply,
+.admin-content button:not(.icon-btn):not(.admin-side button),
+.address-mini-btn {
+  background:var(--btn-bg) !important;
+  color:var(--btn-fg) !important;
+  border-color:var(--btn-border) !important;
+  text-shadow:none !important;
+  opacity:1 !important;
+}
+.btn.primary:disabled, button:disabled {
+  color:#333 !important; opacity:.65 !important;
+}
+.btn.outline, .btn:not(.primary):not(.light), .order-action-link, .text-link {
+  color:#f5f2ed;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline:2px solid #c8b69a !important; outline-offset:3px;
+}
+/* Checkout inputs must remain dark and legible, never browser-default pale blue. */
+.checkout-form input, .checkout-form select, .checkout-form textarea,
+.address-city-row input, .pincode-control input, .address-select {
+  background:#0b0b0b !important; color:#f5f2ed !important;
+  border:1px solid #454545 !important; color-scheme:dark;
+}
+.checkout-form input::placeholder, .pincode-control input::placeholder {color:#999 !important;}
+@media(max-width:700px) {
+  .checkout-layout,.cart-layout,.account-grid,.product-page,.order-detail-grid {grid-template-columns:minmax(0,1fr) !important;}
+  .checkout-layout,.cart-layout {padding-left:16px !important;padding-right:16px !important;gap:24px !important;}
+  .checkout-form,.checkout-page,.order-detail-page,.admin-content {min-width:0;max-width:100%;overflow-wrap:anywhere;}
+  .form-grid {grid-template-columns:minmax(0,1fr) !important;}
+  .form-grid .wide {grid-column:auto !important;}
+  .address-city-row {grid-template-columns:minmax(0,1fr) auto !important;}
+  .summary {position:static !important;}
+  .order-detail-top h1 {font-size:clamp(24px,7vw,42px) !important;overflow-wrap:anywhere;}
+  .admin-content {padding:18px !important;}
+}
+
+/* Final contrast guard for legacy white buttons whose text was also white. */
+.admin-page button, .admin-page .btn, .order-detail-page button, .order-detail-page .btn,
+.checkout-page button, .checkout-page .btn, .auth-page button, .auth-page .btn,
+.order-modal button, .order-modal .btn, .order-actions-panel button {
+  text-shadow:none !important;
+}
+.admin-page .btn.primary, .order-detail-page .btn.primary, .checkout-page .btn.primary,
+.auth-page .btn.primary, .order-modal .btn.primary, .order-actions-panel .btn.primary {
+  background:#c8b69a !important; color:#080808 !important; border-color:#c8b69a !important;
+}
+.admin-page button:not(.active):not(.icon-btn):not(.admin-order-link):not(.order-action-link),
+.checkout-page button:not(.icon-btn), .order-detail-page button:not(.icon-btn) {
+  text-shadow:none;
+}
