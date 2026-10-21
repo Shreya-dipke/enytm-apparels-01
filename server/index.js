@@ -86,6 +86,7 @@ if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishli
 if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
 if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
 if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
+if (!Array.isArray(db.data.walletTopups)) db.data.walletTopups = [];
 
 const seedProducts = [
   { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
@@ -343,6 +344,22 @@ async function notifyOrder(order, type) {
   order.updatedAt = Date.now();
   await db.write();
 }
+async function notifyOrderStatus(order) {
+ const user=db.data.users.find(u=>String(u.id)===String(order.userId));
+ if(!user)return;
+ const labels={payment_pending:"Payment pending",confirmed:"Order confirmed",processing:"Processing",packed:"Packed",shipped:"Shipped",out_for_delivery:"Out for delivery",delivered:"Delivered",cancelled:"Cancelled"};
+ const label=labels[order.status]||String(order.status||"").replace(/_/g," ");
+ const tracking=order.tracking||{};
+ const html=`<div style="font-family:Arial,sans-serif;color:#111"><h2>ENYTM order update</h2><p>Your order <b>${order.receipt||order.id}</b> is now: <b>${label}</b>.</p>${tracking.courier?`<p>Courier: ${tracking.courier}</p>`:""}${tracking.trackingNumber?`<p>Tracking/AWB: ${tracking.trackingNumber}</p>`:""}${tracking.trackingUrl?`<p><a href="${tracking.trackingUrl}">Track your shipment</a></p>`:""}<p>Thank you for shopping with ENYTM APPARELS.</p></div>`;
+ if(user.emailOptIn!==false&&user.email){
+  try{await sendEmail(user.email,`ENYTM order update — ${order.receipt||order.id}: ${label}`,html);}catch(e){console.error("[ENYTM STATUS EMAIL]",e.message);}
+ }
+ // Transactional WhatsApp messages require approved templates outside the customer-service window.
+ if(user.whatsappOptIn&&user.phone&&process.env.WHATSAPP_ORDER_STATUS_TEMPLATE){
+  try{await sendWhatsAppTemplate(user.phone,process.env.WHATSAPP_ORDER_STATUS_TEMPLATE,process.env.WHATSAPP_TEMPLATE_LANGUAGE||"en_US",[user.name||"Customer",order.receipt||order.id,label,tracking.trackingNumber||"Not available"]);}catch(e){console.error("[ENYTM STATUS WHATSAPP]",e.message);}
+ }
+}
+
 
 // Razorpay webhook must receive the raw body.
 app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), async (req, res) => {
@@ -744,6 +761,69 @@ app.post("/api/wishlist/sync", auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+
+// Indian PIN lookup with short-lived in-memory cache to avoid hammering postal services.
+const postalLookupCache = new Map();
+async function postalJson(url) {
+ const cached=postalLookupCache.get(url);
+ if(cached && cached.until>Date.now()) return cached.data;
+ const response=await fetch(url,{headers:{"Accept":"application/json","User-Agent":"ENYTM-App/1.0"}});
+ if(!response.ok) throw new Error(response.status===429?"Postal lookup is busy. Wait a few seconds and retry.":`Postal service returned ${response.status}.`);
+ const data=await response.json();
+ postalLookupCache.set(url,{data,until:Date.now()+6*60*60*1000});
+ return data;
+}
+app.get("/api/pincode/:pin", async (req,res)=>{
+ const pin=String(req.params.pin||"");
+ if(!/^\d{6}$/.test(pin)) return res.status(400).json({valid:false,message:"Enter a valid 6-digit PIN code."});
+ try{
+  let records=[];
+  try{
+   const data=await postalJson(`https://api.postalpincode.in/pincode/${pin}`);
+   if(Array.isArray(data)&&data[0]?.Status==="Success") records=data[0].PostOffice||[];
+  }catch(e){ /* fallback postal provider handles transient 429/5xx responses */ }
+  if(!records.length){
+   const z=await postalJson(`https://api.zippopotam.us/IN/${pin}`);
+   records=(z.places||[]).map(p=>({Name:p["place name"],District:p["place name"],State:p.state,StateName:p.state}));
+  }
+  const p=records[0];
+  if(!p) return res.status(404).json({valid:false,message:"PIN code not found. Check the number or enter your city and state manually."});
+  return res.json({valid:true,pincode:pin,city:p.District||p.Block||p.Name||"",district:p.District||p.Block||"",state:p.State||p.StateName||"",postOffice:p.Name||p["place name"]||""});
+ }catch(e){return res.status(503).json({valid:false,message:"PIN lookup is temporarily unavailable. Please retry or enter city/state manually."});}
+});
+app.get("/api/pincode/city/:city", async (req,res)=>{
+ const city=String(req.params.city||"").trim().replace(/\s+/g," ");
+ if(city.length<2||city.length>80) return res.status(400).json({pincodes:[],message:"Enter a valid city name."});
+ try{
+  let offices=[];
+  try {
+   const data=await postalJson(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
+   offices=Array.isArray(data)&&data[0]?.Status==="Success"?(data[0].PostOffice||[]):[];
+  } catch(e) { /* Try the secondary geocoder when India Post is rate limited. */ }
+  if(!offices.length){
+   try {
+    const geo=await postalJson(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&city=${encodeURIComponent(city)}&country=India`);
+    const seen=new Set();
+    for(const item of (Array.isArray(geo)?geo:[])){
+     const a=item.address||{}, raw=a.postcode||"";
+     for(const pin of String(raw).split(/[;,\s]+/).map(x=>x.trim()).filter(x=>/^\d{6}$/.test(x))){
+      if(!seen.has(pin)){seen.add(pin);offices.push({Pincode:pin,Name:a.suburb||a.neighbourhood||a.city_district||city,District:a.state_district||a.county||a.city||city,State:a.state||""});}
+     }
+    }
+   } catch(e) { /* final response below explains manual fallback */ }
+  }
+  const map=new Map();
+  for(const p of offices){
+   if(!p.Pincode)continue;
+   const key=String(p.Pincode);
+   if(!map.has(key))map.set(key,{pincode:key,postOffice:p.Name||"",district:p.District||p.Block||"",state:p.State||""});
+  }
+  return res.json({pincodes:[...map.values()].slice(0,100)});
+ }catch(e){
+  return res.status(503).json({pincodes:[],message:"City PIN lookup is temporarily unavailable. Please retry or enter the PIN manually."});
+ }
+});
+
 app.post("/api/checkout/order", auth, async (req, res) => {
   const items = req.body.items || [];
   const shippingAddress = req.body.shippingAddress;
@@ -900,6 +980,49 @@ app.get("/api/orders/:id", auth, (req, res) => {
   res.json(order);
 });
 
+
+// Customer wallet. Credits are added only after Razorpay signature verification.
+app.get("/api/wallet", auth, (req,res)=>{
+ const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
+ if(!user)return res.status(404).json({message:"User not found."});
+ res.json({balance:Number(user.walletBalance||0),transactions:Array.isArray(user.walletTransactions)?user.walletTransactions.slice().reverse():[]});
+});
+app.post("/api/wallet/topup/order", auth, async (req,res)=>{
+ const amount=Number(req.body?.amount);
+ if(!Number.isInteger(amount)||amount<100||amount>50000)return res.status(400).json({message:"Wallet top-up must be between ₹100 and ₹50,000."});
+ if(!process.env.RAZORPAY_KEY_ID||!process.env.RAZORPAY_KEY_SECRET)return res.status(503).json({message:"Razorpay is not configured."});
+ try{
+  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
+  const topupId=crypto.randomUUID();
+  const rp=await razorpay.orders.create({amount:amount*100,currency:"INR",receipt:`WALLET-${Date.now()}`,notes:{userId:req.user.id,topupId,brand:"ENYTM APPARELS"}});
+  db.data.walletTopups.push({id:topupId,userId:req.user.id,amount,razorpayOrderId:rp.id,status:"created",createdAt:Date.now()});
+  await db.write();
+  res.json({topupId,razorpayOrderId:rp.id,amount:amount*100,currency:"INR",keyId:process.env.RAZORPAY_KEY_ID});
+ }catch(e){res.status(502).json({message:e.message||"Could not create wallet top-up."});}
+});
+app.post("/api/wallet/topup/verify", auth, async (req,res)=>{
+ const {topupId,razorpay_payment_id,razorpay_order_id,razorpay_signature}=req.body||{};
+ const topup=(db.data.walletTopups||[]).find(t=>t.id===topupId&&String(t.userId)===String(req.user.id));
+ if(!topup)return res.status(404).json({message:"Wallet top-up not found."});
+ if(topup.status==="paid")return res.json({ok:true,balance:Number(db.data.users.find(u=>u.id===req.user.id)?.walletBalance||0)});
+ if(razorpay_order_id!==topup.razorpayOrderId||!razorpay_payment_id||!razorpay_signature)return res.status(400).json({message:"Payment verification details are incomplete."});
+ const expected=crypto.createHmac("sha256",process.env.RAZORPAY_KEY_SECRET||"").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
+ if(expected.length!==String(razorpay_signature).length||!crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(String(razorpay_signature))))return res.status(400).json({message:"Payment signature verification failed."});
+ try{
+  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
+  const payment=await razorpay.payments.fetch(razorpay_payment_id);
+  if(payment.status!=="captured"||Number(payment.amount)!==Number(topup.amount)*100)return res.status(409).json({message:"Payment is not captured yet. Please refresh shortly."});
+  const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
+  if(!user)return res.status(404).json({message:"User not found."});
+  user.walletBalance=Number(user.walletBalance||0)+Number(topup.amount);
+  user.walletTransactions||=[];
+  user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:Number(topup.amount),description:"Wallet top-up",createdAt:Date.now(),paymentId:razorpay_payment_id});
+  topup.status="paid";topup.paymentId=razorpay_payment_id;topup.paidAt=Date.now();
+  await db.write();
+  res.json({ok:true,balance:user.walletBalance});
+ }catch(e){res.status(502).json({message:"Could not verify payment with Razorpay. Please contact support if money was deducted."});}
+});
+
 // CUSTOMER ORDER CANCELLATION
 app.post("/api/orders/:id/cancel", auth, async (req, res) => {
   const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
@@ -922,9 +1045,22 @@ app.post("/api/orders/:id/cancel", auth, async (req, res) => {
     order.stockRestored = true;
   }
 
-  // If Razorpay payment was already captured, attempt a refund.
+  // Customer chooses wallet credit or original payment refund. Wallet credits are atomic in db.
+  const refundTo = String(req.body?.refundTo || "original").toLowerCase();
   const capturedPayments = (order.paymentIds || []).filter(p => p.id && Number(p.amount) > 0);
-  if (capturedPayments.length && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  if (refundTo === "wallet" && capturedPayments.length) {
+    const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
+    const refundable=capturedPayments.reduce((sum,p)=>sum+Number(p.amount||0),0);
+    if(user && refundable>0){
+      user.walletBalance=Number(user.walletBalance||0)+refundable;
+      user.walletTransactions||=[];
+      user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:refundable,description:`Refund for ${order.receipt||order.id}`,createdAt:Date.now(),orderId:order.id});
+      order.refundStatus="wallet_credited";
+      order.refundDestination="wallet";
+      order.walletRefundAmount=refundable;
+    } else order.refundStatus="pending_manual_refund";
+  } else if (capturedPayments.length && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    order.refundDestination="original";
     try {
       const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
       const refundIds = [];
@@ -1015,7 +1151,7 @@ app.post("/api/admin/upload-image", adminAuth, (req, res) => {
 
     res.json({
       success: true,
-      const url = `${process.env.PUBLIC_BACKEND_URL.replace(/\/+$/, "")}/uploads/${encodeURIComponent(req.file.filename)}`;  res.json({   success: true,   url,   filename: req.file.filename, });,
+      url: `/uploads/${req.file.filename}`,
       filename: req.file.filename,
     });
   });
@@ -1024,7 +1160,7 @@ app.post("/api/admin/upload-video", adminAuth, (req, res) => {
   uploadVideoFile.single("video")(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message || "Video upload failed." });
     if (!req.file) return res.status(400).json({ message: "No video selected." });
-    res.json({ success: true, const url = `${process.env.PUBLIC_BACKEND_URL.replace(/\/+$/, "")}/uploads/${encodeURIComponent(req.file.filename)}`;  res.json({   success: true,   url,   filename: req.file.filename, });, filename: req.file.filename });
+    res.json({ success: true, url: `/uploads/${req.file.filename}`, filename: req.file.filename });
   });
 });
 app.post("/api/admin/products", adminAuth, async (req,res) => {
@@ -1120,20 +1256,34 @@ app.get("/api/admin/integrations", adminAuth, (req,res)=>res.json({
 }));
 
 app.put("/api/admin/orders/:id/status", adminAuth, async (req,res)=>{
-  const order = db.data.orders.find(o => o.id === req.params.id);
+  const order = db.data.orders.find(o => String(o.id) === String(req.params.id));
   if (!order) return res.status(404).json({message:"Order not found."});
-  const allowed = ["confirmed","packed","shipped","out_for_delivery","delivered"];
-  const status = String(req.body?.status || "");
+  const allowed = ["payment_pending","confirmed","processing","packed","shipped","out_for_delivery","delivered"];
+  const status = String(req.body?.status || order.status || "");
   if (!allowed.includes(status)) return res.status(400).json({message:"Invalid order status."});
-  if (order.paymentStatus !== "paid") return res.status(400).json({message:"Only fully paid orders can be moved through delivery status."});
-  const launchDate = new Date("2026-11-08T00:00:00+05:30").getTime();
-  if (["shipped","out_for_delivery","delivered"].includes(status) && Date.now() < launchDate) {
-    return res.status(400).json({message:"ENYTM pre-orders can only be dispatched from 8 November 2026."});
+  if (["shipped","out_for_delivery","delivered"].includes(status)) {
+    const balanceDue = Number(order.balanceAmount ?? (Number(order.total || 0) - Number(order.advancePaid || 0)));
+    const fullyPaid = order.paymentStatus === "paid" || (Number(order.advancePaid || 0) > 0 && Number(order.balancePaid || 0) >= balanceDue);
+    if (!fullyPaid) return res.status(400).json({message:"Collect the full order balance before dispatching this pre-order."});
+    const launchDate = new Date("2026-11-08T00:00:00+05:30").getTime();
+    if (Date.now() < launchDate) return res.status(400).json({message:"ENYTM pre-orders can only be dispatched from 8 November 2026."});
   }
+  const previousStatus = order.status;
   order.status = status;
+  if (req.body?.tracking && typeof req.body.tracking === "object") {
+    order.tracking = {
+      ...(order.tracking || {}),
+      courier: String(req.body.tracking.courier || "").trim(),
+      trackingNumber: String(req.body.tracking.trackingNumber || "").trim(),
+      trackingUrl: String(req.body.tracking.trackingUrl || "").trim(),
+    };
+  }
   order.updatedAt = Date.now();
   await db.write();
-  if (status === "delivered") await notifyOrder(order, "delivered");
+  if (previousStatus !== status) {
+    try { await notifyOrderStatus(order); } catch (e) { console.error("[ENYTM STATUS NOTIFICATION]", e.message); }
+  }
+  if (status === "delivered" && previousStatus !== "delivered") await notifyOrder(order, "delivered");
   res.json(order);
 });
 
