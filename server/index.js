@@ -1,1333 +1,2179 @@
-import dotenv from "dotenv";
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import rateLimit from "express-rate-limit";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import Razorpay from "razorpay";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
-import cron from "node-cron";
-import path from "path";
-import fs from "fs";
-import multer from "multer";
-import { fileURLToPath } from "url";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
+:root{--bg:#080808;--surface:#111;--surface2:#171717;--line:#292929;--text:#f5f5f2;--muted:#999;--soft:#cfcfca;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg);font-synthesis:none;text-rendering:optimizeLegibility}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text)}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.nav{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 4vw;position:sticky;top:0;background:rgba(8,8,8,.94);backdrop-filter:blur(18px);z-index:50}.logo{font-size:25px;letter-spacing:.18em;font-weight:900}.logo span{font-size:9px;vertical-align:top;margin-left:2px}.nav-links{display:flex;gap:38px;font-size:11px;letter-spacing:.18em;font-weight:700}.nav-links a{opacity:.75}.nav-actions{display:flex;gap:8px}.icon-btn{border:0;background:none;color:var(--text);display:grid;place-items:center;padding:8px;position:relative}.icon-btn svg{width:19px;height:19px}.badge-icon b{position:absolute;right:0;top:0;background:#fff;color:#000;width:14px;height:14px;border-radius:50%;font-size:8px;display:grid;place-items:center}.mobile-menu{display:none}.announcement{height:30px;background:#fff;color:#050505;text-align:center;font-size:9px;letter-spacing:.2em;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}.hero{height:calc(100vh - 106px);min-height:620px;position:relative;overflow:hidden}.hero>img,.hero-video{width:100%;height:100%;object-fit:cover}.hero-video{display:block;filter:grayscale(.12) saturate(.72) contrast(1.08) brightness(.82);transform:scale(1.015);transition:transform 8s ease}.hero:hover .hero-video{transform:scale(1.035)}.hero-overlay{background:linear-gradient(90deg,rgba(0,0,0,.64) 0%,rgba(0,0,0,.30) 48%,rgba(0,0,0,.12) 100%),linear-gradient(0deg,rgba(0,0,0,.34),transparent 45%)}.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.12) 70%),linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%)}.hero-content{position:absolute;left:8vw;bottom:14vh;max-width:650px}.eyebrow{font-size:10px;letter-spacing:.23em;font-weight:800;color:#aaa;margin:0 0 18px}.hero h1{font-size:clamp(54px,8vw,116px);line-height:.86;margin:0 0 28px;letter-spacing:-.05em}.hero h1 em,.split-copy h2 em,.quote h2 em,.about-hero em,.about-copy em{font-family:Georgia,serif;font-weight:400}.hero-copy{max-width:440px;color:#ddd;line-height:1.6}.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:16px 22px;border:1px solid #444;font-size:10px;letter-spacing:.16em;font-weight:800;transition:.25s}.btn.light,.btn.primary{background:#fff;color:#000;border-color:#fff}.btn.outline{color:#fff}.btn.full{width:100%}.scroll{position:absolute;right:4vw;bottom:32px;font-size:9px;letter-spacing:.18em;color:#aaa}.manifesto{text-align:center;padding:150px 12vw 135px;max-width:1100px;margin:auto}.manifesto h2{font-size:clamp(40px,6vw,78px);line-height:.95;letter-spacing:-.045em;margin:0}.manifesto h2 span{color:#777}.manifesto>p:last-child{max-width:600px;margin:32px auto 0;color:#aaa;line-height:1.8}.section{padding:70px 4vw 130px}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:32px}.section-head h2,.page-heading h1{font-size:clamp(34px,5vw,64px);letter-spacing:-.045em;margin:0}.text-link{font-size:10px;letter-spacing:.15em;display:flex;align-items:center;gap:10px;border-bottom:1px solid #555;padding-bottom:8px}.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.product-image{height:470px;position:relative;background:#151515;overflow:hidden}.product-image img{width:100%;height:100%;object-fit:cover;transition:transform .6s}.product-card:hover .product-image img{transform:scale(1.045)}.product-badge{position:absolute;top:13px;left:13px;background:#fff;color:#000;font-size:8px;font-weight:900;letter-spacing:.15em;padding:7px 9px;z-index:2}.heart{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.4);border:1px solid #444;color:#fff;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;z-index:3}.heart svg{width:16px}.quick-add{position:absolute;bottom:0;left:0;right:0;background:#fff;color:#000;border:0;padding:15px;font-size:9px;font-weight:900;letter-spacing:.15em;display:flex;justify-content:center;align-items:center;gap:7px;transform:translateY(100%);transition:.3s}.product-card:hover .quick-add{transform:translateY(0)}.product-info{display:flex;justify-content:space-between;gap:10px;padding:14px 2px}.product-info h3{font-size:12px;margin:0 0 7px}.product-info p{font-size:10px;color:#777;margin:0}.product-info strong{font-size:12px;white-space:nowrap}.split-feature{display:grid;grid-template-columns:1fr 1fr;min-height:700px;background:#111}.split-image{overflow:hidden}.split-image img{width:100%;height:100%;object-fit:cover;filter:grayscale(1)}.split-copy{padding:10vw;display:flex;flex-direction:column;justify-content:center}.split-copy h2{font-size:clamp(50px,6vw,88px);line-height:.88;letter-spacing:-.05em;margin:0 0 28px}.split-copy>p:not(.eyebrow){color:#999;line-height:1.8;max-width:430px;margin-bottom:35px}.categories{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}.category-tile{height:420px;position:relative;overflow:hidden;border-right:1px solid var(--line)}.category-tile img{width:100%;height:100%;object-fit:cover;filter:grayscale(1);opacity:.65;transition:.6s}.category-tile:hover img{transform:scale(1.05);opacity:.85}.category-tile:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent 55%)}.category-tile div{position:absolute;z-index:2;bottom:28px;left:28px;right:28px;display:flex;align-items:end;justify-content:space-between}.category-tile h3{font-size:22px;margin:0}.quote{text-align:center;padding:160px 20px}.quote-mark{font-family:Georgia,serif;font-size:100px;color:#555}.quote h2{font-size:clamp(40px,6vw,78px);line-height:.92;margin:0 0 25px;letter-spacing:-.05em}.quote p{font-size:9px;letter-spacing:.25em;color:#777}.page-heading{text-align:center;padding:120px 20px 65px}.page-heading.compact{padding-bottom:40px}.page-heading>p:last-child{color:#888}.filters{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 4vw;display:flex;justify-content:space-between;align-items:center}.chips{display:flex;gap:7px;flex-wrap:wrap}.chips button{background:none;color:#888;border:1px solid #292929;padding:9px 15px;font-size:9px;letter-spacing:.12em}.chips button.active,.chips button:hover{background:#fff;color:#000;border-color:#fff}.sort{display:flex;align-items:center;gap:10px;color:#777;font-size:9px;letter-spacing:.13em}.sort select{appearance:none;background:transparent;color:#fff;border:0;outline:0}.sort option{background:#111}.shop-grid{padding:45px 4vw 120px}.product-page{display:grid;grid-template-columns:1.05fr .95fr;min-height:calc(100vh - 106px)}.product-gallery{height:calc(100vh - 106px);min-height:650px;background:#111}.product-gallery img{width:100%;height:100%;object-fit:cover}.product-details{padding:8vw 7vw;display:flex;flex-direction:column;justify-content:center}.product-details h1{font-size:clamp(35px,4.5vw,64px);line-height:.95;letter-spacing:-.045em;margin:0 0 18px}.rating{display:flex;align-items:center;gap:3px;font-size:11px;margin-bottom:22px}.rating span{color:#777;margin-left:7px}.price-row{display:flex;gap:12px;align-items:center;margin-bottom:25px}.price-row strong{font-size:20px}.price-row del{color:#666;font-size:13px}.detail-copy{color:#999;line-height:1.7;max-width:520px}.spec{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:24px 0;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.13em}.spec b{font-weight:500;color:#ddd;letter-spacing:0}.option{margin:8px 0 22px}.option>div:first-child{display:flex;justify-content:space-between;margin-bottom:10px;font-size:9px;letter-spacing:.15em}.option a{text-decoration:underline}.sizes{display:flex;gap:8px}.sizes button{width:48px;height:43px;background:#0e0e0e;border:1px solid #333;color:#fff;font-size:10px}.sizes button.selected{background:#fff;color:#000}.quantity{display:inline-flex;border:1px solid #333;height:42px;align-items:center}.quantity button{background:none;color:#fff;border:0;width:42px;height:100%;display:grid;place-items:center}.quantity b{min-width:35px;text-align:center;font-size:11px}.buy-row{display:flex;gap:8px}.buy-row .btn{flex:1}.wish-big{width:56px;background:#111;border:1px solid #444;color:#fff;display:grid;place-items:center}.wish-big.liked{background:#fff;color:#000}.perks{border-top:1px solid var(--line);margin-top:30px;padding-top:20px;display:grid;gap:14px}.perks div{display:flex;gap:12px;align-items:center;font-size:10px;color:#777}.perks svg{width:17px}.perks b{color:#ddd}.cart-page,.checkout-page,.account-page{min-height:70vh;padding-bottom:120px}.cart-layout,.checkout-layout{display:grid;grid-template-columns:1fr 380px;gap:70px;padding:30px 7vw}.cart-item{display:grid;grid-template-columns:150px 1fr;gap:22px;border-top:1px solid var(--line);padding:20px 0}.cart-item img{width:150px;height:190px;object-fit:cover}.cart-item-info{display:grid;grid-template-columns:1fr auto;gap:10px}.cart-item h3{margin:0 0 7px;font-size:15px}.cart-item p{margin:0;color:#777;font-size:10px}.cart-bottom{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}.remove{background:none;border:0;color:#777;font-size:9px;letter-spacing:.12em;display:flex;gap:7px;align-items:center}.summary{background:#111;border:1px solid var(--line);padding:28px;height:max-content;position:sticky;top:110px}.summary h2{font-size:14px;letter-spacing:.1em;margin:0 0 28px}.summary>div{display:flex;justify-content:space-between;font-size:11px;margin:14px 0;color:#aaa}.summary b{color:#fff}.summary hr{border:0;border-top:1px solid #333}.summary .total{font-size:13px;color:#fff}.summary small{display:block;text-align:center;color:#666;margin-top:14px;font-size:9px}.mini-item{display:grid!important;grid-template-columns:50px 1fr auto;gap:10px;align-items:center!important}.mini-item img{width:50px;height:65px;object-fit:cover}.mini-item span{font-size:10px}.mini-item small{display:block;color:#666;margin-top:5px}.empty{text-align:center;padding:80px 20px 150px;color:#888}.empty h1{font-size:clamp(40px,7vw,90px);letter-spacing:-.05em}.empty h2{color:#fff}.auth-page,.admin-login{min-height:80vh;display:grid;place-items:center;padding:80px 20px}.auth-card{width:min(460px,100%);background:#101010;border:1px solid #292929;padding:45px}.auth-card h1{font-size:42px;letter-spacing:-.04em;margin:0 0 10px}.muted{color:#777;line-height:1.6}.auth-card form{display:grid;gap:12px;margin-top:28px}.auth-card input,.checkout-form input,.admin-form-grid input{width:100%;background:#0a0a0a;border:1px solid #333;color:#fff;padding:15px;outline:none}.auth-card input:focus,.checkout-form input:focus{border-color:#888}.check{font-size:10px;color:#888;display:flex;gap:8px;align-items:start;line-height:1.5}.check input{width:auto;margin-top:2px}.error{background:#2a1111;border:1px solid #5a2525;color:#ffb5b5;padding:12px;font-size:11px}.auth-switch{text-align:center;color:#777;font-size:11px}.auth-switch a{color:#fff;text-decoration:underline}.checkout-head{text-align:center;padding:90px 20px 20px}.checkout-head h1{font-size:clamp(35px,5vw,65px);letter-spacing:-.05em;margin:0}.checkout-form h2{font-size:12px;letter-spacing:.15em;margin:35px 0 15px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-grid .wide{grid-column:1/-1}.payment-box{border:1px solid #333;background:#111;padding:18px;display:flex;align-items:center;gap:14px}.payment-box svg{width:22px}.payment-box div{flex:1;font-size:11px}.payment-box p{color:#777;font-size:9px;margin:5px 0 0}.payment-box>span{font-size:8px;letter-spacing:.15em;color:#777}.tiny{font-size:9px;color:#666;line-height:1.5}.success-page{padding-top:150px}.success-page svg{color:#fff;margin:auto}.account-grid{display:grid;grid-template-columns:330px 1fr;gap:20px;padding:30px 7vw}.account-card{border:1px solid #292929;background:#101010;padding:28px}.account-card h2{font-size:13px;letter-spacing:.12em;margin-top:0}.status-pill{border:1px solid #333;padding:9px;font-size:8px;letter-spacing:.1em;display:inline-block;margin:15px 0 25px;color:#aaa}.order-row{display:grid;grid-template-columns:1fr 120px 100px;gap:15px;padding:18px 0;border-top:1px solid #292929;font-size:11px}.order-row small{display:block;color:#666;margin-top:5px}.order-row span{text-transform:uppercase;color:#aaa}.about-hero{height:75vh;min-height:550px;position:relative}.about-hero img{width:100%;height:100%;object-fit:cover;filter:grayscale(1)}.about-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent 60%)}.about-hero>div{position:absolute;z-index:2;bottom:10%;left:9%}.about-hero h1{font-size:clamp(50px,8vw,110px);line-height:.88;margin:0;letter-spacing:-.05em}.about-copy{max-width:800px;margin:auto;padding:140px 30px}.about-copy h2{font-size:clamp(45px,7vw,90px);line-height:.9;letter-spacing:-.05em;margin:0 0 35px}.about-copy>p:not(.eyebrow){color:#999;line-height:1.9;max-width:650px}footer{border-top:1px solid var(--line);padding:70px 5vw 25px;background:#050505}.footer-main{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;padding-bottom:70px}.footer-main>div:first-child p{color:#777;font-size:9px;letter-spacing:.2em;margin-top:20px}.footer-col{display:flex;flex-direction:column;gap:12px}.footer-col h4{font-size:9px;letter-spacing:.2em;color:#777;margin:0 0 10px}.footer-col a{font-size:11px;color:#bbb;display:flex;align-items:center;gap:8px}.footer-bottom{border-top:1px solid #1d1d1d;padding-top:20px;display:flex;justify-content:space-between;color:#555;font-size:8px;letter-spacing:.13em}.search-overlay{position:fixed;z-index:100;inset:0;background:rgba(5,5,5,.98);padding:12vh 10vw}.close-search{position:absolute;right:4vw;top:30px;background:none;border:0;color:#fff}.search-inner{max-width:900px;margin:auto}.search-inner input{width:100%;background:none;border:0;border-bottom:1px solid #555;color:#fff;padding:15px 0;font-size:clamp(30px,5vw,65px);outline:none}.search-results{margin-top:30px}.search-results a{display:flex;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid #222}.search-results img{width:55px;height:65px;object-fit:cover}.search-results span{flex:1}.search-results small{display:block;color:#777;margin-top:5px}.admin-page{min-height:100vh;display:grid;grid-template-columns:230px 1fr}.admin-side{border-right:1px solid #292929;padding:28px 20px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh}.admin-side button{background:none;color:#777;border:0;text-align:left;padding:13px;font-size:10px;letter-spacing:.14em}.admin-side button.active,.admin-side button:hover{background:#fff;color:#000}.admin-content{padding:50px}.admin-top{display:flex;justify-content:space-between;align-items:end;margin-bottom:35px}.admin-top h1{margin:0;font-size:50px;letter-spacing:-.05em}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:35px}.metric{border:1px solid #292929;background:#111;padding:25px}.metric span{display:block;color:#777;font-size:9px;letter-spacing:.15em;margin-bottom:15px}.metric strong{font-size:32px}.admin-table-wrap{overflow:auto;border:1px solid #292929}.admin-table-wrap table{width:100%;border-collapse:collapse;min-width:700px}.admin-table-wrap th,.admin-table-wrap td{padding:15px;text-align:left;border-bottom:1px solid #252525;font-size:10px}.admin-table-wrap th{color:#777;letter-spacing:.1em}.admin-form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:30px}.admin-settings{max-width:600px}.admin-settings label{display:block;font-size:10px;color:#888;margin:20px 0}.admin-settings input{display:block;width:100%;background:#111;border:1px solid #333;color:#fff;padding:14px;margin-top:8px}@media(max-width:900px){.nav{padding:0 20px}.mobile-menu{display:grid}.nav-links{display:none}.nav-links.mobile-open{display:flex;position:absolute;left:0;right:0;top:76px;background:#080808;padding:25px 20px;flex-direction:column;gap:20px;border-bottom:1px solid #222}.product-grid{grid-template-columns:repeat(2,1fr)}.product-image{height:56vw}.split-feature{grid-template-columns:1fr}.split-image{height:65vh}.categories{grid-template-columns:repeat(2,1fr)}.category-tile{height:330px}.product-page{grid-template-columns:1fr}.product-gallery{height:75vh;min-height:450px}.product-details{padding:60px 7vw}.cart-layout,.checkout-layout{grid-template-columns:1fr;padding:20px}.summary{position:static}.account-grid{grid-template-columns:1fr}.admin-page{grid-template-columns:1fr}.admin-side{height:auto;position:relative;display:grid;grid-template-columns:repeat(3,1fr)}.admin-content{padding:25px}.metric-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.announcement{font-size:7px}.hero{min-height:600px}.hero-content{left:7vw}.hero h1{font-size:15vw}.manifesto{padding:100px 25px}.section{padding:60px 15px}.product-grid{gap:10px}.product-image{height:65vw}.product-info{display:block}.product-info strong{display:block;margin-top:8px}.quick-add{transform:translateY(0);padding:11px}.filters{display:block}.sort{margin-top:15px}.shop-grid{padding:30px 15px 80px}.page-heading{padding:80px 20px 45px}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.cart-item{grid-template-columns:95px 1fr;gap:14px}.cart-item img{width:95px;height:125px}.cart-item-info{display:block}.cart-item-info>strong{display:block;margin-top:12px}.cart-bottom{margin-top:15px}.footer-main{grid-template-columns:1fr 1fr}.footer-bottom{display:block;line-height:2}.footer-bottom span{display:block}.admin-form-grid{grid-template-columns:1fr}.admin-side{grid-template-columns:repeat(2,1fr)}}
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..");
-// Load .env from the project root explicitly. This avoids login failures when
-// the server is started from a different working directory.
-dotenv.config({ path: path.join(ROOT, ".env") });
-const PORT = Number(process.env.PORT || 5173);
-const isProd = process.env.NODE_ENV === "production";
+.auth-card button:disabled{opacity:.55;cursor:not-allowed}.otp-info{border:1px solid #333;background:#0b0b0b;padding:15px;margin:20px 0;font-size:11px}.otp-info p{color:#777;line-height:1.6;margin:7px 0 0}.text-link{background:none;border:0;color:#aaa;font-size:10px;letter-spacing:.1em;padding:10px 0;text-align:left}.text-link:hover{color:#fff}
 
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+/* ENYTM premium logout button */
+.account-profile .logout-btn:hover {
+  background: #c8b69a !important;
+  color: #0b0b0b !important;
+  border-color: #c8b69a !important;
 }
 
-const uploadStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const base = path
-      .basename(file.originalname, ext)
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "") || "image";
-    cb(null, `${base}-${Date.now()}${ext}`);
-  },
-});
+/* ENYTM v4 visual upgrades */
+.added-toast{position:absolute;left:18px;right:18px;bottom:58px;background:rgba(7,7,7,.96);border:1px solid #3b3b3b;padding:13px 14px;display:flex;align-items:center;gap:10px;z-index:8;box-shadow:0 18px 50px rgba(0,0,0,.45);animation:toastIn .25s ease-out}.added-toast>svg{color:#fff;flex:none}.added-toast span{flex:1;min-width:0}.added-toast b{display:block;font-size:10px;letter-spacing:.08em}.added-toast small{display:block;color:#777;font-size:9px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.added-toast a{font-size:8px;letter-spacing:.12em;text-decoration:underline;white-space:nowrap}.quick-add{transition:.25s}.quick-add:active{transform:translateY(0) scale(.99)}@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.account-hero{min-height:430px;padding:100px 8vw 70px;display:flex;align-items:end;justify-content:space-between;border-bottom:1px solid var(--line);background:radial-gradient(circle at 78% 35%,#202020 0,#0c0c0c 32%,#080808 70%)}.account-hero h1{font-size:clamp(58px,9vw,130px);line-height:.78;letter-spacing:-.065em;margin:0}.account-hero h1 em{font-family:Georgia,serif;font-weight:400;color:#aaa}.account-hero p:not(.eyebrow){max-width:510px;color:#888;line-height:1.7;margin:30px 0 0}.account-mark{font-size:150px;line-height:1;font-weight:900;letter-spacing:-.08em;color:#171717;user-select:none}.account-mark span{font-size:20px;vertical-align:top;color:#444}.account-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);margin:0 5vw}.account-stats>div{padding:25px 30px;border-right:1px solid var(--line)}.account-stats>div:last-child{border-right:0}.account-stats span{display:block;font-size:8px;letter-spacing:.18em;color:#666;margin-bottom:9px}.account-stats strong{font-size:21px;letter-spacing:-.02em}.account-grid{padding:45px 7vw 120px}.account-card{background:linear-gradient(145deg,#121212,#0d0d0d);border:1px solid #292929;position:relative;overflow:hidden}.profile-card{padding:34px}.card-kicker{font-size:8px;letter-spacing:.2em;color:#666;margin-bottom:28px}.profile-avatar{width:66px;height:66px;border-radius:50%;border:1px solid #555;display:grid;place-items:center;font-size:25px;font-weight:700;margin-bottom:22px;background:#181818}.profile-card h2{font-size:25px;margin:0 0 8px}.profile-card p{font-size:11px;color:#777;margin:6px 0}.profile-preferences{display:flex;gap:7px;flex-wrap:wrap;margin:22px 0 30px}.profile-preferences span{border:1px solid #292929;padding:8px 10px;color:#555;font-size:8px;letter-spacing:.12em}.profile-preferences span.on{color:#ddd;border-color:#555}.account-actions{display:flex;gap:8px}.account-actions .btn{flex:1}.orders-card{padding:34px}.orders-title{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}.orders-title h2{font-size:24px;margin:0}.orders-title a{display:flex;gap:8px;align-items:center;font-size:8px;letter-spacing:.13em;color:#aaa}.empty-orders{min-height:270px;border-top:1px solid #252525;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#777}.empty-orders svg{color:#444;margin-bottom:10px}.empty-orders h3{color:#ddd;font-size:20px;margin:5px 0}.empty-orders p{font-size:10px;margin:0 0 20px}.order-row{display:grid;grid-template-columns:1fr 150px 100px 30px;gap:15px;align-items:center;padding:20px 0;border-top:1px solid #252525}.order-ref b{display:block;font-size:11px}.order-ref small{display:block;color:#666;margin-top:5px;font-size:9px}.order-status{text-transform:uppercase;font-size:8px;letter-spacing:.1em;color:#999}.order-status.paid,.order-status.captured,.order-status.confirmed{color:#ddd}.order-row>strong{text-align:right;font-size:11px}.order-row>a{display:grid;place-items:center;color:#777}.order-row>a:hover{color:#fff}
+@media(max-width:900px){.account-hero{padding:80px 6vw 55px}.account-mark{font-size:90px}.account-stats{margin:0 3vw;grid-template-columns:repeat(2,1fr)}.account-stats>div:nth-child(2){border-right:0}.account-stats>div{padding:20px}.account-grid{padding:30px 3vw 80px}.order-row{grid-template-columns:1fr 100px 80px 25px}.added-toast{left:10px;right:10px}}
+@media(max-width:560px){.account-hero{min-height:370px;padding:70px 6vw 40px}.account-mark{display:none}.account-hero h1{font-size:21vw}.account-stats{grid-template-columns:1fr 1fr}.account-stats>div{border-bottom:1px solid var(--line)}.account-stats>div:nth-child(2){border-right:0}.orders-title{display:block}.orders-title a{margin-top:12px}.order-row{grid-template-columns:1fr auto;gap:8px}.order-row>strong{text-align:left}.order-row>a{display:none}.order-status{grid-column:2;grid-row:1}.order-row>strong{grid-column:2;grid-row:2}.account-actions{flex-direction:column}.added-toast{bottom:53px}}
 
-const uploadImageFile = multer({
-  storage: uploadStorage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowed.includes(file.mimetype)) return cb(new Error("Only JPG, JPEG, PNG and WEBP images are allowed."));
-    cb(null, true);
-  },
-});
-const uploadVideoFile = multer({
-  storage: uploadStorage,
-  limits: { fileSize: 100 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (!["video/mp4", "video/webm", "video/quicktime"].includes(file.mimetype)) {
-      return cb(new Error("Upload an MP4, WEBM or MOV video."));
-    }
-    cb(null, true);
-  },
-});
+/* ENYTM PRODUCT DETAIL V2 */
+.product-page{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(420px,.8fr);min-height:calc(100vh - 130px);background:#080808}
+.product-gallery-wrap{padding:18px 18px 18px 18px;background:#0b0b0b}
+.gallery-toolbar{height:38px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;color:#666;font-size:8px;letter-spacing:.18em}
+.product-gallery-grid{display:grid;grid-template-columns:1.22fr .78fr;grid-template-rows:minmax(300px,1.15fr) minmax(240px,.85fr);gap:10px;height:calc(100vh - 186px);min-height:680px}
+.gallery-tile{position:relative;display:block;overflow:hidden;border:0;padding:0;background:#151515;cursor:pointer;text-align:left}
+.gallery-tile img,.gallery-tile video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .5s ease}
+.gallery-tile:hover img,.gallery-tile:hover video{transform:scale(1.035)}
+.gallery-tile:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),transparent 55%,rgba(0,0,0,.48));pointer-events:none}
+.gallery-1{grid-row:1/3}
+.gallery-2{grid-column:2;grid-row:1}
+.gallery-3{grid-column:2;grid-row:2}
+.gallery-4{display:none}
+.gallery-tile.active{outline:1px solid #fff;outline-offset:-1px}
+.gallery-label{position:absolute;z-index:2;left:16px;bottom:14px;color:#fff;font-size:8px;letter-spacing:.18em}
+.gallery-video-ui{position:absolute;z-index:3;right:14px;top:13px;left:14px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:8px;letter-spacing:.16em}
+.gallery-video-ui span{display:flex;align-items:center;gap:6px}
+.product-details{padding:66px 6vw 80px 5vw;position:sticky;top:0;align-self:start;min-height:calc(100vh - 130px);box-sizing:border-box;background:#080808}
+.product-detail-top{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.product-detail-top .eyebrow{margin:0}
+.detail-wish{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid #333;color:#aaa;padding:10px 13px;font-size:8px;letter-spacing:.15em}
+.detail-wish:hover,.detail-wish.liked{border-color:#fff;color:#fff}
+.product-details h1{font-size:clamp(42px,4.4vw,78px);line-height:.9;letter-spacing:-.055em;max-width:720px;margin:28px 0 18px}
+.rating{display:flex;align-items:center;gap:9px;font-size:10px;color:#999;margin-bottom:28px}
+.rating .stars{color:#fff;letter-spacing:2px;font-size:13px}
+.rating a{color:#777;text-decoration:underline}
+.price-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:27px;border-bottom:1px solid #292929}
+.price-row strong{font-size:24px;letter-spacing:-.03em}
+.price-row del{font-size:12px;color:#666}
+.price-note{font-size:7px;letter-spacing:.15em;color:#666;margin-left:4px}
+.detail-copy{font-size:13px;line-height:1.75;color:#999;max-width:620px;margin:28px 0 20px}
+.detail-highlights{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 22px}
+.detail-highlights span{border:1px solid #2d2d2d;padding:9px 11px;font-size:7px;letter-spacing:.15em;color:#aaa}
+.spec{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #292929;border-bottom:1px solid #292929;padding:19px 0;margin-bottom:27px}
+.spec span,.option>span,.option-head span,.quantity-option>span{font-size:8px;letter-spacing:.16em;color:#777}
+.spec b{font-size:9px;letter-spacing:.06em;color:#ddd}
+.option{margin:0 0 25px}.option-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.option-head a{font-size:8px;letter-spacing:.12em;color:#aaa;text-decoration:underline}
+.sizes button{width:52px;height:45px;border:1px solid #303030;background:#101010;color:#aaa;font-size:9px;transition:.2s}.sizes button:hover{border-color:#777;color:#fff}.sizes button.selected{background:#fff;color:#000;border-color:#fff}
+.purchase-line{display:grid;grid-template-columns:145px 1fr;gap:10px;align-items:stretch}
+.quantity-option{border:1px solid #303030;margin:0;display:flex;align-items:center;justify-content:space-between;padding-left:14px}
+.quantity-option .quantity{height:100%;border:0}
+.quantity-option .quantity button{width:34px}
+.add-detail{min-height:54px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:9px;letter-spacing:.14em}
+.detail-added{margin-top:9px;border:1px solid #2c2c2c;background:#101010;padding:12px 14px;display:flex;align-items:center;gap:9px;font-size:9px;color:#aaa}.detail-added svg{color:#fff}.detail-added a{margin-left:auto;color:#fff;font-size:8px;letter-spacing:.12em}
+.product-details .perks{margin-top:27px;padding:18px 0;border-top:1px solid #292929;border-bottom:1px solid #292929}.product-details .perks div{font-size:8px;letter-spacing:.05em}
+.product-accordion{margin-top:8px}.product-accordion details{border-bottom:1px solid #292929}.product-accordion summary{list-style:none;cursor:pointer;padding:18px 0;font-size:9px;letter-spacing:.16em;color:#ddd;display:flex;justify-content:space-between}.product-accordion summary::-webkit-details-marker{display:none}.product-accordion summary span{color:#777}.product-accordion p{margin:0 0 18px;color:#777;font-size:10px;line-height:1.7;max-width:600px}
+@media(max-width:1100px){.product-page{grid-template-columns:1fr}.product-details{position:relative;min-height:auto;padding:55px 7vw 80px}.product-gallery-grid{height:auto;min-height:720px}.gallery-4{display:block;grid-column:2;grid-row:2}.gallery-3{grid-column:2;grid-row:2;display:none}.gallery-4{display:none}}
+@media(max-width:700px){.product-gallery-wrap{padding:10px}.gallery-toolbar{font-size:7px}.product-gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:62vw 36vw;gap:6px;min-height:0}.gallery-1{grid-row:1;grid-column:1/3}.gallery-2{grid-row:2;grid-column:1}.gallery-3{display:block;grid-row:2;grid-column:2}.gallery-4{display:none}.gallery-label{left:10px;bottom:9px;font-size:7px}.product-details{padding:42px 20px 70px}.product-details h1{font-size:clamp(42px,14vw,72px);margin-top:22px}.detail-copy{font-size:12px}.purchase-line{grid-template-columns:1fr}.quantity-option{min-height:48px}.add-detail{min-height:56px}.detail-highlights span{font-size:6px}.detail-wish span{display:none}.detail-wish{padding:10px}.product-details .perks div{font-size:7px}}
 
-const adapter = new JSONFile(path.join(ROOT, "data", "db.json"));
-const db = new Low(adapter, {
-  users: [],
-  products: [],
-  orders: [],
-  carts: [],
-  wishlists: [],
-  coupons: [],
-  settings: {
-    storeName: "ENYTM APPARELS",
-    tagline: "more than a moment",
-    whatsapp: "",
-    supportEmail: "",
-    shippingFreeAbove: 1999,
-    shippingCharge: 99
+/* ENYTM PRODUCT DETAIL V3 — editorial gallery + product film */
+.product-gallery-wrap{padding:18px 18px 24px;background:#0b0b0b}
+.product-gallery-shell{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:10px;height:calc(100vh - 186px);min-height:650px}
+.product-main-media{position:relative;overflow:hidden;background:#151515;border:1px solid #202020}
+.product-main-media img,.product-main-media video{width:100%;height:100%;display:block;object-fit:cover}
+.product-main-media img{animation:mediaIn .55s ease both}
+@keyframes mediaIn{from{opacity:.55;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+.main-media-label{position:absolute;left:18px;bottom:16px;z-index:3;color:#fff;font-size:8px;letter-spacing:.18em;text-shadow:0 1px 10px #000}
+.main-video-tag{position:absolute;right:16px;top:16px;z-index:3;display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);padding:9px 11px;color:#fff;font-size:7px;letter-spacing:.16em}
+.product-thumbs{display:grid;grid-template-rows:repeat(4,1fr);gap:8px}
+.product-thumb{position:relative;overflow:hidden;border:1px solid #252525;padding:0;background:#151515;cursor:pointer;min-height:0}
+.product-thumb img,.product-thumb video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease,filter .3s ease}
+.product-thumb:hover img,.product-thumb:hover video{transform:scale(1.05)}
+.product-thumb:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.58));pointer-events:none}
+.product-thumb.active{border-color:#fff}
+.product-thumb>span:last-child{position:absolute;z-index:2;left:8px;bottom:8px;color:#fff;font-size:6px;letter-spacing:.12em}
+.thumb-play{position:absolute;z-index:3!important;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.9);color:#000!important;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.product-details{padding:66px 6vw 80px 5vw;position:sticky;top:0;align-self:start;min-height:calc(100vh - 130px);box-sizing:border-box;background:#080808}
+@media(max-width:1100px){.product-page{grid-template-columns:1fr}.product-details{position:relative;min-height:auto;padding:55px 7vw 80px}.product-gallery-shell{height:75vh;min-height:560px}}
+@media(max-width:700px){.product-gallery-wrap{padding:10px}.gallery-toolbar{font-size:7px}.product-gallery-shell{grid-template-columns:1fr;height:auto;min-height:0}.product-main-media{height:118vw;min-height:430px}.product-thumbs{grid-template-columns:repeat(4,1fr);grid-template-rows:1fr;height:25vw;min-height:90px;gap:6px}.product-thumb>span:last-child{left:5px;bottom:6px;font-size:5px}.thumb-play{width:28px;height:28px}.product-details{padding:42px 20px 70px}.product-details h1{font-size:clamp(42px,14vw,72px);margin-top:22px}.detail-copy{font-size:12px}.purchase-line{grid-template-columns:1fr}.quantity-option{min-height:48px}.add-detail{min-height:56px}.detail-highlights span{font-size:6px}.detail-wish span{display:none}.detail-wish{padding:10px}.product-details .perks div{font-size:7px}}
+
+/* ENYTM AUTH / PRODUCT VIDEO FIX */
+.admin-login-error{margin:12px 0;padding:12px 14px;border:1px solid #5a3030;background:#160d0d;color:#ffb8b8;font-size:10px;line-height:1.5;letter-spacing:.02em}
+.admin-login .btn:disabled{opacity:.55;cursor:wait}
+.product-main-media video{background:#000;object-fit:cover}
+
+/* ENYTM PRODUCT DETAIL — VIDEO + QUANTITY POLISH */
+.product-video-frame{position:relative;width:100%;height:100%;background:#000;overflow:hidden}
+.product-video-frame video{width:100%;height:100%;display:block;object-fit:cover;cursor:pointer;background:#000}
+.video-play-button{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.92);color:#000;display:grid;place-items:center;z-index:5;box-shadow:0 12px 50px rgba(0,0,0,.35)}
+.video-play-button:hover{transform:translate(-50%,-50%) scale(1.06);background:#fff}
+.main-video-tag{display:none!important}
+.purchase-line{grid-template-columns:176px minmax(0,1fr);gap:12px;align-items:end}
+.quantity-block{min-width:0}
+.quantity-block>span{display:block;margin:0 0 9px;font-size:8px;letter-spacing:.16em;color:#777}
+.quantity-control{height:54px;border:1px solid #303030;background:#0d0d0d;display:grid;grid-template-columns:48px 1fr 48px;align-items:center}
+.quantity-control button{height:100%;border:0;background:transparent;color:#aaa;display:grid;place-items:center;transition:.2s}
+.quantity-control button:hover{background:#fff;color:#000}
+.quantity-control strong{text-align:center;font-size:13px;color:#fff;font-weight:700}
+.add-detail{min-height:54px}
+@media(max-width:700px){
+ .purchase-line{grid-template-columns:1fr;gap:12px}
+ .quantity-control{height:54px;grid-template-columns:54px 1fr 54px}
+ .quantity-block>span{margin-bottom:8px}
+ .video-play-button{width:62px;height:62px}
+}
+
+/* ADMIN PRODUCT ACTION ICONS */
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-icon-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background .2s ease,
+    color .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
+}
+
+.admin-edit-icon {
+  color: #fff;
+}
+
+.admin-edit-icon:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+  transform: translateY(-1px);
+}
+
+.admin-delete-icon {
+  color: #777;
+}
+
+.admin-delete-icon:hover {
+  background: #1b1b1b;
+  color: #fff;
+  border-color: #777;
+}
+
+.admin-icon-btn:active {
+  transform: scale(.95);
+}
+
+.admin-icon-btn svg {
+  pointer-events: none;
+}
+
+.admin-product-editor {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #0d0d0d;
+  padding: 32px;
+  margin-bottom: 50px;
+}
+
+.admin-editor-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 32px;
+}
+
+.admin-editor-head h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.admin-text-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #333;
+  padding: 11px 18px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+.admin-text-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* ---------------------------------------------------------
+   FORM GRID
+--------------------------------------------------------- */
+
+.admin-product-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* Each label becomes a proper vertical field */
+
+.admin-product-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-product-field span {
+  display: block;
+  color: #777;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.admin-product-field input,
+.admin-product-field select,
+.admin-product-field textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+
+  background: #080808;
+  color: #fff;
+
+  border: 1px solid #303030;
+  outline: none;
+
+  font-size: 12px;
+}
+
+.admin-product-field textarea {
+  height: auto;
+  min-height: 110px;
+  padding: 14px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.admin-product-field input:focus,
+.admin-product-field select:focus,
+.admin-product-field textarea:focus {
+  border-color: #888;
+}
+
+.admin-product-field select {
+  appearance: auto;
+}
+
+.admin-product-field select option {
+  background: #111;
+  color: #fff;
+}
+
+/* Description spans both columns */
+
+.admin-product-wide {
+  grid-column: 1 / -1;
+}
+
+/* ---------------------------------------------------------
+   EDITOR BUTTONS
+--------------------------------------------------------- */
+
+.admin-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.admin-editor-actions .btn {
+  min-width: 170px;
+}
+
+.admin-save-message {
+  margin-top: 16px;
+  padding: 13px 15px;
+  border: 1px solid #333;
+  background: #111;
+  color: #bbb;
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+
+/* ---------------------------------------------------------
+   CATALOG HEADER
+--------------------------------------------------------- */
+
+.admin-product-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.admin-product-list-head h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.admin-product-list-head > span {
+  max-width: 330px;
+  color: #666;
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------
+   PRODUCT TABLE
+--------------------------------------------------------- */
+
+.admin-products-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-products-table table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.admin-products-table th,
+.admin-products-table td {
+  vertical-align: middle;
+}
+
+.admin-products-table th:nth-child(1) {
+  width: 36%;
+}
+
+.admin-products-table th:nth-child(2) {
+  width: 16%;
+}
+
+.admin-products-table th:nth-child(3) {
+  width: 12%;
+}
+
+.admin-products-table th:nth-child(4) {
+  width: 13%;
+}
+
+.admin-products-table th:nth-child(5) {
+  width: 10%;
+}
+
+.admin-products-table th:nth-child(6) {
+  width: 13%;
+}
+
+/* ---------------------------------------------------------
+   PRODUCT CELL
+--------------------------------------------------------- */
+
+.admin-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+
+/* THIS PREVENTS THE HUGE PRODUCT IMAGE */
+
+.admin-product-cell img,
+.admin-product-placeholder {
+  width: 58px !important;
+  height: 70px !important;
+
+  min-width: 58px;
+  max-width: 58px;
+
+  object-fit: cover;
+
+  background: #171717;
+  border: 1px solid #292929;
+}
+
+.admin-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #555;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.admin-product-cell > span {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #eee;
+  font-size: 11px;
+}
+
+/* ---------------------------------------------------------
+   PRICE / DISCOUNT
+--------------------------------------------------------- */
+
+.admin-products-table td {
+  color: #ddd;
+}
+
+.admin-discount {
+  display: inline-block;
+
+  padding: 6px 9px;
+
+  border: 1px solid #444;
+
+  color: #ddd;
+
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+/* ---------------------------------------------------------
+   ACTION BUTTONS
+--------------------------------------------------------- */
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-icon-btn {
+  width: 38px;
+  height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  color: #aaa;
+
+  border: 1px solid #333;
+
+  transition:
+    background .2s ease,
+    color .2s ease,
+    border-color .2s ease,
+    transform .15s ease;
+}
+
+.admin-icon-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.admin-icon-btn:active {
+  transform: scale(.94);
+}
+
+.admin-delete-icon:hover {
+  background: #191919;
+  color: #fff;
+  border-color: #666;
+}
+
+/* ---------------------------------------------------------
+   ADMIN PRODUCT TABLE ROWS
+--------------------------------------------------------- */
+
+.admin-products-table tbody tr {
+  transition: background .2s ease;
+}
+
+.admin-products-table tbody tr:hover {
+  background: #0e0e0e;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 800px) {
+
+  .admin-product-editor {
+    padding: 22px;
   }
-});
 
-await db.read();
-if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishlists: [], coupons: [], settings: {} };
-if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
-if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
-if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
-if (!Array.isArray(db.data.walletTopups)) db.data.walletTopups = [];
+  .admin-product-form {
+    grid-template-columns: 1fr;
+  }
 
-const seedProducts = [
-  { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 2, name: "Heavyweight Oversized Tee", category: "Oversized", price: 1099, oldPrice: 1299, stock: 50, badge: "BESTSELLER", fabric: "260 GSM Premium Cotton", description: "A heavier everyday essential with a premium drape.", image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 3, name: "Organic Signature Polo", category: "Polos", price: 899, oldPrice: 1099, stock: 40, badge: "SIGNATURE", fabric: "280 GSM Organic Cotton", description: "Minimal branding. Elevated texture. Designed beyond one occasion.", image: "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 4, name: "Core French Terry Sweatshirt", category: "Sweatshirts", price: 1499, oldPrice: 1699, stock: 30, badge: "CORE", fabric: "360 GSM French Terry", description: "Clean proportions and substantial weight for a premium layer.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 5, name: "Everyday Pullover Hoodie", category: "Hoodies", price: 1699, oldPrice: 1899, stock: 30, badge: "NEW", fabric: "380 GSM Cotton Blend", description: "A premium relaxed hoodie with a deep hood and heavyweight hand feel.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 6, name: "Minimal Logo Tee", category: "Oversized", price: 949, oldPrice: 1099, stock: 50, badge: "", fabric: "240 GSM Cotton", description: "A refined oversized tee with subtle ENYTM identity.", image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] }
-];
+  .admin-product-wide {
+    grid-column: auto;
+  }
 
-if (!db.data.products.length) db.data.products = seedProducts;
-if (!db.data.settings.shippingFreeAbove) db.data.settings = { ...db.data.settings, shippingFreeAbove: 1999, shippingCharge: 99 };
-await db.write();
+  .admin-editor-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-const app = express();
-app.use("/uploads", express.static(uploadsDir));
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
-app.use(compression());
-app.use(cors({ origin: true, credentials: true }));
+  .admin-editor-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-function publicUser(u) {
-  if (!u) return null;
-  const { passwordHash, ...safe } = u;
-  return safe;
-}
+  .admin-editor-actions .btn {
+    width: 100%;
+  }
 
-function signUser(user) {
-  return jwt.sign({ id: user.id, email: user.email, role: user.role || "customer" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "7d" });
-}
+  .admin-product-list-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-function auth(req, res, next) {
-  const token = (req.headers.authorization || "").replace("Bearer ", "");
-  try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET || "dev-secret");
-    next();
-  } catch {
-    return res.status(401).json({ message: "Please login to continue." });
+  .admin-product-list-head > span {
+    text-align: left;
   }
 }
 
-function adminAuth(req, res, next) {
-  const token = (req.headers.authorization || "").replace("Bearer ", "");
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || "dev-secret");
-    if (payload.role !== "admin") throw new Error();
-    req.user = payload;
-    next();
-  } catch {
-    return res.status(401).json({ message: "Admin authentication required." });
+@media (max-width: 560px) {
+
+  .admin-product-editor {
+    padding: 18px;
+  }
+
+  .admin-product-cell img,
+  .admin-product-placeholder {
+    width: 48px !important;
+    height: 60px !important;
+    min-width: 48px;
+    max-width: 48px;
+  }
+
+  .admin-product-cell > span {
+    font-size: 10px;
   }
 }
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false });
-app.use("/api/", apiLimiter);
 
-function totals(items) {
-  const subtotal = items.reduce((s, i) => s + Number(i.price) * Number(i.qty), 0);
-  const shipping = subtotal === 0 || subtotal >= Number(db.data.settings.shippingFreeAbove || 1999) ? 0 : Number(db.data.settings.shippingCharge || 99);
-  return { subtotal, shipping, total: subtotal + shipping };
+/* ENYTM account + address fixes */
+.loading-page{min-height:70vh;display:grid;place-items:center;align-content:center;gap:8px}.loading-page h1{margin:0}
+.auth-error{margin-top:20px}.otp-note{border:1px solid #333;background:#0b0b0b;color:#aaa;padding:12px;font-size:10px;line-height:1.5}
+.account-address-section{margin:0 7vw 80px;border:1px solid #292929;background:#101010;padding:30px}.address-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.address-section-head h2{font-size:20px;letter-spacing:.08em;margin:8px 0}.address-section-head .muted{max-width:650px;font-size:11px}.saved-address-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:25px}.saved-address-card{border:1px solid #303030;background:#0b0b0b;padding:20px}.saved-address-card.selected{border-color:#777}.saved-address-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.address-label,.default-badge{font-size:8px;letter-spacing:.14em;text-transform:uppercase}.address-label{color:#aaa}.default-badge{border:1px solid #555;padding:6px 8px;color:#fff}.saved-address-card h3{font-size:13px;margin:0 0 10px}.saved-address-card p{font-size:10px;color:#888;line-height:1.6;margin:4px 0}.saved-address-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.saved-address-actions button{border:0;background:none;color:#bbb;padding:5px 0;font-size:8px;letter-spacing:.12em;text-decoration:underline;cursor:pointer}.saved-address-actions button:hover{color:#fff}.address-empty{border:1px dashed #333;padding:35px;text-align:center;color:#777;margin-top:20px}.address-editor{border-top:1px solid #292929;margin-top:28px;padding-top:28px;display:grid;gap:15px}.address-editor-head{display:flex;justify-content:space-between;align-items:center}.address-editor-head h3{margin:0;font-size:13px;letter-spacing:.1em}.address-city-row{display:grid;grid-template-columns:1fr auto;gap:8px}.address-mini-btn{background:#181818;border:1px solid #444;color:#fff;padding:0 13px;font-size:8px;letter-spacing:.08em;cursor:pointer}.address-mini-btn:disabled{opacity:.5}.pincode-control{position:relative}.pincode-control input{padding-right:100px!important}.pincode-control span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:7px;color:#777;letter-spacing:.08em}.address-select{width:100%;background:#0a0a0a;border:1px solid #333;color:#fff;padding:15px;outline:none}.lookup-message{font-size:9px;color:#c89b9b;border:1px solid #4a2929;background:#170e0e;padding:10px}.lookup-message.success{color:#a9c6ad;border-color:#2f4634;background:#0e160f}.account-address-section .form-grid{margin-bottom:0}
+@media(max-width:760px){.account-address-section{margin:0 20px 60px;padding:20px}.address-section-head{display:grid}.address-section-head .btn{width:100%}.saved-address-grid{grid-template-columns:1fr}.address-city-row{grid-template-columns:1fr}.address-mini-btn{min-height:44px}.account-grid{grid-template-columns:1fr;padding:20px}.checkout-layout{grid-template-columns:1fr;gap:25px;padding:20px}.checkout-form{order:1}.summary{order:2;position:static}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.auth-card{padding:28px 20px}.auth-card h1{font-size:34px}.saved-address-actions{gap:14px}.address-editor{padding-top:20px}}
+
+/* ---------------- ORDER DETAILS ---------------- */
+.order-detail-page{max-width:1240px;margin:0 auto;padding:72px 32px 110px}
+.order-detail-top{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;border-bottom:1px solid #292929;padding-bottom:28px;margin-bottom:22px}
+.order-detail-top h1{font-size:clamp(28px,4vw,54px);margin:8px 0 8px;letter-spacing:.03em}
+.order-status-card,.order-panel{border:1px solid #2a2a2a;background:#0d0d0d}
+.order-status-card{padding:28px;margin-bottom:24px}
+.order-status-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding-bottom:25px;border-bottom:1px solid #242424}
+.order-status-big{font-size:12px;letter-spacing:.18em;color:#fff;font-weight:700}
+.order-status-big.cancelled{color:#bdbdbd}
+.order-status-head h2{font-size:20px;margin:10px 0 0;color:#ddd;font-weight:500}
+.order-timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding-top:28px}
+.timeline-step{position:relative;min-height:74px;padding-right:16px;color:#5d5d5d}
+.timeline-step:not(:last-child):after{content:"";position:absolute;top:11px;left:28px;right:0;height:1px;background:#292929}
+.timeline-step.active:not(:last-child):after{background:#777}
+.timeline-dot{width:23px;height:23px;border:1px solid #454545;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;background:#0d0d0d;margin-bottom:10px}
+.timeline-step.active{color:#eee}
+.timeline-step.active .timeline-dot{border-color:#aaa}
+.timeline-step b{display:block;font-size:10px;letter-spacing:.12em}
+.timeline-step small{display:block;color:#777;margin-top:5px;line-height:1.4}
+.cancelled-note{padding-top:22px;color:#999}
+.order-detail-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.8fr);gap:24px}
+.order-detail-main,.order-detail-side{display:grid;gap:18px;align-content:start}
+.order-panel{padding:24px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+.panel-head h2{font-size:12px;letter-spacing:.16em;margin:0}
+.panel-head>span{font-size:10px;letter-spacing:.12em;color:#777}
+.order-item-detail{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:18px;align-items:center;padding:18px 0;border-top:1px solid #252525}
+.order-item-detail:first-of-type{border-top:0;padding-top:0}
+.order-item-detail img{width:90px;height:110px;object-fit:cover;background:#171717}
+.order-item-copy h3{font-size:15px;margin:0 0 9px}
+.order-item-copy p{font-size:12px;color:#aaa;margin:5px 0}
+.order-item-detail>strong{font-size:14px}
+.order-action-link{margin-top:9px;padding:0;border:0;background:none;color:#ddd;font-size:10px;letter-spacing:.12em;text-decoration:underline;cursor:pointer}
+.tracking-row,.tracking-placeholder{display:flex;align-items:center;gap:15px;border-top:1px solid #252525;padding-top:18px}
+.tracking-row>div,.tracking-placeholder>div{display:flex;flex-direction:column;gap:5px;flex:1}
+.tracking-row b{font-size:14px}
+.tracking-row small,.tracking-placeholder small{font-size:11px;color:#777}
+.delivery-address{border-top:1px solid #252525;padding-top:18px;color:#aaa;font-size:13px;line-height:1.7}
+.delivery-address b{color:#eee}
+.delivery-address p{margin:2px 0}
+.price-panel>div:not(.panel-head){display:flex;justify-content:space-between;gap:15px;padding:9px 0;color:#aaa;font-size:13px}
+.price-panel hr{border:0;border-top:1px solid #292929;margin:10px 0}
+.price-panel .grand{color:#fff!important;font-size:15px!important}
+.payment-meta{font-size:10px;letter-spacing:.1em;color:#666;line-height:1.6;margin:16px 0 0}
+.delivery-summary>b{font-size:18px}
+.delivery-summary p{margin:6px 0 0}
+.order-actions-panel{border:1px solid #2a2a2a;padding:18px;background:#0d0d0d}
+.order-actions-panel .btn+.btn{margin-top:10px}
+.action-note{font-size:10px;color:#666;line-height:1.5;margin:12px 0 0}
+.order-action-message{border:1px solid #4b4b4b;background:#151515;padding:13px 16px;margin-bottom:20px;font-size:12px;color:#ddd}
+.order-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.order-modal{width:min(430px,100%);background:#111;border:1px solid #3a3a3a;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.order-modal .panel-head{margin-bottom:12px}
+.order-modal .panel-head .icon-btn{margin-left:auto}
+.order-modal p{color:#aaa;font-size:13px;margin:0 0 15px}
+.order-modal select{width:100%;height:48px;background:#181818;border:1px solid #3a3a3a;color:#fff;padding:0 13px;margin-bottom:15px}
+
+@media(max-width:800px){
+ .order-detail-page{padding:48px 18px 80px}
+ .order-detail-top{align-items:flex-start;flex-direction:column}
+ .order-detail-grid{grid-template-columns:1fr}
+ .order-timeline{grid-template-columns:1fr;gap:0}
+ .timeline-step{display:grid;grid-template-columns:32px 1fr;min-height:62px;padding:0}
+ .timeline-step:not(:last-child):after{left:11px;top:23px;bottom:0;width:1px;height:auto;right:auto}
+ .timeline-dot{margin:0}
+ .order-item-detail{grid-template-columns:72px minmax(0,1fr);gap:13px}
+ .order-item-detail img{width:72px;height:90px}
+ .order-item-detail>strong{grid-column:2}
+ .tracking-row{align-items:flex-start;flex-wrap:wrap}
 }
 
-async function sendEmail(to, subject, html) {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !to) {
-    if (String(process.env.OTP_DEV_MODE) === "true") {
-      console.log(`[ENYTM DEV EMAIL] To: ${to} | Subject: ${subject} | ${html.replace(/<[^>]*>/g, " ")}`);
-      return { dev: true };
-    }
-    return { skipped: true };
+/* ============================================================
+   ENYTM ORDER DETAILS V3 — FORCE PREMIUM LAYOUT
+   Unique namespace prevents old CSS from overriding this page.
+   ============================================================ */
+.enytm-order-v3{width:100%!important;max-width:1240px!important;margin:0 auto!important;padding:54px 30px 100px!important;background:#080808!important;color:#f5f5f5!important;min-height:calc(100vh - 130px)!important;box-sizing:border-box!important;font-family:inherit!important}
+.enytm-order-v3 *{box-sizing:border-box!important}
+.order-v3-breadcrumb{font-size:8px!important;letter-spacing:.16em!important;color:#555!important;margin-bottom:20px!important;text-transform:uppercase!important}
+.order-v3-breadcrumb b{color:#aaa!important;font-weight:600!important}
+.order-v3-header{display:flex!important;justify-content:space-between!important;align-items:flex-end!important;gap:25px!important;padding-bottom:30px!important;border-bottom:1px solid #292929!important}
+.order-v3-header p{margin:0 0 10px!important;font-size:9px!important;letter-spacing:.2em!important;color:#777!important}
+.order-v3-header h1{margin:0 0 10px!important;font-size:clamp(32px,4.5vw,58px)!important;line-height:.95!important;letter-spacing:-.055em!important;color:#fff!important}
+.order-v3-header span{font-size:11px!important;color:#666!important}
+.order-v3-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:48px!important;padding:0 17px!important;border:1px solid #414141!important;text-decoration:none!important;font-size:8px!important;font-weight:800!important;letter-spacing:.14em!important;cursor:pointer!important;transition:.2s ease!important}
+.order-v3-btn.dark{background:#101010!important;color:#eee!important}.order-v3-btn.dark:hover{background:#fff!important;color:#000!important;border-color:#fff!important}.order-v3-btn.light{background:#f4f4f4!important;color:#050505!important;border-color:#f4f4f4!important}.order-v3-btn.light:hover{background:#fff!important}.order-v3-btn.full{width:100%!important}
+.order-v3-message{margin:18px 0!important;padding:13px 16px!important;border:1px solid #414141!important;background:#111!important;color:#ddd!important;font-size:10px!important}
+.order-v3-status{display:grid!important;grid-template-columns:1fr 230px!important;margin-top:20px!important;border:1px solid #292929!important;background:linear-gradient(135deg,#141414,#0d0d0d)!important}
+.order-v3-status-copy{padding:28px!important}.order-v3-status-copy small,.order-v3-status-meta span,.order-v3-delivery small,.order-v3-section-head small{display:block!important;font-size:8px!important;letter-spacing:.18em!important;color:#666!important}
+.order-v3-status-copy strong{display:block!important;margin-top:9px!important;font-size:25px!important;letter-spacing:-.03em!important;color:#fff!important}.order-v3-status-copy strong.cancelled{color:#f08080!important}.order-v3-status-copy p{margin:9px 0 0!important;color:#888!important;font-size:11px!important}
+.order-v3-status-meta{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:7px!important;padding:25px!important;border-left:1px solid #292929!important}.order-v3-status-meta b{font-size:13px!important;color:#eee!important}.order-v3-status-meta em{font-style:normal!important;font-size:8px!important;letter-spacing:.12em!important;color:#777!important}
+.order-v3-tracking,.order-v3-card{border:1px solid #292929!important;background:#101010!important}
+.order-v3-tracking{margin-top:20px!important;padding:27px!important}.order-v3-section-head{display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:20px!important;padding-bottom:20px!important;border-bottom:1px solid #272727!important}.order-v3-section-head h2{margin:7px 0 0!important;font-size:17px!important;letter-spacing:.06em!important;color:#f5f5f5!important}.order-v3-section-head>span{font-size:8px!important;letter-spacing:.14em!important;color:#666!important}
+.order-v3-steps{display:grid!important;grid-template-columns:repeat(5,1fr)!important;padding-top:27px!important}.order-v3-step{position:relative!important;display:flex!important;flex-direction:column!important;gap:11px!important;padding-right:22px!important;color:#555!important}.order-v3-step:not(:last-child):after{content:""!important;position:absolute!important;top:14px!important;left:30px!important;right:12px!important;height:1px!important;background:#2b2b2b!important}.order-v3-step.active{color:#eee!important}.order-v3-step.active:after{background:#777!important}.order-v3-step-dot{position:relative!important;z-index:2!important;width:30px!important;height:30px!important;border:1px solid #444!important;border-radius:50%!important;background:#101010!important;display:grid!important;place-items:center!important;font-size:9px!important;color:#777!important}.order-v3-step.active .order-v3-step-dot{background:#f2f2f2!important;border-color:#f2f2f2!important;color:#000!important}.order-v3-step b{font-size:8px!important;letter-spacing:.12em!important}.order-v3-step p{margin:4px 0 0!important;color:#666!important;font-size:9px!important;line-height:1.4!important}
+.order-v3-layout{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(300px,.72fr)!important;gap:20px!important;margin-top:20px!important;align-items:start!important}.order-v3-main{display:grid!important;gap:20px!important}.order-v3-side{display:grid!important;gap:20px!important;position:sticky!important;top:100px!important}.order-v3-card{padding:25px!important}
+.order-v3-item{display:grid!important;grid-template-columns:120px minmax(0,1fr) auto!important;gap:20px!important;align-items:center!important;padding:22px 0!important;border-bottom:1px solid #252525!important}.order-v3-item:last-child{border-bottom:0!important;padding-bottom:0!important}.order-v3-item:first-of-type{padding-top:22px!important}.order-v3-item img{width:120px!important;height:150px!important;object-fit:cover!important;background:#181818!important;border:1px solid #292929!important}.order-v3-item-info small{font-size:7px!important;letter-spacing:.16em!important;color:#555!important}.order-v3-item-info h3{margin:7px 0 11px!important;font-size:19px!important;letter-spacing:-.02em!important;color:#f2f2f2!important}.order-v3-item-info p{display:flex!important;align-items:center!important;gap:8px!important;margin:0 0 7px!important;font-size:9px!important;color:#777!important;letter-spacing:.08em!important}.order-v3-item-info p b{color:#ddd!important}.order-v3-item-info p i{height:10px!important;width:1px!important;background:#444!important}.order-v3-item-info>span{font-size:9px!important;color:#666!important}.order-v3-item-info button{display:block!important;margin-top:13px!important;padding:7px 0!important;border:0!important;background:none!important;color:#ccc!important;text-decoration:underline!important;font-size:8px!important;letter-spacing:.13em!important;cursor:pointer!important}.order-v3-item>strong{font-size:15px!important;color:#fff!important;white-space:nowrap!important}
+.order-v3-track-row,.order-v3-empty-track{display:flex!important;align-items:center!important;gap:14px!important;padding-top:20px!important}.order-v3-track-icon{width:42px!important;height:42px!important;display:grid!important;place-items:center!important;border:1px solid #333!important;color:#ddd!important}.order-v3-track-row>div:nth-child(2),.order-v3-empty-track>div{display:flex!important;flex-direction:column!important;gap:5px!important;flex:1!important}.order-v3-track-row b,.order-v3-empty-track b{font-size:11px!important;color:#eee!important}.order-v3-track-row span,.order-v3-empty-track span{font-size:9px!important;color:#666!important}
+.order-v3-address{padding-top:20px!important}.order-v3-address b{font-size:13px!important;color:#fff!important}.order-v3-address p{margin:6px 0!important;color:#888!important;font-size:10px!important;line-height:1.5!important}
+.order-v3-summary>div:not(.order-v3-section-head){display:flex!important;justify-content:space-between!important;padding:13px 0!important;border-bottom:1px solid #252525!important;font-size:10px!important}.order-v3-summary>div span{color:#777!important}.order-v3-summary>div b{color:#ddd!important}.order-v3-summary hr{border:0!important;border-top:1px solid #444!important;margin:5px 0!important}.order-v3-summary .order-v3-total{border:0!important;padding-top:20px!important}.order-v3-summary .order-v3-total span{color:#fff!important;font-weight:700!important}.order-v3-summary .order-v3-total b{font-size:20px!important;color:#fff!important}.order-v3-summary>p{margin:7px 0 0!important;color:#555!important;font-size:7px!important;letter-spacing:.1em!important;line-height:1.5!important;text-transform:uppercase!important}
+.order-v3-delivery{display:flex!important;flex-direction:column!important;gap:7px!important}.order-v3-delivery strong{font-size:18px!important;color:#fff!important}.order-v3-delivery span{font-size:9px!important;color:#666!important}.order-v3-actions{padding:20px!important;border:1px solid #292929!important;background:#101010!important}.order-v3-actions p{margin:10px 0 15px!important;color:#555!important;font-size:8px!important;line-height:1.5!important;text-align:center!important}.order-v3-actions .order-v3-btn+.order-v3-btn{margin-top:9px!important}
+.order-v3-modal-bg{position:fixed!important;inset:0!important;z-index:99999!important;background:rgba(0,0,0,.8)!important;backdrop-filter:blur(10px)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:20px!important}.order-v3-modal{width:min(420px,100%)!important;padding:26px!important;background:#111!important;border:1px solid #3a3a3a!important;box-shadow:0 25px 80px rgba(0,0,0,.8)!important}.order-v3-modal>div{display:flex!important;justify-content:space-between!important;align-items:center!important}.order-v3-modal small{font-size:8px!important;letter-spacing:.16em!important;color:#666!important}.order-v3-modal>div button{width:36px!important;height:36px!important;display:grid!important;place-items:center!important;background:#171717!important;border:1px solid #333!important;color:#fff!important;cursor:pointer!important}.order-v3-modal h2{font-size:20px!important;margin:20px 0 6px!important}.order-v3-modal p{font-size:10px!important;color:#888!important;margin:0 0 18px!important}.order-v3-modal select{width:100%!important;height:50px!important;margin-bottom:12px!important;background:#080808!important;color:#fff!important;border:1px solid #444!important;padding:0 12px!important}
+.order-v3-loading,.order-v3-error{min-height:65vh!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}.order-v3-loading{font-size:9px!important;letter-spacing:.2em!important;color:#666!important}.order-v3-error span{font-size:8px!important;letter-spacing:.2em!important;color:#666!important}.order-v3-error h1{font-size:38px!important;margin:12px 0!important}.order-v3-error p{color:#888!important;font-size:10px!important;margin-bottom:20px!important}
+@media(max-width:900px){.enytm-order-v3{padding:40px 18px 70px!important}.order-v3-layout{grid-template-columns:1fr!important}.order-v3-side{position:static!important}.order-v3-status{grid-template-columns:1fr!important}.order-v3-status-meta{border-left:0!important;border-top:1px solid #292929!important}.order-v3-steps{grid-template-columns:1fr!important;gap:18px!important}.order-v3-step{display:grid!important;grid-template-columns:30px 1fr!important;gap:12px!important;padding:0!important}.order-v3-step:not(:last-child):after{top:30px!important;left:14px!important;right:auto!important;bottom:-18px!important;width:1px!important;height:auto!important}.order-v3-item{grid-template-columns:90px minmax(0,1fr)!important}.order-v3-item img{width:90px!important;height:115px!important}.order-v3-item>strong{grid-column:2!important}.order-v3-header{align-items:flex-start!important;flex-direction:column!important}.order-v3-header .order-v3-btn{width:100%!important}.order-v3-track-row{flex-wrap:wrap!important}.order-v3-track-row .order-v3-btn{width:100%!important}}
+@media(max-width:520px){.enytm-order-v3{padding:32px 12px 60px!important}.order-v3-header h1{font-size:34px!important}.order-v3-status-copy,.order-v3-status-meta,.order-v3-tracking,.order-v3-card{padding:20px!important}.order-v3-item{gap:13px!important}.order-v3-item-info h3{font-size:16px!important}.order-v3-item>strong{font-size:13px!important}.order-v3-section-head h2{font-size:15px!important}}
+
+/* ENYTM Order Success compact layout — targets current OrderSuccess JSX classes */
+.order-detail-page{width:min(1180px,100%);margin:0 auto;padding:30px 28px 52px;min-height:0}
+.order-detail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:0 0 18px;margin:0 0 16px;border-bottom:1px solid #292929}
+.order-detail-head .eyebrow{margin-bottom:8px;font-size:9px}
+.order-detail-head h1{font-size:clamp(28px,3.4vw,42px);line-height:1;margin:0 0 8px;letter-spacing:-.04em}
+.order-reference{font-size:13px;color:#aaa;margin:0}
+.order-detail-head .btn{min-height:40px;padding:0 14px;font-size:9px;white-space:nowrap;background:#0c0c0c;color:#fff;border-color:#414141}
+.order-status-banner{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:14px;background:#111;border:1px solid #292929;padding:14px 18px;margin:0 0 16px}
+.order-status-icon{display:grid;place-items:center;width:36px;height:36px;border:1px solid #454545;border-radius:50%;color:#ddd}
+.order-status-banner span{display:block;font-size:8px;letter-spacing:.16em;color:#888;margin-bottom:5px}
+.order-status-banner strong{font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.order-status-date{text-align:right}
+.order-tracking-card,.order-section,.order-actions-card,.order-info-card,.order-summary-card{background:#0e0e0e;border:1px solid #292929;padding:18px;margin:0 0 16px;min-width:0}
+.order-section-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.order-section-title .eyebrow{font-size:8px;margin:0 0 5px}
+.order-section-title h2,.order-actions-card h2,.order-info-card h3,.order-help h2{font-size:18px;line-height:1.15;letter-spacing:-.025em;margin:0}
+.order-section-title>span{font-size:9px;letter-spacing:.12em;color:#888;white-space:nowrap}
+.tracking-line{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:4px 0 10px}
+.tracking-step{position:relative;display:grid;grid-template-columns:26px 1fr;align-items:center;column-gap:8px;row-gap:3px;min-width:0;padding:9px;background:#090909;border:1px solid #292929;color:#666}
+.tracking-step span{grid-row:span 2;width:24px;height:24px;display:grid;place-items:center;border:1px solid #444;border-radius:50%;font-size:10px}
+.tracking-step b{font-size:9px;letter-spacing:.05em;line-height:1.2}
+.tracking-step small{font-size:9px;color:#777;line-height:1.2}
+.tracking-step.active{color:#f5f5f5;border-color:#555;background:#151515}
+.tracking-step.active span{border-color:#aaa;color:#fff}
+.expected-delivery{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid #292929;padding-top:10px;font-size:9px;color:#888;letter-spacing:.08em}
+.expected-delivery strong{font-size:10px;color:#eee;letter-spacing:0}
+.order-products{display:grid;gap:0}
+.order-product{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:13px;align-items:center;padding:12px 0;border-top:1px solid #252525;min-width:0}
+.order-product:first-child{border-top:0;padding-top:0}
+.order-product-image{width:64px;height:76px;background:#171717;overflow:hidden}
+.order-product-image img{display:block;width:100%;height:100%;object-fit:cover}
+.order-product-info .eyebrow{font-size:7px;margin:0 0 5px}
+.order-product-info h3{font-size:13px;line-height:1.25;margin:0 0 8px;overflow-wrap:anywhere}
+.order-product-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:9px;color:#888}
+.order-product-meta b{color:#eee}
+.order-product-price{font-size:12px;white-space:nowrap}
+.order-actions-card{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.order-actions-card .eyebrow{font-size:8px;margin:0 0 5px}
+.order-action-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.order-action-buttons .btn{min-height:38px;padding:0 13px;font-size:8px;background:#080808;color:#fff;border:1px solid #444}
+.order-action-buttons .btn:hover:not(:disabled){background:#fff;color:#000;border-color:#fff}
+.order-action-buttons .btn:disabled{opacity:.35;cursor:not-allowed}
+.order-locked-message{font-size:9px;color:#aaa;line-height:1.4;margin:10px 0 0;flex-basis:100%}
+.order-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.order-info-card{margin:0;padding:18px}
+.order-info-card .eyebrow{font-size:8px;margin:0 0 7px}
+.order-info-card h3{font-size:15px;margin:0 0 12px}
+.order-info-card>p:not(.eyebrow){font-size:11px;line-height:1.45;color:#bbb;margin:6px 0;overflow-wrap:anywhere}
+.order-info-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #252525;font-size:10px}
+.order-info-row span{color:#888;letter-spacing:.08em}
+.order-info-row strong{text-align:right;max-width:68%;overflow-wrap:anywhere;font-size:10px}
+.order-summary-card{margin-bottom:16px;padding:18px}
+.order-summary-card .order-section-title{margin-bottom:8px}
+.order-summary-lines{max-width:440px;margin-left:auto}
+.order-summary-lines>div{display:flex;justify-content:space-between;gap:18px;padding:7px 0;border-bottom:1px solid #242424;font-size:11px;color:#aaa}
+.order-summary-lines strong{color:#eee;white-space:nowrap}
+.order-summary-lines .order-total-row{border-bottom:0;border-top:1px solid #555;padding-top:11px;margin-top:3px;font-size:14px;color:#fff;font-weight:800}
+.order-help{padding:18px 0 8px;border-top:1px solid #292929}
+.order-help .eyebrow{font-size:8px;margin:0 0 6px}
+.order-help h2{font-size:20px;margin:0 0 8px}
+.order-help>p:not(.eyebrow){font-size:11px;line-height:1.5;color:#999;margin:0 0 12px;max-width:650px}
+.order-help .btn{min-height:38px;padding:0 14px;font-size:8px;background:#080808;color:#fff;border-color:#444}
+.order-help .btn:hover{background:#fff;color:#000}
+@media(max-width:760px){
+ .order-detail-page{padding:22px 14px 38px}
+ .order-detail-head{align-items:flex-start;flex-direction:column;gap:12px;padding-bottom:14px;margin-bottom:12px}
+ .order-detail-head h1{font-size:30px}
+ .order-status-banner{grid-template-columns:34px 1fr;gap:10px;padding:12px}
+ .order-status-icon{width:30px;height:30px}
+ .order-status-date{grid-column:2;text-align:left;padding-top:6px;border-top:1px solid #252525}
+ .order-tracking-card,.order-section,.order-actions-card,.order-info-card,.order-summary-card{padding:14px;margin-bottom:12px}
+ .order-section-title h2,.order-actions-card h2{font-size:16px}
+ .tracking-line{grid-template-columns:1fr 1fr;gap:6px}
+ .tracking-step{padding:8px;grid-template-columns:22px 1fr;column-gap:7px}
+ .tracking-step span{width:21px;height:21px;font-size:9px}
+ .tracking-step b{font-size:8px}
+ .tracking-step small{font-size:8px}
+ .order-product{grid-template-columns:54px minmax(0,1fr) auto;gap:10px;padding:10px 0}
+ .order-product-image{width:54px;height:66px}
+ .order-product-info h3{font-size:12px}
+ .order-product-price{font-size:11px}
+ .order-actions-card{display:block}
+ .order-action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+ .order-action-buttons .btn{width:100%;padding:0 8px;min-height:38px}
+ .order-action-buttons .btn:last-child{grid-column:1/-1}
+ .order-info-grid{grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+ .order-summary-lines{max-width:none}
+ .order-help h2{font-size:18px}
+}
+@media(max-width:380px){.tracking-line{grid-template-columns:1fr}.order-product{grid-template-columns:48px minmax(0,1fr)}.order-product-image{width:48px;height:60px}.order-product-price{grid-column:2}.order-action-buttons{grid-template-columns:1fr}.order-action-buttons .btn:last-child{grid-column:auto}}
+
+/* ENYTM FIX: keep product thumbnails inside the account order-history row.
+   The account JSX includes .order-thumb, but the previous stylesheet did not
+   define it, so the product image rendered at its natural oversized dimensions. */
+.account-page .orders-card .order-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 150px 100px 28px;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.account-page .orders-card .order-thumb {
+  position: relative;
+  width: 64px;
+  height: 80px;
+  min-width: 64px;
+  overflow: hidden;
+  background: #171717;
+  border: 1px solid #292929;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.account-page .orders-card .order-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+.account-page .orders-card .order-thumb > span {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 3px 5px;
+  background: rgba(0,0,0,.82);
+  color: #fff;
+  font-size: 9px;
+}
+.account-page .orders-card .order-ref { min-width: 0; }
+.account-page .orders-card .order-ref b {
+  overflow-wrap: anywhere;
+}
+.account-page .orders-card .order-row > a {
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 900px) {
+  .account-page .orders-card .order-row {
+    grid-template-columns: 56px minmax(0, 1fr) 100px 80px 24px;
+    gap: 10px;
   }
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 465),
-    secure: String(process.env.SMTP_SECURE || "true") === "true",
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-  await transporter.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, to, subject, html });
-  return { sent: true };
+  .account-page .orders-card .order-thumb {
+    width: 56px;
+    height: 70px;
+    min-width: 56px;
+  }
+}
+@media (max-width: 560px) {
+  .account-page .orders-card .order-row {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px 0;
+  }
+  .account-page .orders-card .order-thumb {
+    width: 52px;
+    height: 66px;
+    min-width: 52px;
+    grid-row: 1 / span 2;
+  }
+  .account-page .orders-card .order-ref {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .account-page .orders-card .order-status {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: right;
+  }
+  .account-page .orders-card .order-row > strong {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: left;
+  }
+  .account-page .orders-card .order-row > a {
+    display: none;
+  }
 }
 
-function normalizeIndianPhone(value) {
-  const raw = String(value || "").trim().replace(/[\s()-]/g, "");
-  if (/^\d{10}$/.test(raw)) return `+91${raw}`;
-  if (/^91\d{10}$/.test(raw)) return `+${raw}`;
-  if (/^\+91\d{10}$/.test(raw)) return raw;
-  return null;
+
+/* ENYTM targeted mobile hero-video fix.
+   Keep the existing desktop layout and all other UI unchanged.
+   On phones, show the complete video frame instead of zoom-cropping it. */
+@media (max-width: 560px) {
+  .hero {
+    height: calc(100svh - 106px);
+    min-height: 480px;
+    background: #080808;
+  }
+  .hero > 
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 15%;
+}
+  }
+  .hero:hover > .hero-video {
+    transform: none;
+  }
+/* ENYTM APPARELS — hero video framing fix */
+
+/* Keep the video filling the hero while shifting the crop upward
+   so the model's face is less likely to be cut off. */
+.hero-video,
+.hero video,
+.hero__video,
+.hero-section video,
+.home-hero video,
+.banner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 10%;
 }
 
-function validEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || "").trim().toLowerCase());
+/* If the hero uses a CSS background image/video instead of a <video> element. */
+.hero,
+.hero-section,
+.home-hero,
+.banner {
+  background-size: cover;
+  background-position: 70% 10%;
 }
 
-function otpHash(code) {
-  return crypto.createHash("sha256").update(String(code)).digest("hex");
-}
-
-function generateOtp() {
-  return String(crypto.randomInt(100000, 1000000));
-}
-
-async function startTwilioSmsVerification(phone) {
-  // Development mode: skip Twilio completely.
-  // This prevents invalid or outdated Twilio credentials from
-  // breaking local registration tests.
-  if (String(process.env.OTP_DEV_MODE) === "true") {
-    return { dev: true };
+/* Mobile framing: keep more of the upper body and face visible. */
+@media (max-width: 768px) {
+  .hero-video,
+  .hero video,
+  .hero__video,
+  .hero-section video,
+  .home-hero video,
+  .banner video {
+    object-position: 68% 5%;
   }
 
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  .hero,
+  .hero-section,
+  .home-hero,
+  .banner {
+    background-position: 68% 5%;
+  }
+}
 
-  if (!sid || !token || !serviceSid) {
-    throw new Error(
-      "Mobile OTP is not configured. Add Twilio Verify credentials to .env."
-    );
+
+/* ENYTM BLACK LABEL V3 — screenshot refinements */
+.home-v3 .announcement{background:#4b0008;color:#fff;height:31px;justify-content:flex-start;overflow:hidden;white-space:nowrap;gap:0;font-size:9px;letter-spacing:.09em}
+.announcement-ticker-track{display:flex;align-items:center;gap:34px;min-width:max-content;animation:enytmTicker 28s linear infinite;padding-left:3vw}
+.announcement-ticker-track span{display:inline-flex;align-items:center;gap:13px}.announcement-ticker-track b{font-size:10px;color:#aaa}
+@keyframes enytmTicker{to{transform:translateX(-50%)}}
+.home-v3 .craft-strip-v2{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important}
+.home-v3 .craft-strip-v2>div{min-width:0;padding:28px 24px 30px!important;border-right:1px solid #2b2b2b}
+.home-v3 .craft-strip-v2>div:last-child{border-right:0}
+.home-v3 .craft-strip-v2>div>span{font-size:8px!important;letter-spacing:.17em;color:#777}
+.home-v3 .craft-strip-v2 h3{font-size:clamp(15px,1.55vw,22px)!important;white-space:nowrap;letter-spacing:-.025em;margin:17px 0 8px}
+.home-v3 .craft-strip-v2 p{font-size:10px!important;line-height:1.6;margin:0;color:#888}
+.home-v3 .feature-editorial-v2{min-height:700px}
+.home-v3 .feature-editorial-image{min-height:700px}
+.home-v3 .feature-editorial-copy{padding:7vw 6vw}
+.home-v3 .feature-editorial-copy h2{font-size:clamp(64px,7.5vw,112px)}
+.home-v3 .feature-big-number{font-size:clamp(100px,13vw,190px)}
+.home-v3 .feature-specs{margin-top:34px}.home-v3 .feature-specs span{padding:11px 0}
+.home-v4 .whatsapp-float{position:fixed;z-index:100;right:20px;bottom:20px;width:48px;height:48px;border:1px solid #555;background:#090909;color:#fff;display:grid;place-items:center;border-radius:50%;box-shadow:0 4px 18px #0009;transition:background .2s,color .2s,transform .2s}
+.home-v4 .whatsapp-float:hover{background:#fff;color:#080808;transform:translateY(-2px)}.home-v4 .whatsapp-float svg{width:21px;height:21px}
+.home-v3 .hero-content-v2 h1{font-size:clamp(60px,8.2vw,122px)}.home-v3 .hero-content-v2 h1 em{font-style:normal;font-family:Georgia,serif;font-weight:400;color:#9c9c9c}
+@media(max-width:900px){.home-v3 .craft-strip-v2{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0 3vw}.home-v3 .craft-strip-v2>div{padding:20px 12px!important}.home-v3 .craft-strip-v2 h3{white-space:normal;font-size:clamp(12px,2vw,18px)!important}.home-v3 .feature-editorial-v2{min-height:0}.home-v3 .feature-editorial-image{height:65vw;min-height:390px}.home-v3 .feature-editorial-copy{padding:65px 7vw}}
+@media(max-width:560px){.home-v3 .announcement{height:28px;font-size:7px;letter-spacing:.06em}.announcement-ticker-track{gap:20px;padding-left:15px}.announcement-ticker-track span{gap:8px}.home-v3 .craft-strip-v2{margin:0 12px;grid-template-columns:repeat(3,minmax(0,1fr))!important}.home-v3 .craft-strip-v2>div{padding:18px 8px!important}.home-v3 .craft-strip-v2>div>span{font-size:6px!important;letter-spacing:.06em}.home-v3 .craft-strip-v2 h3{font-size:11px!important;line-height:1.3;margin:12px 0 6px}.home-v3 .craft-strip-v2 p{font-size:8px!important;line-height:1.45}.home-v3 .feature-editorial-image{height:95vw;min-height:330px}.home-v3 .feature-editorial-copy{padding:54px 22px}.home-v3 .feature-editorial-copy h2{font-size:18vw}.home-v3 .feature-big-number{font-size:40vw}.home-v3 .whatsapp-float{right:15px;bottom:16px;width:49px;height:49px}}
+
+
+/* ENYTM targeted UI repair — only homepage layout, product media sizing, footer links and route scroll. */
+.home-v3 { overflow: clip; }
+.home-v3 .hero-v2 { height: min(790px, calc(100svh - 106px)); min-height: 560px; }
+.home-v3 .hero-v2 > .hero-video { object-fit: cover; object-position: center; }
+/* The supplied homepage video is intentionally preserved unchanged. */
+.home-v3 .hero-edition { position:absolute; z-index:2; top:26px; left:4vw; right:4vw; display:flex; align-items:center; gap:9px; font-size:8px; letter-spacing:.19em; color:#eee; }
+.home-v3 .hero-edition>span:last-child { margin-left:auto; color:#bdbdbd; }
+.home-v3 .hero-edition-dot { width:6px; height:6px; background:#fff; border-radius:50%; box-shadow:0 0 0 4px #ffffff20; }
+.home-v3 .hero-content-v2 { bottom:clamp(62px,10vh,110px); left:7vw; max-width:min(650px,82vw); }
+.home-v3 .hero-content-v2 .hero-kicker { color:#e0e0e0; font-size:9px; margin-bottom:20px; }
+.home-v3 .hero-content-v2 h1 { font-size:clamp(58px,7.3vw,108px); line-height:.86; margin-bottom:19px; }
+.home-v3 .hero-subline { color:#e1e1e1; font-size:clamp(12px,1.2vw,15px); line-height:1.7; margin:0 0 23px; }
+.home-v3 .hero-cta { min-height:48px; }
+.home-v3 .hero-caption { display:block; margin-top:20px; font-size:8px; letter-spacing:.22em; color:#c6c6c6; }
+.home-v3 .hero-index { position:absolute; z-index:2; right:4vw; top:50%; transform:translateY(-50%); display:flex; align-items:center; gap:10px; color:#ddd; font-size:8px; letter-spacing:.16em; }
+.home-v3 .hero-index i { display:block; height:1px; width:34px; background:#aaa; }
+.home-v3 .hero-index span:first-child { color:#fff; }
+.home-v3 .blackline-marquee { overflow:hidden; background:#f2f2ee; color:#080808; border-bottom:1px solid #d5d5d0; }
+.home-v3 .blackline-marquee-track { min-width:max-content; display:flex; align-items:center; justify-content:space-around; gap:34px; padding:15px 22px; font-size:9px; letter-spacing:.2em; font-weight:800; }
+.home-v3 .blackline-marquee-track b { font-size:12px; }
+.home-v3 .manifesto-v2 { max-width:1180px; padding:clamp(90px,12vw,165px) 8vw clamp(75px,9vw,120px); text-align:left; }
+.home-v3 .manifesto-number { display:flex; justify-content:flex-end; color:#686868; font-size:8px; letter-spacing:.18em; margin-bottom:65px; }
+.home-v3 .manifesto-v2>.eyebrow { margin-bottom:22px; }
+.home-v3 .manifesto-v2 h2 { font-size:clamp(48px,8vw,110px); line-height:.88; letter-spacing:-.06em; }
+.home-v3 .manifesto-v2 h2 span { color:#686868; }
+.home-v3 .manifesto-v2 h2 em { font-family:Georgia,serif; font-weight:400; font-style:italic; }
+.home-v3 .manifesto-bottom { display:flex; justify-content:space-between; align-items:end; gap:30px; margin-top:36px; border-top:1px solid #292929; padding-top:24px; }
+.home-v3 .manifesto-bottom>p { max-width:400px; margin:0; color:#999; font-size:12px; line-height:1.8; }
+.home-v3 .manifesto-signature { text-align:right; font-size:11px; font-weight:900; letter-spacing:.17em; white-space:nowrap; }
+.home-v3 .manifesto-signature span { display:block; margin-top:7px; font-size:7px; font-weight:500; color:#777; }
+.home-v3 .craft-strip-v2 { margin:0 4vw; border-top:1px solid #292929; border-bottom:1px solid #292929; }
+.home-v3 .home-arrivals-v2 { padding:clamp(75px,9vw,130px) 4vw; }
+.home-v3 .drop-heading { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:35px; }
+.home-v3 .drop-heading h2 { margin:0; font-size:clamp(42px,7vw,92px); line-height:.9; letter-spacing:-.06em; }
+.home-v3 .heading-period { color:#777; }
+.home-v3 .drop-subtitle { color:#888; font-size:12px; margin:16px 0 0; }
+.home-v3 .drop-circle-link { width:78px; height:78px; border:1px solid #4a4a4a; border-radius:50%; display:flex; align-items:center; justify-content:center; gap:4px; flex-direction:column; font-size:8px; letter-spacing:.12em; flex:none; transition:background .2s,color .2s; }
+.home-v3 .drop-circle-link:hover { background:#fff; color:#000; }
+.home-v3 .home-arrivals-v2 .product-grid { gap:16px; }
+.home-v3 .home-arrivals-v2 .product-image { height:clamp(270px,37vw,510px); }
+.home-v3 .arrivals-footnote { display:flex; justify-content:space-between; gap:12px; margin-top:22px; padding-top:14px; border-top:1px solid #292929; color:#777; font-size:8px; letter-spacing:.16em; }
+.home-v3 .feature-editorial-v2 { display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); min-height:0; background:#0b0b0b; border-top:1px solid #242424; border-bottom:1px solid #242424; }
+.home-v3 .feature-editorial-image { position:relative; height:clamp(440px,58vw,760px); min-height:0; overflow:hidden; background:#171717; }
+.home-v3 .feature-editorial-image img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; filter:grayscale(1); }
+.home-v3 .feature-editorial-image:after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(0deg,rgba(0,0,0,.58),transparent 40%); }
+.home-v3 .image-index,.home-v3 .image-vertical-label { position:absolute; z-index:2; color:#fff; font-size:8px; letter-spacing:.16em; }
+.home-v3 .image-index { left:24px; bottom:22px; }
+.home-v3 .image-vertical-label { top:22px; right:18px; writing-mode:vertical-rl; }
+.home-v3 .feature-editorial-copy { min-width:0; padding:clamp(40px,6vw,90px); display:flex; flex-direction:column; justify-content:center; }
+.home-v3 .feature-editorial-copy .eyebrow { margin-bottom:30px; }
+.home-v3 .feature-big-number { display:block; font-size:clamp(82px,10vw,150px); line-height:.85; font-weight:300; letter-spacing:-.08em; border-right:1px solid #666; width:max-content; padding-right:30px; margin-bottom:35px; }
+.home-v3 .feature-editorial-copy h2 { font-size:clamp(48px,6.2vw,90px); line-height:.88; letter-spacing:-.06em; margin:0 0 24px; }
+.home-v3 .feature-editorial-copy h2 em { font-family:Georgia,serif; font-weight:400; }
+.home-v3 .feature-editorial-copy>p:not(.eyebrow) { max-width:480px; color:#aaa; font-size:13px; line-height:1.8; margin:0 0 24px; }
+.home-v3 .feature-editorial-copy .btn { align-self:flex-start; }
+.home-v3 .feature-specs { display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:28px; padding-top:17px; border-top:1px solid #292929; }
+.home-v3 .feature-specs span { color:#aaa; font-size:8px; letter-spacing:.09em; }
+.home-v3 .feature-specs b { color:#fff; margin-right:5px; }
+.home-v3 .category-editorial-v2 { padding:clamp(75px,9vw,125px) 4vw 0; }
+.home-v3 .category-editorial-head { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:32px; }
+.home-v3 .category-editorial-head h2 { margin:0; font-size:clamp(40px,6.5vw,82px); line-height:.9; letter-spacing:-.055em; }
+.home-v3 .category-editorial-head h2 span { color:#777; }
+.home-v3 .category-editorial-head>p { color:#aaa; font-size:12px; line-height:1.7; margin:0 0 3px; }
+.home-v3 .category-editorial-v2 .categories { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.home-v3 .category-editorial-v2 .category-tile { height:clamp(270px,36vw,450px); }
+.home-v3 .category-editorial-v2 .category-tile img { filter:grayscale(1); opacity:.78; }
+.home-v3 .category-editorial-v2 .category-tile div { left:18px; right:18px; bottom:20px; }
+.home-v3 .category-editorial-v2 .category-tile div>span { position:absolute; top:-28px; left:0; font-size:7px; letter-spacing:.14em; color:#ccc; }
+.home-v3 .category-editorial-v2 .category-tile h3 { font-size:clamp(14px,1.7vw,22px); letter-spacing:.04em; }
+.home-v3 .quote-v2 { padding:clamp(90px,12vw,160px) 20px; }
+.home-v3 .quote-v2 .quote-mark { line-height:.6; margin-bottom:28px; }
+.home-v3 .quote-v2 h2 { font-size:clamp(38px,6.5vw,86px); }
+.home-v3 .quote-v2 h2 em { font-style:normal; color:#8d8d8d; }
+.home-v3 .quote-brand { margin-top:32px; }
+.home-v3 .quote-shop-link { display:inline-flex; align-items:center; gap:10px; border-bottom:1px solid #555; padding:12px 0; font-size:8px; letter-spacing:.16em; }
+.whatsapp-float { position:fixed; z-index:100; right:20px; bottom:20px; width:48px; height:48px; border:1px solid #555; background:#090909; color:#fff; display:grid; place-items:center; border-radius:50%; box-shadow:0 4px 18px #0009; transition:background .2s,color .2s,transform .2s; }
+.whatsapp-float:hover { background:#fff; color:#080808; transform:translateY(-2px); }
+.whatsapp-float svg { width:21px; height:21px; }
+/* Product page: keep all gallery media contained in a viewport-sized frame. */
+.product-page { grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr); align-items:start; min-height:0; }
+.product-gallery-wrap { min-width:0; padding:14px; }
+.product-gallery-shell { height:min(760px,calc(100svh - 150px)); min-height:420px; grid-template-columns:minmax(0,1fr) clamp(70px,8vw,112px); gap:8px; }
+.product-main-media { min-width:0; min-height:0; aspect-ratio:4/5; }
+.product-main-media img,.product-main-media video { object-fit:contain; background:#111; }
+.product-thumbs { min-width:0; min-height:0; grid-template-rows:repeat(4,minmax(0,1fr)); }
+.product-thumb img,.product-thumb video { object-fit:cover; }
+.product-details { min-width:0; padding:clamp(30px,4vw,66px) clamp(22px,4vw,60px); position:relative; top:auto; min-height:0; }
+@media (max-width: 900px) {
+  .home-v3 .hero-v2 { height:calc(78svh - 76px); min-height:500px; }
+  .home-v3 .feature-editorial-v2 { grid-template-columns:1fr; }
+  .home-v3 .feature-editorial-image { height:min(90vw,620px); }
+  .home-v3 .feature-editorial-copy { padding:52px 7vw; }
+  .home-v3 .category-editorial-v2 .categories { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .home-v3 .category-editorial-v2 .category-tile { height:clamp(280px,55vw,420px); }
+  .product-page { grid-template-columns:minmax(0,1fr); }
+  .product-gallery-shell { height:min(74svh,680px); min-height:420px; }
+  .product-details { padding:38px 6vw 55px; }
+}
+@media (max-width: 560px) {
+  .home-v3 .hero-v2 { height:calc(82svh - 76px); min-height:480px; }
+  .home-v3 .hero-v2 > .hero-video { object-fit:contain; object-position:center; transform:none; }
+  .home-v3 .hero:hover > .hero-video { transform:none; }
+  .home-v3 .hero-edition { top:17px; left:5vw; right:5vw; font-size:7px; letter-spacing:.12em; }
+  .home-v3 .hero-content-v2 { left:6vw; right:6vw; bottom:54px; max-width:88vw; }
+  .home-v3 .hero-content-v2 h1 { font-size:clamp(45px,12.5vw,68px); }
+  .home-v3 .hero-subline { font-size:11px; }
+  .home-v3 .hero-cta { min-height:43px; padding:13px 15px; font-size:8px; }
+  .home-v3 .hero-index { right:5vw; top:auto; bottom:20px; transform:none; }
+  .home-v3 .hero-index i { width:20px; }
+  .home-v3 .scroll { right:auto; left:6vw; bottom:24px; }
+  .home-v3 .manifesto-v2 { padding:82px 6vw 70px; }
+  .home-v3 .manifesto-number { margin-bottom:45px; }
+  .home-v3 .manifesto-v2 h2 { font-size:clamp(43px,12vw,64px); }
+  .home-v3 .manifesto-bottom { align-items:flex-start; flex-direction:column; }
+  .home-v3 .manifesto-signature { text-align:left; }
+  .home-v3 .craft-strip-v2 { margin:0 12px; grid-template-columns:1fr!important; }
+  .home-v3 .craft-strip-v2>div { border-right:0; border-bottom:1px solid #292929; padding:18px 8px!important; }
+  .home-v3 .craft-strip-v2>div:last-child { border-bottom:0; }
+  .home-v3 .craft-strip-v2 h3 { font-size:14px!important; white-space:normal; }
+  .home-v3 .craft-strip-v2 p { font-size:10px!important; }
+  .home-v3 .home-arrivals-v2 { padding:72px 15px 80px; }
+  .home-v3 .drop-heading h2 { font-size:clamp(38px,11vw,58px); }
+  .home-v3 .drop-circle-link { width:62px; height:62px; }
+  .home-v3 .home-arrivals-v2 .product-grid { gap:10px; }
+  .home-v3 .home-arrivals-v2 .product-image { height:65vw; }
+  .home-v3 .product-info { display:block; }
+  .home-v3 .product-info strong { display:block; margin-top:8px; }
+  .home-v3 .feature-editorial-image { height:100vw; min-height:300px; }
+  .home-v3 .feature-editorial-copy { padding:48px 22px; }
+  .home-v3 .feature-big-number { font-size:36vw; }
+  .home-v3 .feature-editorial-copy h2 { font-size:18vw; }
+  .home-v3 .feature-editorial-copy>p:not(.eyebrow) { font-size:12px; }
+  .home-v3 .category-editorial-v2 { padding:70px 15px 0; }
+  .home-v3 .category-editorial-head { align-items:flex-start; flex-direction:column; }
+  .home-v3 .category-editorial-head h2 { font-size:clamp(38px,11vw,58px); }
+  .home-v3 .category-editorial-v2 .category-tile { height:58vw; min-height:210px; }
+  .home-v3 .category-editorial-v2 .category-tile div { left:12px; right:12px; bottom:14px; }
+  .home-v3 .category-editorial-v2 .category-tile h3 { font-size:13px; }
+  .home-v3 .quote-v2 { padding:85px 18px; }
+  .product-gallery-wrap { padding:10px; }
+  .product-gallery-shell { height:auto; min-height:0; grid-template-columns:minmax(0,1fr) 66px; gap:6px; aspect-ratio:1.02/1; }
+  .product-main-media { height:100%; min-height:0; aspect-ratio:auto; }
+  .product-thumbs { grid-template-rows:repeat(4,minmax(0,1fr)); gap:5px; }
+  .gallery-toolbar { height:30px; }
+  .product-details { padding:28px 18px 42px; }
+  .product-details h1 { font-size:clamp(35px,10vw,48px); }
+  .sizes { flex-wrap:wrap; }
+  .footer-main { gap:24px 18px; }
+  
+.whatsapp-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 50%;
+  z-index: 9999;
+  visibility: visible;
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+.whatsapp-float svg {
+  display: block;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float {
+    right: 14px;
+    bottom: 18px;
+    width: 54px;
+    height: 54px;
+  }
+}
+
+}
+
+
+/* WhatsApp floating button — mobile visibility fix */
+.whatsapp-float {
+  display: flex !important;
+  position: fixed !important;
+  right: 14px !important;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #000;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  box-sizing: border-box;
+}
+
+.whatsapp-float svg {
+  display: block !important;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float {
+    right: 14px !important;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+
+/* ENYTM WhatsApp floating button - mobile fix */
+.whatsapp-float {
+  display: flex !important;
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 24px !important;
+  width: 56px !important;
+  height: 56px !important;
+  z-index: 999999 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  background: #000 !important;
+  border: 1px solid #25D366 !important;
+  border-radius: 50% !important;
+}
+
+.whatsapp-float svg {
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float {
+    right: 14px !important;
+    bottom: 20px !important;
+  }
+}
+
+
+/* ENYTM mobile homepage repair — desktop rules above remain unchanged. */
+@media (max-width: 560px) {
+  .home-v3 .hero-v2 {
+    height: calc(82svh - 76px);
+    min-height: 480px;
+    position: relative;
+    overflow: hidden;
   }
 
-  const auth = Buffer.from(`${sid}:${token}`).toString("base64");
+  /* Fill the mobile hero frame; contain was creating the large black band. */
+  .home-v3 .hero-v2 > .hero-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important;
+    object-position: 62% center !important;
+    transform: none !important;
+  }
 
-  const body = new URLSearchParams({
-    To: phone,
-    Channel: "sms",
-  });
+  .home-v3 .hero-overlay {
+    z-index: 1;
+    background: linear-gradient(90deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.30) 62%, rgba(0,0,0,.12) 100%),
+                linear-gradient(0deg, rgba(0,0,0,.62) 0%, transparent 60%);
+  }
 
-  const response = await fetch(
-    `https://verify.twilio.com/v2/Services/${serviceSid}/Verifications`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body,
-    }
+  .home-v3 .hero-edition {
+    z-index: 3;
+    top: 18px;
+    left: 6vw;
+    right: 6vw;
+    gap: 7px;
+    font-size: 7px;
+    letter-spacing: .10em;
+    white-space: nowrap;
+  }
+
+  .home-v3 .hero-content-v2 {
+    z-index: 3;
+    left: 6vw;
+    right: auto;
+    bottom: 68px;
+    width: 88vw;
+    max-width: 88vw;
+  }
+
+  .home-v3 .hero-content-v2 .hero-kicker {
+    font-size: 7px;
+    line-height: 1.5;
+    letter-spacing: .13em;
+    margin: 0 0 14px;
+    white-space: normal;
+  }
+
+  .home-v3 .hero-content-v2 h1 {
+    font-size: clamp(42px, 11.8vw, 58px);
+    line-height: .91;
+    letter-spacing: -.055em;
+    margin: 0 0 16px;
+  }
+
+  .home-v3 .hero-subline {
+    font-size: 11px;
+    line-height: 1.55;
+    margin: 0 0 17px;
+  }
+
+  .home-v3 .hero-cta {
+    min-height: 44px;
+    padding: 13px 15px;
+    font-size: 8px;
+    gap: 10px;
+  }
+
+  .home-v3 .hero-caption {
+    margin-top: 13px;
+    font-size: 7px;
+    letter-spacing: .18em;
+  }
+
+  .home-v3 .hero-index {
+    z-index: 3;
+    right: 6vw;
+    bottom: 22px;
+    top: auto;
+    gap: 7px;
+    font-size: 7px;
+  }
+
+  .home-v3 .hero-index i { width: 16px; }
+  .home-v3 .scroll { z-index: 3; left: 6vw; right: auto; bottom: 22px; font-size: 7px; }
+}
+
+/* ENYTM — Keep the model's face visible in the hero video */
+.home-v3 .hero-v2 > .hero-video {
+  object-fit: cover !important;
+  object-position: 62% top !important;
+}
+
+/* Mobile adjustment */
+@media (max-width: 560px) {
+  .home-v3 .hero-v2 > .hero-video {
+    object-fit: cover !important;
+    object-position: 62% top !important;
+    transform: none !important;
+  }
+}
+
+/* ENYTM — Product discount pricing */
+
+.product-price-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.product-price-original {
+  color: #777;
+  font-size: 11px;
+  text-decoration: line-through;
+  text-decoration-color: #999;
+  font-weight: 400;
+}
+
+.product-price-sale {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.product-discount {
+  display: inline-block;
+  background: #fff;
+  color: #000;
+  padding: 5px 7px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+
+.product-price-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.product-price-details .product-price-original {
+  font-size: 12px;
+}
+
+.product-price-details .product-price-sale {
+  font-size: 16px;
+}
+
+@media (max-width: 560px) {
+  .product-price-wrap {
+    justify-content: flex-start;
+  }
+
+  .product-price-sale {
+    font-size: 12px;
+  }
+}
+
+/* =========================================
+   ENYTM APPARELS — CINEMATIC BRAND INTRO
+   Responsive for desktop and mobile
+========================================= */
+
+.enytm-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #050505;
+  color: #f5f5f2;
+  animation: enytm-intro-exit 0.85s
+    cubic-bezier(.76, 0, .24, 1) 2.85s forwards;
+}
+
+.enytm-intro-top,
+.enytm-intro-bottom {
+  position: absolute;
+  left: 5vw;
+  right: 5vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 8px;
+  letter-spacing: .2em;
+  color: #777;
+}
+
+.enytm-intro-top {
+  top: 35px;
+  animation: enytm-meta-in .8s ease both;
+}
+
+.enytm-intro-bottom {
+  bottom: 30px;
+  flex-wrap: wrap;
+  animation: enytm-meta-in .8s ease .3s both;
+}
+
+.enytm-intro-center {
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+}
+
+.enytm-intro-logo {
+  font-size: clamp(54px, 11vw, 120px);
+  font-weight: 900;
+  letter-spacing: .16em;
+  line-height: 1;
+  padding-left: .16em;
+  opacity: 0;
+  animation: enytm-logo-in 1s
+    cubic-bezier(.2, .75, .25, 1) .2s forwards;
+}
+
+.enytm-intro-logo span {
+  display: inline-block;
+  font-size: .16em;
+  vertical-align: top;
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+
+.enytm-intro-line {
+  width: 0;
+  height: 1px;
+  background: #aaa;
+  margin: 25px auto 28px;
+  animation: enytm-line-in .7s ease .65s forwards;
+}
+
+.enytm-intro-tagline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  font-size: clamp(19px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: .16em;
+  line-height: 1.35;
+}
+
+.enytm-intro-tagline span {
+  opacity: 0;
+  animation: enytm-slide-up .8s
+    cubic-bezier(.2, .75, .25, 1) .85s forwards;
+}
+
+.enytm-intro-tagline em {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 1.2em;
+  letter-spacing: .04em;
+  color: #999;
+  opacity: 0;
+  animation: enytm-slide-up .8s
+    cubic-bezier(.2, .75, .25, 1) 1.1s forwards;
+}
+
+.enytm-intro-progress {
+  width: clamp(60px, 12vw, 130px);
+  height: 1px;
+  background: #292929;
+  overflow: hidden;
+}
+
+.enytm-intro-progress i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #eee;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: enytm-progress 2.5s
+    cubic-bezier(.4, 0, .2, 1) .3s forwards;
+}
+
+@keyframes enytm-logo-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    letter-spacing: .28em;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: .16em;
+  }
+}
+
+@keyframes enytm-line-in {
+  to { width: clamp(70px, 13vw, 150px); }
+}
+
+@keyframes enytm-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enytm-meta-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enytm-progress {
+  to { transform: scaleX(1); }
+}
+
+@keyframes enytm-intro-exit {
+  to {
+    transform: translateY(-100%);
+    visibility: hidden;
+  }
+}
+
+/* Phone layout */
+@media (max-width: 560px) {
+  .enytm-intro-top,
+  .enytm-intro-bottom {
+    left: 20px;
+    right: 20px;
+    font-size: 6px;
+    letter-spacing: .13em;
+  }
+
+  .enytm-intro-top {
+    top: 25px;
+  }
+
+  .enytm-intro-bottom {
+    bottom: 22px;
+  }
+
+  .enytm-intro-center {
+    padding: 20px 12px;
+  }
+
+  .enytm-intro-logo {
+    font-size: clamp(43px, 12vw, 66px);
+  }
+
+  .enytm-intro-line {
+    margin: 22px auto;
+  }
+
+  .enytm-intro-tagline {
+    font-size: clamp(17px, 5vw, 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enytm-intro {
+    animation-duration: .01ms;
+    animation-delay: 0s;
+  }
+
+  .enytm-intro-logo,
+  .enytm-intro-line,
+  .enytm-intro-tagline span,
+  .enytm-intro-tagline em,
+  .enytm-intro-top,
+  .enytm-intro-bottom,
+  .enytm-intro-progress i {
+    animation-duration: .01ms;
+    animation-delay: 0s;
+    animation-fill-mode: forwards;
+  }
+}
+.brand-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ENYTM launch countdown layout fix */
+.enytm-countdown-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: #080808;
+  color: #f5f2ed;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+.countdown-top,
+.countdown-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 24px clamp(20px, 5vw, 76px);
+}
+
+.countdown-top {
+  border-bottom: 1px solid rgba(255,255,255,.14);
+}
+
+.countdown-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 70px 22px 90px;
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    #25221d 0%, #111 40%, #080808 76%
   );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || "Could not send mobile OTP."
-    );
-  }
-
-  return data;
 }
 
-async function checkTwilioSmsVerification(phone, code) {
-  // Development mode: accept only the configured local test code.
-  // This does not verify ownership of the phone number.
-  if (String(process.env.OTP_DEV_MODE) === "true") {
-    return (
-      String(code) ===
-      String(process.env.DEV_PHONE_OTP || "123456")
-    );
-  }
-
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-
-  if (!sid || !token || !serviceSid) {
-    throw new Error("Mobile OTP is not configured.");
-  }
-
-  const auth = Buffer.from(`${sid}:${token}`).toString("base64");
-
-  const body = new URLSearchParams({
-    To: phone,
-    Code: code,
-  });
-
-  const response = await fetch(
-    `https://verify.twilio.com/v2/Services/${serviceSid}/VerificationCheck`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body,
-    }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || "Could not verify mobile OTP."
-    );
-  }
-
-  return data.status === "approved";
+.countdown-inner {
+  width: min(100%, 900px);
 }
 
-async function sendWhatsApp(phone, body) {
-  if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID || !phone) return { skipped: true };
-  const version = process.env.WHATSAPP_API_VERSION || "v23.0";
-  const url = `https://graph.facebook.com/${version}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: phone.replace(/\D/g, ""),
-      type: "text",
-      text: { preview_url: false, body }
-    })
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "WhatsApp API error");
-  return data;
+.countdown-title {
+  font-size: clamp(42px, 8vw, 100px);
+  letter-spacing: -.06em;
+  line-height: .92;
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 800;
 }
 
-async function sendWhatsAppTemplate(phone, templateName, languageCode, parameters=[]) {
-  if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID || !phone || !templateName) return { skipped: true };
-  const version = process.env.WHATSAPP_API_VERSION || "v23.0";
-  const url = `https://graph.facebook.com/${version}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-  const components = parameters.length ? [{ type: "body", parameters: parameters.map(text => ({ type: "text", text: String(text) })) }] : [];
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ messaging_product: "whatsapp", to: phone.replace(/\D/g, ""), type: "template", template: { name: templateName, language: { code: languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US" }, ...(components.length ? {components} : {}) } })
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "WhatsApp template API error");
-  return data;
+.countdown-title em {
+  font-style: normal;
+  color: #c8b69a;
 }
 
-async function notifyOrder(order, type) {
-  const user = db.data.users.find(u => u.id === order.userId);
-  if (!user) return;
-  order.notifications = order.notifications || {};
-  const isPlaced = type === "placed";
-  const subject = isPlaced ? `ENYTM Order Confirmed — ${order.receipt}` : `ENYTM Order Delivered — ${order.receipt}`;
-  const heading = isPlaced ? "Your ENYTM order is confirmed." : "Your ENYTM order has been delivered.";
-  const html = `<div style="font-family:Arial,sans-serif"><h2>${heading}</h2><p>Order: <b>${order.receipt}</b></p><p>Total: <b>₹${Number(order.total).toLocaleString("en-IN")}</b></p><p>Thank you for choosing ENYTM APPARELS.</p></div>`;
-  if (user.emailOptIn !== false && user.email && !order.notifications[`${type}EmailAt`]) {
-    try { await sendEmail(user.email, subject, html); order.notifications[`${type}EmailAt`] = Date.now(); } catch (e) { console.error(`[ENYTM EMAIL ${type}]`, e.message); }
-  }
-  if (user.whatsappOptIn && user.phone && !order.notifications[`${type}WhatsAppAt`]) {
-    const templateName = isPlaced ? process.env.WHATSAPP_ORDER_PLACED_TEMPLATE : process.env.WHATSAPP_ORDER_DELIVERED_TEMPLATE;
-    const params = isPlaced ? [user.name || "Customer", order.receipt, `₹${Number(order.total).toLocaleString("en-IN")}`] : [user.name || "Customer", order.receipt];
-    try {
-      if (templateName) {
-        await sendWhatsAppTemplate(user.phone, templateName, process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US", params);
-        order.notifications[`${type}WhatsAppAt`] = Date.now();
-      } else if (String(process.env.WHATSAPP_TEXT_FALLBACK) === "true") {
-        const text = isPlaced ? `Hi ${user.name || "Customer"}, your ENYTM order ${order.receipt} has been placed successfully. Total: ₹${Number(order.total).toLocaleString("en-IN")}.` : `Hi ${user.name || "Customer"}, your ENYTM order ${order.receipt} has been delivered. Thank you for shopping with ENYTM APPARELS.`;
-        await sendWhatsApp(user.phone, text);
-        order.notifications[`${type}WhatsAppAt`] = Date.now();
-      }
-    } catch (e) { console.error(`[ENYTM WHATSAPP ${type}]`, e.message); }
-  }
-  order.updatedAt = Date.now();
-  await db.write();
-}
-async function notifyOrderStatus(order) {
- const user=db.data.users.find(u=>String(u.id)===String(order.userId));
- if(!user)return;
- const labels={payment_pending:"Payment pending",confirmed:"Order confirmed",processing:"Processing",packed:"Packed",shipped:"Shipped",out_for_delivery:"Out for delivery",delivered:"Delivered",cancelled:"Cancelled"};
- const label=labels[order.status]||String(order.status||"").replace(/_/g," ");
- const tracking=order.tracking||{};
- const html=`<div style="font-family:Arial,sans-serif;color:#111"><h2>ENYTM order update</h2><p>Your order <b>${order.receipt||order.id}</b> is now: <b>${label}</b>.</p>${tracking.courier?`<p>Courier: ${tracking.courier}</p>`:""}${tracking.trackingNumber?`<p>Tracking/AWB: ${tracking.trackingNumber}</p>`:""}${tracking.trackingUrl?`<p><a href="${tracking.trackingUrl}">Track your shipment</a></p>`:""}<p>Thank you for shopping with ENYTM APPARELS.</p></div>`;
- if(user.emailOptIn!==false&&user.email){
-  try{await sendEmail(user.email,`ENYTM order update — ${order.receipt||order.id}: ${label}`,html);}catch(e){console.error("[ENYTM STATUS EMAIL]",e.message);}
- }
- // Transactional WhatsApp messages require approved templates outside the customer-service window.
- if(user.whatsappOptIn&&user.phone&&process.env.WHATSAPP_ORDER_STATUS_TEMPLATE){
-  try{await sendWhatsAppTemplate(user.phone,process.env.WHATSAPP_ORDER_STATUS_TEMPLATE,process.env.WHATSAPP_TEMPLATE_LANGUAGE||"en_US",[user.name||"Customer",order.receipt||order.id,label,tracking.trackingNumber||"Not available"]);}catch(e){console.error("[ENYTM STATUS WHATSAPP]",e.message);}
- }
+.countdown-overline {
+  color: #c8b69a;
+  letter-spacing: .3em;
+  font-size: 10px;
+  margin-bottom: 24px;
 }
 
-
-// Razorpay webhook must receive the raw body.
-app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), async (req, res) => {
-  try {
-    const signature = req.headers["x-razorpay-signature"];
-    const expected = crypto.createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET || "").update(req.body).digest("hex");
-    if (!signature || signature !== expected) return res.status(400).send("Invalid signature");
-    const event = JSON.parse(req.body.toString("utf8"));
-    const payment = event.payload?.payment?.entity;
-    if (payment && event.event === "payment.captured") {
-      const order = db.data.orders.find(o => o.razorpayOrderId === payment.order_id || o.razorpayOrderIds?.advance === payment.order_id || o.razorpayOrderIds?.balance === payment.order_id);
-      if (order) {
-        order.paymentIds ||= [];
-        if (!order.paymentIds.some(p => p.id === payment.id)) {
-          const stage = order.razorpayOrderIds?.balance === payment.order_id ? "balance" : "advance";
-          const amount = Number(payment.amount || 0) / 100;
-          if (stage === "balance") {
-            order.balancePaid = amount;
-            order.paymentStatus = "paid";
-          } else {
-            order.advancePaid = amount;
-            order.paymentStatus = "partially_paid";
-            if (!order.stockDeducted) {
-              for (const item of order.items || []) {
-                const product = db.data.products.find(p => p.id === item.productId);
-                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-              }
-              order.stockDeducted = true;
-            }
-          }
-          order.paymentIds.push({ id: payment.id, stage, amount, capturedAt: Date.now() });
-          order.paymentId = payment.id;
-          order.paymentMethod = payment.method || "online";
-          order.status = "confirmed";
-          order.updatedAt = Date.now();
-          await db.write();
-          if (stage === "advance") await notifyOrder(order, "placed");
-        }
-      }
-    }
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).send("Webhook error");
-  }
-});
-
-app.use(express.json());
-
-app.get("/api/products", (req, res) => res.json(db.data.products));
-app.get("/api/settings", (req, res) => res.json(db.data.settings));
-
-
-app.post("/api/auth/register/send-otp", async (req, res) => {
-  const { name, email, phone, password } = req.body;
-  const normalizedEmail = String(email || "").trim().toLowerCase();
-  const normalizedPhone = normalizeIndianPhone(phone);
-
-  if (!name || !normalizedEmail || !password) {
-    return res.status(400).json({
-      message: "Name, email and password are required."
-    });
-  }
-
-  if (!validEmail(normalizedEmail)) {
-    return res.status(400).json({
-      message: "Please enter a valid email address."
-    });
-  }
-
-  if (!normalizedPhone) {
-    return res.status(400).json({
-      message: "Please enter a valid 10-digit Indian mobile number."
-    });
-  }
-
-  if (String(password).length < 6) {
-    return res.status(400).json({
-      message: "Password must be at least 6 characters."
-    });
-  }
-
-  if (db.data.users.some(
-    u => String(u.email).trim().toLowerCase() === normalizedEmail
-  )) {
-    return res.status(409).json({
-      message: "This email is already registered. Please login instead."
-    });
-  }
-
-  if (db.data.users.some(
-    u => normalizeIndianPhone(u.phone) === normalizedPhone
-  )) {
-    return res.status(409).json({
-      message: "This mobile number is already registered. Please login instead."
-    });
-  }
-
-  const now = Date.now();
-  const recent = db.data.pendingOtps.find(
-    x => x.email === normalizedEmail && now - x.createdAt < 60000
-  );
-
-  if (recent) {
-    return res.status(429).json({
-      message: "OTP was just sent. Please wait 60 seconds before requesting another."
-    });
-  }
-
-  const emailOtp = generateOtp();
-  const challengeId = crypto.randomUUID();
-
-  const challenge = {
-    id: challengeId,
-    name: String(name).trim(),
-    email: normalizedEmail,
-    phone: normalizedPhone,
-    password,
-    emailOtpHash: otpHash(emailOtp),
-    attempts: 0,
-    createdAt: now,
-    expiresAt: now + 10 * 60 * 1000
-  };
-
-  try {
-    const emailResult = await sendEmail(
-      normalizedEmail,
-      "Your ENYTM verification code",
-      `<div style="font-family:Arial,sans-serif">
-        <h2>ENYTM APPARELS</h2>
-        <p>Your email verification code is:</p>
-        <p style="font-size:30px;font-weight:700;letter-spacing:8px">${emailOtp}</p>
-        <p>This code expires in 10 minutes.</p>
-        <p>If you did not request an ENYTM account, you can ignore this email.</p>
-      </div>`
-    );
-
-    if (emailResult.skipped && process.env.OTP_DEV_MODE !== "true") {
-      throw new Error("Email OTP is not configured. Check SMTP credentials in .env.");
-    }
-
-    db.data.pendingOtps = db.data.pendingOtps.filter(
-      x => x.email !== normalizedEmail
-    );
-    db.data.pendingOtps.push(challenge);
-    await db.write();
-
-    if (process.env.OTP_DEV_MODE === "true") {
-      console.log(`[ENYTM DEV OTP] ${normalizedEmail}: ${emailOtp}`);
-    }
-
-    return res.json({
-      challengeId,
-      message: `Email verification code sent to ${normalizedEmail}.`
-    });
-  } catch (error) {
-    console.error("[ENYTM EMAIL OTP]", error.message);
-    return res.status(503).json({
-      message: error.message || "Could not send email verification code."
-    });
-  }
-});
-
-app.post("/api/auth/register/verify-otp", async (req, res) => {
-  const {
-    challengeId,
-    emailOtp,
-    whatsappOptIn = false,
-    emailOptIn = true
-  } = req.body;
-
-  const challenge = db.data.pendingOtps.find(
-    x => x.id === challengeId
-  );
-
-  if (!challenge) {
-    return res.status(400).json({
-      message: "Verification session expired. Please request a new email OTP."
-    });
-  }
-
-  if (Date.now() > challenge.expiresAt) {
-    db.data.pendingOtps = db.data.pendingOtps.filter(
-      x => x.id !== challengeId
-    );
-    await db.write();
-
-    return res.status(400).json({
-      message: "Email OTP expired. Please request a new one."
-    });
-  }
-
-  if (challenge.attempts >= 5) {
-    return res.status(429).json({
-      message: "Too many incorrect attempts. Please request a new email OTP."
-    });
-  }
-
-  if (otpHash(String(emailOtp || "")) !== challenge.emailOtpHash) {
-    challenge.attempts += 1;
-    await db.write();
-
-    return res.status(400).json({
-      message: "Incorrect email OTP. Please check the code and try again."
-    });
-  }
-
-  if (db.data.users.some(
-    u => String(u.email).trim().toLowerCase() === challenge.email
-  )) {
-    db.data.pendingOtps = db.data.pendingOtps.filter(
-      x => x.id !== challengeId
-    );
-    await db.write();
-
-    return res.status(409).json({
-      message: "This email is already registered. Please login instead."
-    });
-  }
-
-  if (db.data.users.some(
-    u => normalizeIndianPhone(u.phone) === challenge.phone
-  )) {
-    db.data.pendingOtps = db.data.pendingOtps.filter(
-      x => x.id !== challengeId
-    );
-    await db.write();
-
-    return res.status(409).json({
-      message: "This mobile number is already registered. Please login instead."
-    });
-  }
-
-  const user = {
-    id: crypto.randomUUID(),
-    name: challenge.name,
-    email: challenge.email,
-    phone: challenge.phone,
-    passwordHash: await bcrypt.hash(challenge.password, 12),
-    whatsappOptIn: Boolean(whatsappOptIn),
-    emailOptIn: Boolean(emailOptIn),
-    emailVerified: true,
-    phoneVerified: false,
-    role: "customer",
-    createdAt: Date.now(),
-    lastLoginAt: Date.now()
-  };
-
-  db.data.users.push(user);
-  db.data.pendingOtps = db.data.pendingOtps.filter(
-    x => x.id !== challengeId
-  );
-  await db.write();
-
-  return res.json({
-    token: signUser(user),
-    user: publicUser(user),
-    message: "Account created and email verified successfully."
-  });
-});
-
-
-app.post("/api/auth/register/verify-otp", async (req, res) => {
-  const { challengeId, emailOtp, phoneOtp, whatsappOptIn = false, emailOptIn = true } = req.body;
-  const challenge = db.data.pendingOtps.find(x => x.id === challengeId);
-  if (!challenge) return res.status(400).json({ message: "Verification session expired. Please request new OTPs." });
-  if (Date.now() > challenge.expiresAt) return res.status(400).json({ message: "OTP expired. Please request new OTPs." });
-  if (challenge.attempts >= 5) return res.status(429).json({ message: "Too many incorrect attempts. Please request new OTPs." });
-
-  const emailOk = otpHash(String(emailOtp || "")) === challenge.emailOtpHash;
-  let phoneOk = false;
-  try {
-    phoneOk = await checkTwilioSmsVerification(challenge.phone, String(phoneOtp || ""));
-  } catch (e) {
-    return res.status(503).json({ message: e.message || "Could not verify mobile OTP." });
-  }
-
-  if (!emailOk || !phoneOk) {
-    challenge.attempts += 1;
-    await db.write();
-    return res.status(400).json({ message: "Incorrect email or mobile OTP. Please check both codes." });
-  }
-
-  if (db.data.users.some(u => String(u.email).toLowerCase() === challenge.email)) {
-    db.data.pendingOtps = db.data.pendingOtps.filter(x => x.id !== challengeId);
-    await db.write();
-    return res.status(409).json({ message: "This email is already registered. Please login instead." });
-  }
-  if (db.data.users.some(u => normalizeIndianPhone(u.phone) === challenge.phone)) {
-    db.data.pendingOtps = db.data.pendingOtps.filter(x => x.id !== challengeId);
-    await db.write();
-    return res.status(409).json({ message: "This mobile number is already registered. Please login instead." });
-  }
-
-  const user = {
-    id: crypto.randomUUID(),
-    name: challenge.name,
-    email: challenge.email,
-    phone: challenge.phone,
-    passwordHash: await bcrypt.hash(challenge.password, 12),
-    whatsappOptIn: Boolean(whatsappOptIn),
-    emailOptIn: Boolean(emailOptIn),
-    emailVerified: true,
-    phoneVerified: true,
-    role: "customer",
-    createdAt: Date.now(),
-    lastLoginAt: Date.now()
-  };
-  db.data.users.push(user);
-  db.data.pendingOtps = db.data.pendingOtps.filter(x => x.id !== challengeId);
-  await db.write();
-  res.json({ token: signUser(user), user: publicUser(user), message: "Account created and both email and mobile numbers verified." });
-});
-
-
-app.post("/api/auth/password-reset/send-otp", async (req, res) => {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  if (!validEmail(email)) return res.status(400).json({ message: "Please enter a valid email address." });
-  const user = db.data.users.find(u => String(u.email).toLowerCase() === email);
-  // Avoid revealing whether an account exists. In development mode, the OTP is logged locally.
-  if (!user) return res.json({ message: "If that email is registered, a reset code has been sent." });
-  db.data.passwordResetOtps ||= [];
-  const now = Date.now();
-  const recent = db.data.passwordResetOtps.find(x => x.email === email && now - x.createdAt < 60000);
-  if (recent) return res.status(429).json({ message: "A reset code was just requested. Please wait 60 seconds." });
-  const code = generateOtp();
-  const challengeId = crypto.randomUUID();
-  try {
-    const result = await sendEmail(email, "Reset your ENYTM password", `<div style="font-family:Arial,sans-serif"><h2>ENYTM APPARELS</h2><p>Your password reset code is:</p><p style="font-size:30px;font-weight:700;letter-spacing:8px">${code}</p><p>This code expires in 10 minutes. If you did not request this, ignore this email.</p></div>`);
-    if (result.skipped && String(process.env.OTP_DEV_MODE) !== "true") throw new Error("Password reset email is not configured.");
-    db.data.passwordResetOtps = db.data.passwordResetOtps.filter(x => x.email !== email);
-    db.data.passwordResetOtps.push({ id: challengeId, email, codeHash: otpHash(code), attempts: 0, createdAt: now, expiresAt: now + 10 * 60 * 1000 });
-    await db.write();
-    if (String(process.env.OTP_DEV_MODE) === "true") console.log(`[ENYTM DEV PASSWORD RESET] ${email}: ${code}`);
-    return res.json({ challengeId, message: "If that email is registered, a reset code has been sent." });
-  } catch (e) {
-    return res.status(503).json({ message: e.message || "Could not send reset code." });
-  }
-});
-
-app.post("/api/auth/password-reset/confirm", async (req, res) => {
-  const { challengeId, otp, password } = req.body;
-  if (String(password || "").length < 8) return res.status(400).json({ message: "Your new password must be at least 8 characters." });
-  db.data.passwordResetOtps ||= [];
-  const challenge = db.data.passwordResetOtps.find(x => x.id === challengeId);
-  if (!challenge || Date.now() > challenge.expiresAt) return res.status(400).json({ message: "Reset code expired. Please request another code." });
-  if (challenge.attempts >= 5) return res.status(429).json({ message: "Too many attempts. Request a new reset code." });
-  if (otpHash(String(otp || "")) !== challenge.codeHash) {
-    challenge.attempts += 1; await db.write();
-    return res.status(400).json({ message: "Incorrect reset code." });
-  }
-  const user = db.data.users.find(u => String(u.email).toLowerCase() === challenge.email);
-  if (!user) return res.status(400).json({ message: "Could not reset password. Please request a new code." });
-  user.passwordHash = await bcrypt.hash(String(password), 12);
-  db.data.passwordResetOtps = db.data.passwordResetOtps.filter(x => x.id !== challengeId);
-  await db.write();
-  return res.json({ message: "Password updated successfully." });
-});
-
-app.post("/api/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = db.data.users.find(u => u.email === String(email || "").toLowerCase());
-  if (!user || !(await bcrypt.compare(password || "", user.passwordHash))) return res.status(401).json({ message: "Invalid email or password." });
-  user.lastLoginAt = Date.now();
-  await db.write();
-  res.json({ token: signUser(user), user: publicUser(user) });
-});
-
-app.get("/api/auth/me", auth, (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
-  res.json(publicUser(user));
-});
-
-app.put("/api/auth/profile", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ message: "User not found." });
-  const { name, phone, whatsappOptIn, emailOptIn, address } = req.body;
-  if (name !== undefined) user.name = name;
-  if (phone !== undefined) user.phone = phone;
-  if (whatsappOptIn !== undefined) user.whatsappOptIn = Boolean(whatsappOptIn);
-  if (emailOptIn !== undefined) user.emailOptIn = Boolean(emailOptIn);
-  if (address !== undefined) user.address = address;
-  await db.write();
-  res.json(publicUser(user));
-});
-
-app.post("/api/cart/sync", auth, async (req, res) => {
-  const existing = db.data.carts.find(c => c.userId === req.user.id);
-  const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
-  if (existing) Object.assign(existing, record); else db.data.carts.push(record);
-  await db.write();
-  res.json({ ok: true });
-});
-
-app.post("/api/wishlist/sync", auth, async (req, res) => {
-  const existing = db.data.wishlists.find(c => c.userId === req.user.id);
-  const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
-  if (existing) Object.assign(existing, record); else db.data.wishlists.push(record);
-  await db.write();
-  res.json({ ok: true });
-});
-
-
-// Indian PIN lookup with short-lived in-memory cache to avoid hammering postal services.
-const postalLookupCache = new Map();
-async function postalJson(url) {
- const cached=postalLookupCache.get(url);
- if(cached && cached.until>Date.now()) return cached.data;
- const response=await fetch(url,{headers:{"Accept":"application/json","User-Agent":"ENYTM-App/1.0"}});
- if(!response.ok) throw new Error(response.status===429?"Postal lookup is busy. Wait a few seconds and retry.":`Postal service returned ${response.status}.`);
- const data=await response.json();
- postalLookupCache.set(url,{data,until:Date.now()+6*60*60*1000});
- return data;
-}
-app.get("/api/pincode/:pin", async (req,res)=>{
- const pin=String(req.params.pin||"");
- if(!/^\d{6}$/.test(pin)) return res.status(400).json({valid:false,message:"Enter a valid 6-digit PIN code."});
- try{
-  let records=[];
-  try{
-   const data=await postalJson(`https://api.postalpincode.in/pincode/${pin}`);
-   if(Array.isArray(data)&&data[0]?.Status==="Success") records=data[0].PostOffice||[];
-  }catch(e){ /* fallback postal provider handles transient 429/5xx responses */ }
-  if(!records.length){
-   const z=await postalJson(`https://api.zippopotam.us/IN/${pin}`);
-   records=(z.places||[]).map(p=>({Name:p["place name"],District:p["place name"],State:p.state,StateName:p.state}));
-  }
-  const p=records[0];
-  if(!p) return res.status(404).json({valid:false,message:"PIN code not found. Check the number or enter your city and state manually."});
-  return res.json({valid:true,pincode:pin,city:p.District||p.Block||p.Name||"",district:p.District||p.Block||"",state:p.State||p.StateName||"",postOffice:p.Name||p["place name"]||""});
- }catch(e){return res.status(503).json({valid:false,message:"PIN lookup is temporarily unavailable. Please retry or enter city/state manually."});}
-});
-app.get("/api/pincode/city/:city", async (req,res)=>{
- const city=String(req.params.city||"").trim().replace(/\s+/g," ");
- if(city.length<2||city.length>80) return res.status(400).json({pincodes:[],message:"Enter a valid city name."});
- try{
-  let offices=[];
-  try {
-   const data=await postalJson(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
-   offices=Array.isArray(data)&&data[0]?.Status==="Success"?(data[0].PostOffice||[]):[];
-  } catch(e) { /* Try the secondary geocoder when India Post is rate limited. */ }
-  if(!offices.length){
-   try {
-    const geo=await postalJson(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&city=${encodeURIComponent(city)}&country=India`);
-    const seen=new Set();
-    for(const item of (Array.isArray(geo)?geo:[])){
-     const a=item.address||{}, raw=a.postcode||"";
-     for(const pin of String(raw).split(/[;,\s]+/).map(x=>x.trim()).filter(x=>/^\d{6}$/.test(x))){
-      if(!seen.has(pin)){seen.add(pin);offices.push({Pincode:pin,Name:a.suburb||a.neighbourhood||a.city_district||city,District:a.state_district||a.county||a.city||city,State:a.state||""});}
-     }
-    }
-   } catch(e) { /* final response below explains manual fallback */ }
-  }
-  const map=new Map();
-  for(const p of offices){
-   if(!p.Pincode)continue;
-   const key=String(p.Pincode);
-   if(!map.has(key))map.set(key,{pincode:key,postOffice:p.Name||"",district:p.District||p.Block||"",state:p.State||""});
-  }
-  return res.json({pincodes:[...map.values()].slice(0,100)});
- }catch(e){
-  return res.status(503).json({pincodes:[],message:"City PIN lookup is temporarily unavailable. Please retry or enter the PIN manually."});
- }
-});
-
-app.post("/api/checkout/order", auth, async (req, res) => {
-  const items = req.body.items || [];
-  const shippingAddress = req.body.shippingAddress;
-  if (!items.length) return res.status(400).json({ message: "Your cart is empty." });
-  if (!shippingAddress?.name || !shippingAddress?.phone || !shippingAddress?.address || !shippingAddress?.pincode) {
-    return res.status(400).json({ message: "Complete your delivery details." });
-  }
-
-  const safeItems = [];
-  for (const i of items) {
-    const product = db.data.products.find(p => p.id === Number(i.id));
-    const qty = Number(i.qty);
-    if (!product) continue;
-    if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ message: `Invalid quantity for ${product.name}.` });
-    const stock = Number(product.stock || 0);
-    if (stock <= 0) return res.status(409).json({ message: `${product.name} is out of stock.` });
-    if (qty > stock) return res.status(409).json({ message: `${product.name} has only ${stock} item${stock === 1 ? "" : "s"} left.` });
-    safeItems.push({ productId: product.id, name: product.name, price: product.price, qty, size: i.size, image: product.image });
-  }
-
-  const amount = totals(safeItems);
-  if (!amount.total) return res.status(400).json({ message: "Invalid order amount." });
-  let appliedCoupon = null;
-  let discount = 0;
-  const couponCode = String(req.body?.couponCode || "").trim().toUpperCase();
-  if (couponCode) {
-    appliedCoupon = (db.data.coupons || []).find(c => String(c.code).toUpperCase() === couponCode);
-    const couponItems = safeItems.map(i => {
-      const product = db.data.products.find(p => p.id === i.productId);
-      return { ...i, category: product?.category || "" };
-    });
-    const couponError = getCouponError(appliedCoupon, amount.subtotal, couponItems, req.user.id);
-    if (couponError) return res.status(400).json({ message: couponError });
-    discount = couponDiscount(appliedCoupon, amount.subtotal, couponItems);
-    if (!discount) return res.status(400).json({ message: "This coupon does not apply to the current order." });
-  }
-  const orderTotal = Math.max(0, amount.total - discount);
-  if (orderTotal <= 0) return res.status(400).json({ message: "This coupon makes the order total zero. Please contact ENYTM for this promotion." });
-
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    return res.status(503).json({ message: "Razorpay is not configured. Add Razorpay test/live keys to .env." });
-  }
-
-  const advanceAmount = Math.ceil(orderTotal * 0.30);
-  const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-  const receipt = `ENYTM-${Date.now()}`;
-  const rpOrder = await razorpay.orders.create({
-    amount: Math.round(advanceAmount * 100),
-    currency: "INR",
-    receipt,
-    notes: { customerId: req.user.id, brand: "ENYTM APPARELS", paymentStage: "advance" }
-  });
-
-  const order = {
-    id: crypto.randomUUID(), receipt, userId: req.user.id, items: safeItems,
-    customer: { ...shippingAddress, email: db.data.users.find(u => u.id === req.user.id)?.email },
-    subtotal: amount.subtotal, shipping: amount.shipping, discount, couponCode: appliedCoupon?.code || null, couponId: appliedCoupon?.id || null,
-    total: orderTotal, advanceAmount, advancePaid: 0, balanceAmount: orderTotal - advanceAmount, balancePaid: 0,
-    paymentStage: "advance", paymentStatus: "created", paymentMethod: null, paymentId: null,
-    razorpayOrderId: rpOrder.id, razorpayOrderIds: { advance: rpOrder.id }, paymentIds: [],
-    status: "payment_pending", stockDeducted: false, createdAt: Date.now(), updatedAt: Date.now()
-  };
-  db.data.orders.push(order);
-  await db.write();
-  res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: advanceAmount * 100, currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, advanceAmount, balanceAmount: order.balanceAmount, total: order.total, discount: order.discount, couponCode: order.couponCode });
-});
-
-app.post("/api/checkout/verify", auth, async (req, res) => {
-  const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const order = db.data.orders.find(o => o.id === orderId && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  const stage = order.razorpayOrderIds?.balance === razorpay_order_id ? "balance" : "advance";
-  const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
-  const expectedOrderId = order.razorpayOrderIds?.[stage] || order.razorpayOrderId;
-  if (expected !== razorpay_signature || expectedOrderId !== razorpay_order_id) return res.status(400).json({ message: "Payment verification failed." });
-  if ((order.paymentIds || []).some(p => p.id === razorpay_payment_id)) return res.json({ ok: true, order });
-  const amountPaid = stage === "balance" ? Number(order.balanceAmount || 0) : Number(order.advanceAmount || order.total);
-  if (stage === "advance") {
-    order.advancePaid = amountPaid;
-    order.paymentStatus = "partially_paid";
-    order.status = "confirmed";
-    if (order.couponId && !order.couponUsageCounted) {
-      const coupon = (db.data.coupons || []).find(c => c.id === order.couponId);
-      if (coupon) {
-        coupon.usageCount = Number(coupon.usageCount || 0) + 1;
-        coupon.userUsage ||= {};
-        coupon.userUsage[req.user.id] = Number(coupon.userUsage[req.user.id] || 0) + 1;
-      }
-      order.couponUsageCounted = true;
-    }
-    if (!order.stockDeducted) {
-      for (const item of order.items || []) {
-        const product = db.data.products.find(p => p.id === item.productId);
-        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-      }
-      order.stockDeducted = true;
-      const cart = db.data.carts.find(c => c.userId === req.user.id);
-      if (cart) { cart.items = []; cart.updatedAt = Date.now(); }
-    }
-  } else {
-    order.balancePaid = amountPaid;
-    order.paymentStatus = "paid";
-    order.status = "confirmed";
-  }
-  order.paymentId = razorpay_payment_id;
-  order.paymentIds ||= [];
-  order.paymentIds.push({ id: razorpay_payment_id, stage, amount: amountPaid, capturedAt: Date.now() });
-  order.paymentMethod = "online";
-  order.updatedAt = Date.now();
-  await db.write();
-  if (stage === "advance") await notifyOrder(order, "placed");
-  res.json({ ok: true, order });
-});
-
-app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  if (order.status === "cancelled") return res.status(409).json({ message: "This order is cancelled." });
-  if (order.paymentStatus === "paid") return res.status(409).json({ message: "The balance is already paid." });
-  if (Number(order.advancePaid || 0) <= 0) return res.status(409).json({ message: "Pay the advance first." });
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return res.status(503).json({ message: "Razorpay is not configured." });
-  const balanceAmount = Number(order.total) - Number(order.advancePaid);
-  const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-  const rpOrder = await razorpay.orders.create({ amount: Math.round(balanceAmount * 100), currency: "INR", receipt: `${order.receipt}-BAL-${Date.now()}`, notes: { customerId: req.user.id, orderId: order.id, paymentStage: "balance", brand: "ENYTM APPARELS" } });
-  order.razorpayOrderIds ||= {};
-  order.razorpayOrderIds.balance = rpOrder.id;
-  order.balanceAmount = balanceAmount;
-  order.paymentStage = "balance";
-  order.updatedAt = Date.now();
-  await db.write();
-  res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: Math.round(balanceAmount * 100), currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, balanceAmount });
-});
-
-app.get("/api/orders/my", auth, (req, res) => res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a,b) => b.createdAt-a.createdAt)));
-// GET SINGLE CUSTOMER ORDER
-app.get("/api/orders/:id", auth, (req, res) => {
-  const order = db.data.orders.find(
-    o => String(o.id) === String(req.params.id) &&
-         String(o.userId) === String(req.user.id)
-  );
-
-  if (!order) {
-    return res.status(404).json({
-      message: "Order not found."
-    });
-  }
-
-  res.json(order);
-});
-// CUSTOMER ORDER DETAILS
-app.get("/api/orders/:id", auth, (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  res.json(order);
-});
-
-
-// Customer wallet. Credits are added only after Razorpay signature verification.
-app.get("/api/wallet", auth, (req,res)=>{
- const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
- if(!user)return res.status(404).json({message:"User not found."});
- res.json({balance:Number(user.walletBalance||0),transactions:Array.isArray(user.walletTransactions)?user.walletTransactions.slice().reverse():[]});
-});
-app.post("/api/wallet/topup/order", auth, async (req,res)=>{
- const amount=Number(req.body?.amount);
- if(!Number.isInteger(amount)||amount<100||amount>50000)return res.status(400).json({message:"Wallet top-up must be between ₹100 and ₹50,000."});
- if(!process.env.RAZORPAY_KEY_ID||!process.env.RAZORPAY_KEY_SECRET)return res.status(503).json({message:"Razorpay is not configured."});
- try{
-  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
-  const topupId=crypto.randomUUID();
-  const rp=await razorpay.orders.create({amount:amount*100,currency:"INR",receipt:`WALLET-${Date.now()}`,notes:{userId:req.user.id,topupId,brand:"ENYTM APPARELS"}});
-  db.data.walletTopups.push({id:topupId,userId:req.user.id,amount,razorpayOrderId:rp.id,status:"created",createdAt:Date.now()});
-  await db.write();
-  res.json({topupId,razorpayOrderId:rp.id,amount:amount*100,currency:"INR",keyId:process.env.RAZORPAY_KEY_ID});
- }catch(e){res.status(502).json({message:e.message||"Could not create wallet top-up."});}
-});
-app.post("/api/wallet/topup/verify", auth, async (req,res)=>{
- const {topupId,razorpay_payment_id,razorpay_order_id,razorpay_signature}=req.body||{};
- const topup=(db.data.walletTopups||[]).find(t=>t.id===topupId&&String(t.userId)===String(req.user.id));
- if(!topup)return res.status(404).json({message:"Wallet top-up not found."});
- if(topup.status==="paid")return res.json({ok:true,balance:Number(db.data.users.find(u=>u.id===req.user.id)?.walletBalance||0)});
- if(razorpay_order_id!==topup.razorpayOrderId||!razorpay_payment_id||!razorpay_signature)return res.status(400).json({message:"Payment verification details are incomplete."});
- const expected=crypto.createHmac("sha256",process.env.RAZORPAY_KEY_SECRET||"").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
- if(expected.length!==String(razorpay_signature).length||!crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(String(razorpay_signature))))return res.status(400).json({message:"Payment signature verification failed."});
- try{
-  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
-  const payment=await razorpay.payments.fetch(razorpay_payment_id);
-  if(payment.status!=="captured"||Number(payment.amount)!==Number(topup.amount)*100)return res.status(409).json({message:"Payment is not captured yet. Please refresh shortly."});
-  const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
-  if(!user)return res.status(404).json({message:"User not found."});
-  user.walletBalance=Number(user.walletBalance||0)+Number(topup.amount);
-  user.walletTransactions||=[];
-  user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:Number(topup.amount),description:"Wallet top-up",createdAt:Date.now(),paymentId:razorpay_payment_id});
-  topup.status="paid";topup.paymentId=razorpay_payment_id;topup.paidAt=Date.now();
-  await db.write();
-  res.json({ok:true,balance:user.walletBalance});
- }catch(e){res.status(502).json({message:"Could not verify payment with Razorpay. Please contact support if money was deducted."});}
-});
-
-// CUSTOMER ORDER CANCELLATION
-app.post("/api/orders/:id/cancel", auth, async (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  const blocked = ["shipped", "out_for_delivery", "delivered", "cancelled"];
-  if (blocked.includes(String(order.status))) {
-    return res.status(409).json({ message: "This order can no longer be cancelled." });
-  }
-
-  order.status = "cancelled";
-  order.cancelledAt = Date.now();
-  order.updatedAt = Date.now();
-
-  // Restore stock only once.
-  if (order.stockDeducted && !order.stockRestored) {
-    for (const item of (order.items || [])) {
-      const product = db.data.products.find(p => p.id === Number(item.productId));
-      if (product) product.stock = Number(product.stock || 0) + Number(item.qty || 0);
-    }
-    order.stockRestored = true;
-  }
-
-  // Customer chooses wallet credit or original payment refund. Wallet credits are atomic in db.
-  const refundTo = String(req.body?.refundTo || "original").toLowerCase();
-  const capturedPayments = (order.paymentIds || []).filter(p => p.id && Number(p.amount) > 0);
-  if (refundTo === "wallet" && capturedPayments.length) {
-    const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
-    const refundable=capturedPayments.reduce((sum,p)=>sum+Number(p.amount||0),0);
-    if(user && refundable>0){
-      user.walletBalance=Number(user.walletBalance||0)+refundable;
-      user.walletTransactions||=[];
-      user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:refundable,description:`Refund for ${order.receipt||order.id}`,createdAt:Date.now(),orderId:order.id});
-      order.refundStatus="wallet_credited";
-      order.refundDestination="wallet";
-      order.walletRefundAmount=refundable;
-    } else order.refundStatus="pending_manual_refund";
-  } else if (capturedPayments.length && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    order.refundDestination="original";
-    try {
-      const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-      const refundIds = [];
-      for (const payment of capturedPayments) {
-        const refund = await razorpay.payments.refund(payment.id, { amount: Math.round(Number(payment.amount) * 100) });
-        refundIds.push(refund.id);
-      }
-      order.refundStatus = "initiated";
-      order.refundIds = refundIds;
-    } catch (e) {
-      order.refundStatus = "pending_manual_refund";
-      order.refundError = e.message;
-    }
-  } else if (!capturedPayments.length) {
-    order.refundStatus = "not_required";
-  }
-
-  await db.write();
-  res.json(order);
-});
-
-// CUSTOMER SIZE CHANGE — available only before shipment.
-app.post("/api/orders/:id/change-size", auth, async (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  if (["shipped", "out_for_delivery", "delivered", "cancelled"].includes(String(order.status))) {
-    return res.status(409).json({ message: "Size can no longer be changed after shipment." });
-  }
-
-  const productId = Number(req.body?.productId);
-  const newSize = String(req.body?.size || "").trim().toUpperCase();
-  const item = (order.items || []).find(i => Number(i.productId) === productId);
-  if (!item) return res.status(404).json({ message: "Product not found in this order." });
-
-  const product = db.data.products.find(p => p.id === productId);
-  const availableSizes = Array.isArray(product?.sizes) && product.sizes.length
-    ? product.sizes.map(String).map(x => x.toUpperCase())
-    : ["S", "M", "L", "XL", "XXL"];
-  if (!availableSizes.includes(newSize)) {
-    return res.status(400).json({ message: `Size ${newSize} is not available for this product.` });
-  }
-
-  item.size = newSize;
-  order.updatedAt = Date.now();
-  await db.write();
-  res.json(order);
-});
-
-app.post("/api/admin/login", async (req, res) => {
-  const email = String(req.body?.email || "").trim().toLowerCase();
-  const password = String(req.body?.password ?? "");
-  const configuredEmail = String(process.env.ADMIN_EMAIL || "admin@enytm.co.in").trim().toLowerCase();
-  const configuredPassword = String(process.env.ADMIN_PASSWORD || "change-me");
-  if (!email || !password) return res.status(400).json({ message: "Enter both admin email and password." });
-  if (email !== configuredEmail || password !== configuredPassword) {
-    return res.status(401).json({ message: "Invalid admin credentials. Check ADMIN_EMAIL and ADMIN_PASSWORD in the project .env, then restart the server." });
-  }
-  const token = jwt.sign({ email: configuredEmail, role: "admin" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "12h" });
-  res.json({ token });
-});
-
-app.get("/api/admin/dashboard", adminAuth, (req, res) => {
-  const revenue = db.data.orders.filter(o => o.paymentStatus === "paid").reduce((s,o)=>s+o.total,0);
-  const customers = db.data.users.filter(u => u.role !== "admin").length;
-  res.json({
-    revenue, orders: db.data.orders.length, paidOrders: db.data.orders.filter(o=>o.paymentStatus==="paid").length,
-    customers, products: db.data.products.length,
-    pendingPayments: db.data.orders.filter(o=>o.paymentStatus!=="paid").length
-  });
-});
-app.get("/api/admin/orders", adminAuth, (req,res) => res.json(db.data.orders.sort((a,b)=>b.createdAt-a.createdAt)));
-app.get("/api/admin/customers", adminAuth, (req,res) => res.json(db.data.users.filter(u=>u.role!=="admin").map(publicUser).sort((a,b)=>b.createdAt-a.createdAt)));
-app.get("/api/admin/products", adminAuth, (req,res) => res.json(db.data.products));
-
-app.post("/api/admin/upload-image", adminAuth, (req, res) => {
-  uploadImageFile.single("image")(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({
-        message: err.message || "Image upload failed.",
-      });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({
-        message: "No image selected.",
-      });
-    }
-
-    res.json({
-      success: true,
-      url: `/uploads/${req.file.filename}`,
-      filename: req.file.filename,
-    });
-  });
-});
-app.post("/api/admin/upload-video", adminAuth, (req, res) => {
-  uploadVideoFile.single("video")(req, res, (err) => {
-    if (err) return res.status(400).json({ message: err.message || "Video upload failed." });
-    if (!req.file) return res.status(400).json({ message: "No video selected." });
-    res.json({ success: true, url: `/uploads/${req.file.filename}`, filename: req.file.filename });
-  });
-});
-app.post("/api/admin/products", adminAuth, async (req,res) => {
-  const p = { ...req.body, id: Date.now(), price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S","M","L","XL","XXL"] };
-  db.data.products.push(p); await db.write(); res.json(p);
-});
-app.put("/api/admin/products/:id", adminAuth, async (req,res) => {
-  const p = db.data.products.find(x=>x.id===Number(req.params.id)); if(!p) return res.status(404).json({message:"Product not found"});
-  Object.assign(p, req.body); await db.write(); res.json(p);
-});
-app.delete("/api/admin/products/:id", adminAuth, async (req,res) => {
-  db.data.products = db.data.products.filter(x=>x.id!==Number(req.params.id)); await db.write(); res.json({ok:true});
-});
-function couponDiscount(coupon, subtotal, items) {
-  const eligible = !coupon.productIds?.length && !coupon.categories?.length
-    ? subtotal
-    : items.filter(i => (!coupon.productIds?.length || coupon.productIds.includes(Number(i.productId))) &&
-        (!coupon.categories?.length || coupon.categories.includes(String(i.category || ""))))
-      .reduce((sum, i) => sum + Number(i.price || 0) * Number(i.qty || 0), 0);
-  if (eligible <= 0) return 0;
-  let discount = coupon.discountType === "fixed"
-    ? Number(coupon.discountValue || 0)
-    : eligible * Number(coupon.discountValue || 0) / 100;
-  if (coupon.discountType !== "fixed" && Number(coupon.maxDiscount || 0) > 0) discount = Math.min(discount, Number(coupon.maxDiscount));
-  return Math.max(0, Math.min(Math.round(discount), eligible));
-}
-function getCouponError(coupon, subtotal, items, userId) {
-  if (!coupon || coupon.active === false) return "This coupon is not active.";
-  const now = Date.now();
-  if (coupon.startsAt && now < new Date(coupon.startsAt).getTime()) return "This coupon is not available yet.";
-  if (coupon.expiresAt && now > new Date(coupon.expiresAt).getTime()) return "This coupon has expired.";
-  if (subtotal < Number(coupon.minOrderValue || 0)) return `Minimum order value for this coupon is ₹${Number(coupon.minOrderValue || 0).toLocaleString("en-IN")}.`;
-  if (Number(coupon.usageLimit || 0) > 0 && Number(coupon.usageCount || 0) >= Number(coupon.usageLimit)) return "This coupon has reached its usage limit.";
-  const userUses = Number(coupon.userUsage?.[userId] || 0);
-  if (Number(coupon.perCustomerLimit || 0) > 0 && userUses >= Number(coupon.perCustomerLimit)) return "You have reached the usage limit for this coupon.";
-  if (coupon.productIds?.length && !items.some(i => coupon.productIds.includes(Number(i.productId)))) return "This coupon does not apply to these products.";
-  if (coupon.categories?.length && !items.some(i => coupon.categories.includes(String(i.category || "")))) return "This coupon does not apply to these categories.";
-  return "";
-}
-app.post("/api/coupons/validate", auth, (req, res) => {
-  const code = String(req.body?.code || "").trim().toUpperCase();
-  const items = Array.isArray(req.body?.items) ? req.body.items : [];
-  const subtotal = items.reduce((sum, i) => sum + Number(i.price || 0) * Number(i.qty || 0), 0);
-  const coupon = db.data.coupons.find(c => String(c.code).toUpperCase() === code);
-  const error = getCouponError(coupon, subtotal, items.map(i => {
-    const product = db.data.products.find(p => p.id === Number(i.id || i.productId));
-    return { ...i, productId: Number(i.id || i.productId), category: product?.category || i.category };
-  }), req.user.id);
-  if (error) return res.status(400).json({ message: error });
-  const normalizedItems = items.map(i => {
-    const product = db.data.products.find(p => p.id === Number(i.id || i.productId));
-    return { ...i, productId: Number(i.id || i.productId), category: product?.category || i.category };
-  });
-  const discount = couponDiscount(coupon, subtotal, normalizedItems);
-  if (!discount) return res.status(400).json({ message: "This coupon does not apply to the current order." });
-  res.json({ code: coupon.code, discount, discountType: coupon.discountType, discountValue: coupon.discountValue, message: "Coupon applied successfully." });
-});
-app.get("/api/admin/coupons", adminAuth, (req, res) => res.json(db.data.coupons || []));
-app.post("/api/admin/coupons", adminAuth, async (req, res) => {
-  const code = String(req.body?.code || "").trim().toUpperCase().replace(/\s+/g, "");
-  const discountType = req.body?.discountType === "fixed" ? "fixed" : "percentage";
-  const discountValue = Number(req.body?.discountValue);
-  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return res.status(400).json({ message: "Coupon code must be 3–30 letters, numbers, hyphens or underscores." });
-  if ((db.data.coupons || []).some(c => String(c.code).toUpperCase() === code && c.id !== req.body.id)) return res.status(409).json({ message: "That coupon code already exists." });
-  if (!Number.isFinite(discountValue) || discountValue <= 0 || (discountType === "percentage" && discountValue > 100)) return res.status(400).json({ message: "Enter a valid discount value." });
-  const coupon = {
-    id: req.body.id || crypto.randomUUID(), code, title: String(req.body.title || "").trim(),
-    discountType, discountValue, maxDiscount: Number(req.body.maxDiscount || 0),
-    minOrderValue: Number(req.body.minOrderValue || 0), usageLimit: Number(req.body.usageLimit || 0),
-    perCustomerLimit: Number(req.body.perCustomerLimit || 1),
-    startsAt: req.body.startsAt || "", expiresAt: req.body.expiresAt || "",
-    categories: Array.isArray(req.body.categories) ? req.body.categories : [],
-    productIds: Array.isArray(req.body.productIds) ? req.body.productIds.map(Number) : [],
-    active: req.body.active !== false, usageCount: Number(req.body.usageCount || 0), userUsage: req.body.userUsage || {},
-    createdAt: req.body.createdAt || Date.now()
-  };
-  if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
-  const index = db.data.coupons.findIndex(c => c.id === coupon.id);
-  if (index >= 0) db.data.coupons[index] = { ...db.data.coupons[index], ...coupon };
-  else db.data.coupons.push(coupon);
-  await db.write(); res.json(coupon);
-});
-app.delete("/api/admin/coupons/:id", adminAuth, async (req, res) => {
-  db.data.coupons = (db.data.coupons || []).filter(c => c.id !== req.params.id);
-  await db.write(); res.json({ ok: true });
-});
-app.get("/api/admin/settings", adminAuth, (req,res)=>res.json(db.data.settings));
-app.put("/api/admin/settings", adminAuth, async (req,res)=>{ db.data.settings={...db.data.settings,...req.body}; await db.write(); res.json(db.data.settings); });
-app.get("/api/admin/integrations", adminAuth, (req,res)=>res.json({
-  email: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
-  whatsapp: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
-  whatsappTemplates: Boolean(process.env.WHATSAPP_ORDER_PLACED_TEMPLATE && process.env.WHATSAPP_ORDER_DELIVERED_TEMPLATE)
-}));
-
-app.put("/api/admin/orders/:id/status", adminAuth, async (req,res)=>{
-  const order = db.data.orders.find(o => String(o.id) === String(req.params.id));
-  if (!order) return res.status(404).json({message:"Order not found."});
-  const allowed = ["payment_pending","confirmed","processing","packed","shipped","out_for_delivery","delivered"];
-  const status = String(req.body?.status || order.status || "");
-  if (!allowed.includes(status)) return res.status(400).json({message:"Invalid order status."});
-  if (["shipped","out_for_delivery","delivered"].includes(status)) {
-    const balanceDue = Number(order.balanceAmount ?? (Number(order.total || 0) - Number(order.advancePaid || 0)));
-    const fullyPaid = order.paymentStatus === "paid" || (Number(order.advancePaid || 0) > 0 && Number(order.balancePaid || 0) >= balanceDue);
-    if (!fullyPaid) return res.status(400).json({message:"Collect the full order balance before dispatching this pre-order."});
-    const launchDate = new Date("2026-11-08T00:00:00+05:30").getTime();
-    if (Date.now() < launchDate) return res.status(400).json({message:"ENYTM pre-orders can only be dispatched from 8 November 2026."});
-  }
-  const previousStatus = order.status;
-  order.status = status;
-  if (req.body?.tracking && typeof req.body.tracking === "object") {
-    order.tracking = {
-      ...(order.tracking || {}),
-      courier: String(req.body.tracking.courier || "").trim(),
-      trackingNumber: String(req.body.tracking.trackingNumber || "").trim(),
-      trackingUrl: String(req.body.tracking.trackingUrl || "").trim(),
-    };
-  }
-  order.updatedAt = Date.now();
-  await db.write();
-  if (previousStatus !== status) {
-    try { await notifyOrderStatus(order); } catch (e) { console.error("[ENYTM STATUS NOTIFICATION]", e.message); }
-  }
-  if (status === "delivered" && previousStatus !== "delivered") await notifyOrder(order, "delivered");
-  res.json(order);
-});
-
-app.post("/api/admin/test-email", adminAuth, async (req,res)=>{
-  try { await sendEmail(req.body.to, "ENYTM Test Email", "<h2>ENYTM notification system is working.</h2>"); res.json({ok:true}); }
-  catch(e){ res.status(500).json({message:e.message}); }
-});
-app.post("/api/admin/test-whatsapp", adminAuth, async (req,res)=>{
-  try { await sendWhatsApp(req.body.phone, "ENYTM APPARELS: WhatsApp notification integration is connected."); res.json({ok:true}); }
-  catch(e){ res.status(500).json({message:e.message}); }
-});
-
-async function runReminderJob() {
-  if (String(process.env.ENABLE_REMINDER_JOB) !== "true") return;
-  const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-  for (const cart of db.data.carts) {
-    if (!cart.items?.length || cart.updatedAt > cutoff || cart.remindedAt > cart.updatedAt) continue;
-    const user = db.data.users.find(u=>u.id===cart.userId);
-    if (!user) continue;
-    const text = `Hey ${user.name}, your ENYTM APPARELS selection is still waiting for you. Complete your order at ${process.env.APP_URL || "https://enytm.co.in"}.`;
-    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM selection is waiting", `<p>${text}</p>`).catch(()=>{});
-    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(()=>{});
-    cart.remindedAt = Date.now();
-  }
-  for (const list of db.data.wishlists) {
-    if (!list.items?.length || list.updatedAt > cutoff || list.remindedAt > list.updatedAt) continue;
-    const user = db.data.users.find(u=>u.id===list.userId);
-    if (!user) continue;
-    const text = `You saved something from ENYTM APPARELS. Your wishlist is still waiting at ${process.env.APP_URL || "https://enytm.co.in"}.`;
-    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM wishlist is waiting", `<p>${text}</p>`).catch(()=>{});
-    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(()=>{});
-    list.remindedAt = Date.now();
-  }
-  await db.write();
-}
-cron.schedule("0 * * * *", runReminderJob);
-
-if (isProd) {
-  app.use(express.static(path.join(ROOT, "dist")));
-  app.get("*", (req,res)=>res.sendFile(path.join(ROOT,"dist","index.html")));
-} else {
-  const { createServer } = await import("vite");
-  const vite = await createServer({ server: { middlewareMode: true }, appType: "spa" });
-  app.use(vite.middlewares);
+.countdown-subtitle {
+  max-width: 520px;
+  margin: 25px auto 36px;
+  color: #c5c0b7;
+  line-height: 1.8;
 }
 
-app.listen(PORT, ()=>console.log(`ENYTM server running on http://localhost:${PORT}`));
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 18px);
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+.countdown-unit {
+  border: 1px solid rgba(200,182,154,.45);
+  padding: clamp(14px, 3vw, 30px) 5px;
+  background: rgba(255,255,255,.025);
+}
+
+.countdown-number {
+  font-size: clamp(30px, 6.5vw, 70px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+  margin-top: 12px;
+  color: #c8b69a;
+  font-size: 9px;
+  letter-spacing: .2em;
+}
+
+.countdown-launch-date {
+  margin-top: 27px;
+  color: #a9a39a;
+  font-size: 10px;
+  letter-spacing: .15em;
+}
+
+.countdown-footer {
+  border-top: 1px solid rgba(255,255,255,.12);
+  color: #9e988f;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+@media (max-width: 600px) {
+  .countdown-grid { gap: 6px; }
+  .countdown-label { font-size: 7px; letter-spacing: .08em; }
+  .countdown-footer { font-size: 8px; }
+}
+
+/* ENYTM pre-order payment breakdown */
+.preorder-payment-note{margin:18px 0;padding:18px;border:1px solid var(--line,#d8d8d8);background:rgba(127,127,127,.06);border-radius:12px}
+.preorder-payment-note>b{display:block;font-size:12px;letter-spacing:.12em;margin-bottom:8px}
+.preorder-payment-note>p{font-size:13px;line-height:1.6;margin:0 0 14px;color:var(--muted,#777)}
+.preorder-payment-note>div{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px}
+.preorder-payment-note>div strong{white-space:nowrap}
+
+
+/* ENYTM countdown page: pre-launch T-shirt offer */
+.countdown-preorder{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:74px 0 86px;border-top:1px solid rgba(200,182,154,.28);display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr);gap:48px;align-items:center}
+.countdown-offer-copy .countdown-overline{margin:0 0 18px}
+.countdown-offer-copy h2{font-size:clamp(30px,4.1vw,56px);line-height:.98;letter-spacing:-.045em;margin:0 0 22px;font-weight:900}
+.countdown-offer-copy h2 em{font-style:normal;color:#c8b69a}
+.countdown-offer-copy>p:not(.countdown-overline){color:#c9c6c1;line-height:1.8;max-width:490px;margin:0 0 22px}
+.countdown-offer-points{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
+.countdown-offer-points span{border:1px solid rgba(200,182,154,.48);padding:9px 11px;font-size:10px;letter-spacing:.12em;color:#e4d8c6}
+.countdown-preorder-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.countdown-product-card{display:block;min-width:0;border:1px solid rgba(200,182,154,.25);color:inherit;text-decoration:none;background:rgba(255,255,255,.025);transition:border-color .2s,transform .2s}
+.countdown-product-card:hover{border-color:#c8b69a;transform:translateY(-3px)}
+.countdown-product-image{aspect-ratio:4/5;overflow:hidden;background:#171615}
+.countdown-product-image img{width:100%;height:100%;display:block;object-fit:cover}
+.countdown-product-info{padding:15px}
+.countdown-product-info>span{display:block;color:#c8b69a;font-size:9px;letter-spacing:.14em;margin-bottom:8px}
+.countdown-product-info>strong{display:block;font-size:13px;line-height:1.4;margin-bottom:8px}
+.countdown-product-info>div{display:flex;gap:9px;align-items:center}
+.countdown-product-info>div b{font-size:15px}
+.countdown-product-info>div del{font-size:12px;color:#8e8982}
+.countdown-product-info small{display:block;color:#c8b69a;font-size:10px;margin-top:12px;letter-spacing:.04em}
+@media(max-width:760px){.countdown-preorder{width:calc(100% - 32px);padding:48px 0 56px;grid-template-columns:1fr;gap:28px}.countdown-preorder-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.countdown-product-info{padding:11px}.countdown-product-info>strong{font-size:12px}.countdown-product-info>div b{font-size:14px}.countdown-offer-points span{font-size:9px;padding:8px}}
+
+/* ENYTM homepage: brand story + expandable FAQ */
+/* ENYTM FAQ — dark editorial treatment with subtle warm metallic texture */
+.home-faq{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr);gap:clamp(36px,8vw,140px);padding:clamp(76px,10vw,144px) max(24px,calc((100vw - 1320px)/2));background:radial-gradient(ellipse at 12% 18%,rgba(200,182,154,.12),transparent 34%),radial-gradient(ellipse at 88% 82%,rgba(160,132,91,.10),transparent 38%),linear-gradient(135deg,#080808 0%,#151412 48%,#090909 100%);color:#f4f0e9}
+.home-faq:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.22;background:repeating-linear-gradient(125deg,transparent 0,transparent 88px,rgba(200,182,154,.07) 89px,transparent 90px,transparent 170px);mask-image:linear-gradient(90deg,#000,transparent 78%)}
+.home-faq-heading,.home-faq-list{position:relative;z-index:1}
+.home-faq-heading .eyebrow{font-size:10px;letter-spacing:.16em;margin:0 0 36px;color:#c8b69a;opacity:.9}
+.home-faq-heading h2{font-family:Georgia,'Times New Roman',serif;font-size:clamp(58px,7vw,100px);font-weight:500;line-height:.84;letter-spacing:-.065em;margin:0 0 28px}
+.home-faq-heading h2 em{color:#c8b69a;font-weight:500}
+.home-faq-heading>p:last-child{max-width:290px;color:#c7c0b6;line-height:1.8;font-size:14px}
+.home-faq-list{min-width:0;border-top:1px solid rgba(200,182,154,.38)}
+.home-faq-list details{border-bottom:1px solid rgba(200,182,154,.30);padding:0}
+.home-faq-list summary{display:flex;justify-content:space-between;align-items:center;gap:20px;list-style:none;cursor:pointer;padding:24px 0;font-size:clamp(15px,1.25vw,19px);font-weight:500;color:#f4f0e9}
+.home-faq-list summary::-webkit-details-marker{display:none}
+.home-faq-list summary span,.home-faq-list .faq-plus{flex:0 0 32px;width:32px;height:32px;border:1px solid rgba(200,182,154,.8);border-radius:50%;display:grid;place-items:center;color:#c8b69a;font-size:19px;font-weight:300;transition:transform .2s}
+.home-faq-list details[open] summary span,.home-faq-list details[open] summary .faq-plus{transform:rotate(45deg)}
+.home-faq-list details>p{margin:0;padding:0 48px 24px 0;color:#c9c3ba;line-height:1.8;font-size:14px;max-width:680px}
+.home-faq-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding-top:18px;color:#c8b69a;font-size:9px;letter-spacing:.16em}
+.home-faq-footer a{display:inline-flex;align-items:center;gap:16px;text-decoration:none;color:#f4f0e9;font-size:10px;font-weight:800;letter-spacing:.16em;border-bottom:1px solid currentColor;padding:13px 0;margin-top:0}
+@media(max-width:760px){.home-faq{grid-template-columns:1fr;gap:38px;padding:64px 22px}.home-faq-heading .eyebrow{margin-bottom:18px}.home-faq-heading h2{font-size:68px}.home-faq-list summary{padding:20px 0}.home-faq-list details>p{padding-right:8px}}
+
+
+/* ENYTM About page — dark editorial palette */
+.enytm-about-page{background:#080808;color:#f5f3ee}
+.enytm-about-page .about-hero{height:62vh;min-height:440px}
+.enytm-about-page .about-hero>div{left:8vw;bottom:9%}
+.enytm-about-page .about-hero h1{font-size:clamp(54px,8vw,112px);line-height:.82;letter-spacing:-.06em}
+.enytm-about-page .about-hero h1 em{color:#c8b69a}
+.about-quality-section{padding:105px 4vw 36px;background:radial-gradient(ellipse at 50% 0%,rgba(200,182,154,.08),transparent 55%),linear-gradient(145deg,#111 0%,#080808 60%,#101010 100%);border-top:1px solid #242424}
+.about-quality-heading{max-width:760px;margin:0 auto 42px;text-align:center}
+.about-quality-heading .eyebrow,.about-why .eyebrow{color:#c8b69a}
+.about-quality-heading h2,.about-why h2{font-size:clamp(44px,7vw,88px);line-height:.86;letter-spacing:-.055em;margin:0 0 22px}
+.about-quality-heading h2 em,.about-why h2 em{font-family:Georgia,serif;font-weight:400;color:#c8b69a}
+.about-quality-heading>p:last-child{color:#aaa;line-height:1.8;max-width:580px;margin:0 auto}
+.about-quality-triptych{display:block;width:100%;height:auto;max-height:620px;object-fit:cover;border:1px solid #29251f}
+.about-quality-caption{display:flex;justify-content:space-between;gap:16px;padding:16px 0 0;color:#c8b69a;font-size:9px;letter-spacing:.18em}
+.enytm-about-page .about-copy{max-width:none;margin:0;padding:110px 8vw 120px;background:radial-gradient(ellipse at 80% 15%,rgba(200,182,154,.07),transparent 40%),#0b0b0b;border-top:1px solid #242424}
+.enytm-about-page .about-copy .eyebrow{color:#c8b69a}
+.enytm-about-page .about-copy h2{max-width:1000px;font-size:clamp(48px,7vw,96px);line-height:.88;color:#f5f3ee}
+.enytm-about-page .about-copy h2 em{color:#c8b69a}
+.enytm-about-page .about-copy>p:not(.eyebrow){max-width:760px;color:#aaa;font-size:15px;line-height:1.9}
+.about-vision{display:grid;grid-template-columns:220px minmax(0,700px);gap:35px;align-items:start;border-top:1px solid #292929;margin-top:45px;padding-top:28px}
+.about-vision .eyebrow{margin:0}
+.about-vision>p:last-child{margin:0;color:#e2dfd8;font-size:clamp(20px,2.5vw,30px);line-height:1.45}
+.about-why{padding:100px 8vw 120px;background:linear-gradient(135deg,#111 0%,#080808 55%,#15120f 100%);border-top:1px solid #292929}
+.about-why h2{margin-bottom:48px}
+.about-why-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #34302a;border-bottom:1px solid #34302a;margin-bottom:36px}
+.about-why-grid>div{padding:28px 25px 30px 0;border-right:1px solid #34302a}
+.about-why-grid>div+div{padding-left:25px}
+.about-why-grid>div:last-child{border-right:0}
+.about-why-grid span{color:#c8b69a;font-size:10px;letter-spacing:.16em}
+.about-why-grid h3{font-size:13px;letter-spacing:.1em;margin:25px 0 12px}
+.about-why-grid p{color:#999;line-height:1.8;font-size:13px;max-width:290px;margin:0}
+.about-why .btn{margin-top:8px}
+@media(max-width:700px){.about-quality-section{padding:75px 18px 28px}.about-quality-heading{margin-bottom:28px}.about-quality-caption{font-size:7px;letter-spacing:.1em}.enytm-about-page .about-copy{padding:75px 22px 80px}.about-vision{grid-template-columns:1fr;gap:15px}.about-why{padding:75px 22px 85px}.about-why-grid{grid-template-columns:1fr}.about-why-grid>div,.about-why-grid>div+div{padding:22px 0;border-right:0;border-bottom:1px solid #34302a}.about-why-grid>div:last-child{border-bottom:0}.enytm-about-page .about-hero{height:55vh;min-height:380px}}
+
+
+/* ENYTM targeted pre-launch refresh: hero CTA, compact copy and category tiles */
+.prelaunch-explore{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  min-height:62px!important;padding:20px 28px!important;gap:34px!important;
+  border:1px solid rgba(200,182,154,.9)!important;
+  background:linear-gradient(115deg,#f5f2ed 0%,#e3d1b5 48%,#f5f2ed 100%)!important;
+  box-shadow:0 10px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.8)!important;
+  font-size:11px!important;letter-spacing:.2em!important;
+  transition:transform .25s ease,box-shadow .25s ease,filter .25s ease!important;
+}
+.prelaunch-explore:before{
+  content:"";position:absolute;inset:0;z-index:-1;transform:translateX(-110%);
+  background:linear-gradient(110deg,transparent,rgba(255,255,255,.75),transparent);
+  transition:transform .55s ease;
+}
+.prelaunch-explore:hover{transform:translateY(-3px)!important;box-shadow:0 16px 38px rgba(0,0,0,.38)!important;filter:brightness(1.04)}
+.prelaunch-explore:hover:before{transform:translateX(110%)}
+.countdown-shop{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:16px!important;
+  padding:16px 20px!important;min-height:52px!important;border:1px solid #c8b69a!important;
+  color:#080808!important;background:linear-gradient(115deg,#c8b69a,#f0e4d2 52%,#b59b78)!important;
+  text-decoration:none!important;font-size:10px!important;font-weight:800!important;letter-spacing:.13em!important;
+  box-shadow:0 8px 24px rgba(200,182,154,.12)!important;
+  transition:transform .22s ease,box-shadow .22s ease,filter .22s ease!important;
+}
+.countdown-shop:hover{transform:translateY(-3px)!important;box-shadow:0 14px 30px rgba(200,182,154,.2)!important;filter:brightness(1.06)}
+.countdown-preorder{grid-template-columns:minmax(230px,.72fr) minmax(0,1.28fr)!important;gap:clamp(24px,4vw,58px)!important}
+.countdown-offer-copy h2{font-size:clamp(28px,3.5vw,48px)!important;line-height:.98!important;margin-bottom:16px!important}
+.countdown-offer-copy>p:not(.countdown-overline){font-size:14px!important;line-height:1.65!important;margin-bottom:18px!important}
+.countdown-offer-points{gap:7px!important;margin-bottom:20px!important}
+.countdown-offer-points span{font-size:9px!important;letter-spacing:.1em!important;padding:8px 9px!important}
+.countdown-preorder-cta{width:100%;max-width:360px;justify-content:space-between!important;padding:16px 18px!important}
+.countdown-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.countdown-category-card{display:block;min-width:0;overflow:hidden;color:#f5f2ed;text-decoration:none;border:1px solid rgba(200,182,154,.28);background:linear-gradient(145deg,#151412,#080808);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.countdown-category-card:hover{transform:translateY(-4px);border-color:#c8b69a;box-shadow:0 14px 34px rgba(0,0,0,.3)}
+.countdown-category-image{position:relative;aspect-ratio:1/1;overflow:hidden;background:#171615}
+.countdown-category-image:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.5))}
+.countdown-category-image img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .5s ease,filter .3s ease;filter:saturate(.8)}
+.countdown-category-card:hover .countdown-category-image img{transform:scale(1.045);filter:saturate(1)}
+.countdown-category-number,.countdown-category-arrow{position:absolute;z-index:1;top:12px;color:#f5f2ed}
+.countdown-category-number{left:12px;font-size:10px;letter-spacing:.15em}
+.countdown-category-arrow{right:12px;width:28px;height:28px;display:grid;place-items:center;border:1px solid rgba(245,242,237,.65);border-radius:50%;font-size:16px}
+.countdown-category-info{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 12px 14px}
+.countdown-category-info>div{display:grid;gap:5px;min-width:0}
+.countdown-category-info strong{font-size:clamp(10px,1.1vw,13px);letter-spacing:.08em;line-height:1.25}
+.countdown-category-info>div span{font-size:11px;color:#b9b1a5}
+.countdown-category-link{flex-shrink:0;font-size:8px;letter-spacing:.12em;color:#d6c2a5;border-bottom:1px solid rgba(200,182,154,.55);padding-bottom:3px}
+@media(max-width:760px){
+  .prelaunch-explore{min-height:58px!important;padding:18px 20px!important;gap:18px!important;letter-spacing:.14em!important;font-size:10px!important}
+  .countdown-preorder{grid-template-columns:1fr!important;gap:24px!important;padding:44px 0 54px!important}
+  .countdown-offer-copy h2{font-size:clamp(27px,7.2vw,38px)!important}
+  .countdown-preorder-cta{max-width:none}
+  .countdown-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .countdown-category-info{padding:10px 8px 11px;align-items:flex-start}
+  .countdown-category-info strong{font-size:10px}
+  .countdown-category-info>div span{font-size:10px}
+  .countdown-category-link{font-size:7px;margin-top:2px}
+  .countdown-category-number{top:9px;left:9px}
+  .countdown-category-arrow{top:8px;right:8px;width:25px;height:25px}
+}
+
+
+/* ENYTM SHOP V2 — premium editorial shop layout */
+.shop-page-v2{background:#080808!important;color:#f5f2ed!important;padding:0 0 100px!important;min-height:65vh}
+.shop-intro-v2{position:relative;overflow:hidden;padding:clamp(78px,10vw,145px) max(24px,7.5vw) 30px;background:radial-gradient(ellipse at 78% 8%,rgba(174,147,111,.13),transparent 38%),linear-gradient(145deg,#111 0%,#080808 55%,#17130f 100%);border-bottom:1px solid #302b24}
+.shop-intro-v2:before{content:"ENYTM";position:absolute;right:-.04em;bottom:-.24em;font-size:clamp(130px,25vw,360px);font-weight:900;letter-spacing:-.09em;color:rgba(255,255,255,.025);pointer-events:none}
+.shop-intro-kicker{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#d7c3a5;font-size:9px;letter-spacing:.2em;font-weight:700;margin-bottom:70px}
+.shop-intro-kicker span:last-child{color:#777;margin-left:auto}
+.shop-live-dot{width:7px;height:7px;border-radius:50%;background:#d7c3a5;box-shadow:0 0 14px rgba(215,195,165,.55)}
+.shop-intro-v2 .eyebrow{color:#b8a58b;font-size:10px;letter-spacing:.24em;margin:0 0 16px}
+.shop-intro-v2 h1{position:relative;margin:0;font-size:clamp(48px,9vw,124px);line-height:.86;letter-spacing:-.075em;font-weight:900;text-transform:uppercase;max-width:1000px}
+.shop-intro-copy{position:relative;max-width:520px;margin:27px 0 70px;color:#b4b0aa;font-size:clamp(15px,1.5vw,19px);line-height:1.65}
+.shop-intro-bottom{position:relative;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid #302b24;padding-top:18px;color:#8f887e;font-size:9px;letter-spacing:.17em}
+.shop-toolbar-v2{padding:28px max(24px,7.5vw) 24px;background:#0b0b0b;border-bottom:1px solid #282522}
+.shop-filter-head{display:flex;justify-content:space-between;gap:15px;color:#9e927f;font-size:9px;letter-spacing:.18em;margin-bottom:15px}
+.shop-filter-head span:last-child{color:#65615c}
+.shop-chips-v2{display:flex;gap:9px;flex-wrap:wrap}
+.shop-chip-v2{display:inline-flex;align-items:center;justify-content:space-between;gap:20px;padding:13px 15px;min-height:44px;border:1px solid #34302a;color:#bdb7ad;text-decoration:none;font-size:9px;letter-spacing:.13em;font-weight:700;transition:background .25s,border-color .25s,color .25s,transform .25s}
+.shop-chip-v2 svg{color:#a89579;transition:transform .25s}
+.shop-chip-v2:hover,.shop-chip-v2.active{background:linear-gradient(120deg,#e1d2bb,#bca688);border-color:#d5c2a5;color:#090909;transform:translateY(-2px)}
+.shop-chip-v2:hover svg,.shop-chip-v2.active svg{color:#090909;transform:translateX(2px)}
+.shop-sort-v2{display:flex;align-items:center;gap:14px;margin-top:25px;color:#8f887e;font-size:9px;letter-spacing:.16em}
+.shop-sort-v2 select{appearance:none;background:#0b0b0b;border:0;color:#eee;font:inherit;letter-spacing:.05em;padding:8px 4px;outline-offset:4px;cursor:pointer}
+.shop-sort-v2 svg{margin-left:-18px;pointer-events:none}
+.shop-results-v2{padding:45px max(24px,7.5vw) 20px}
+.shop-results-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #292621;padding-bottom:17px;margin-bottom:24px}
+.shop-results-heading .eyebrow{margin:0;color:#a99578;font-size:9px;letter-spacing:.18em}
+.shop-results-heading>span{font-size:9px;letter-spacing:.12em;color:#777}
+.shop-grid-v2{gap:20px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.shop-grid-v2 .product-card{background:linear-gradient(180deg,#111 0%,#090909 100%);border:1px solid #282522;transition:transform .3s,border-color .3s,box-shadow .3s}
+.shop-grid-v2 .product-card:hover{transform:translateY(-5px);border-color:#8d795d;box-shadow:0 18px 42px rgba(0,0,0,.25)}
+.shop-grid-v2 .product-image{background:#151515;overflow:hidden}
+.shop-grid-v2 .product-image img{transition:transform .6s}
+.shop-grid-v2 .product-card:hover .product-image img{transform:scale(1.035)}
+.shop-empty-v2{padding:70px 25px;text-align:center;border:1px solid #302b24;background:radial-gradient(ellipse at center,rgba(174,147,111,.1),transparent 65%)}
+.shop-empty-v2>span{font-size:9px;letter-spacing:.2em;color:#c3ac8d}
+.shop-empty-v2 h2{font-size:clamp(36px,6vw,66px);line-height:.95;letter-spacing:-.05em;margin:20px 0}
+.shop-empty-v2 h2 em{font-family:Georgia,serif;font-weight:400;color:#c8b69a}
+.shop-empty-v2 p{max-width:410px;margin:0 auto 25px;color:#aaa;line-height:1.7;font-size:14px}
+.shop-empty-link{display:inline-flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(120deg,#e1d2bb,#bca688);color:#080808;text-decoration:none;font-size:10px;font-weight:800;letter-spacing:.13em}
+@media(max-width:850px){.shop-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))!important}.shop-intro-kicker{margin-bottom:48px}.shop-intro-copy{margin-bottom:48px}}
+@media(max-width:520px){.shop-intro-v2{padding:78px 20px 24px}.shop-intro-kicker{font-size:8px;gap:8px;margin-bottom:42px}.shop-intro-kicker span:last-child{width:100%;margin-left:15px}.shop-intro-v2 h1{font-size:clamp(43px,12vw,64px)}.shop-intro-copy{font-size:14px;margin:20px 0 38px;max-width:320px}.shop-toolbar-v2{padding:23px 20px}.shop-filter-head{font-size:8px}.shop-chip-v2{flex:1 1 calc(50% - 6px);padding:12px 10px;gap:8px;font-size:8px}.shop-sort-v2{margin-top:20px}.shop-results-v2{padding:32px 15px 15px}.shop-grid-v2{gap:10px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.shop-results-heading{margin-bottom:16px}.shop-results-heading .eyebrow{font-size:8px}.shop-empty-v2{padding:50px 16px}}
+
+
+/* ENYTM SHOP SORT — refined, high-contrast control */
+.shop-sort-v2{position:relative;display:flex;align-items:center;gap:13px;width:max-content;max-width:100%;margin-top:25px;padding:9px 13px 9px 15px;border:1px solid #40382d;background:linear-gradient(135deg,#15130f 0%,#0a0a0a 100%);color:#b8a58b;font-size:9px;letter-spacing:.17em;transition:border-color .2s,box-shadow .2s,background .2s}
+.shop-sort-v2:focus-within{border-color:#c6ad88;box-shadow:0 0 0 3px rgba(198,173,136,.1)}
+.shop-sort-v2>span{white-space:nowrap;color:#9b8a72;font-weight:800}
+.shop-sort-v2 select{appearance:none;-webkit-appearance:none;min-width:165px;max-width:calc(100vw - 150px);padding:9px 31px 9px 12px;border:1px solid #302a22;border-radius:0;background:#171511;color:#f5f2ed;font-family:inherit;font-size:11px;font-weight:650;letter-spacing:.04em;outline:none;cursor:pointer;transition:border-color .2s,background .2s}
+.shop-sort-v2 select:hover{border-color:#8d795d;background:#201c16}
+.shop-sort-v2 select option{background:#111;color:#f5f2ed}
+.shop-sort-v2>svg{flex-shrink:0;margin-left:-39px;color:#d7c3a5;pointer-events:none}
+@media(max-width:520px){.shop-sort-v2{width:100%;justify-content:space-between;gap:9px;padding:9px 10px;margin-top:18px}.shop-sort-v2 select{flex:1;min-width:0;max-width:none;font-size:11px;padding:10px 31px 10px 10px}.shop-sort-v2>svg{margin-left:-38px}.shop-sort-v2>span{font-size:8px;letter-spacing:.13em}}
+
+
+/* ENYTM product price clarity + recommendations */
+.product-card-pricing{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;white-space:nowrap}
+.product-card-pricing strong{font-size:12px;color:#f5f2ed}
+.product-card-pricing del{font-size:10px;color:#777}
+.product-card-pricing span,.discount-pill{display:inline-flex;align-items:center;background:#d7c3a5;color:#090909;padding:4px 6px;font-size:8px;font-weight:900;letter-spacing:.06em}
+.price-row .discount-pill{font-size:9px;padding:6px 8px}
+.related-products{border-top:1px solid #292929;padding-top:70px!important;margin-top:30px}
+.related-products .section-head{align-items:end}
+.related-products .section-head h2{font-size:clamp(28px,4vw,48px);letter-spacing:-.05em;margin:0}
+.related-products-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.related-products-grid .product-image{height:clamp(220px,30vw,390px)}
+@media(max-width:900px){.related-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.product-card-pricing{justify-content:flex-start;margin-top:8px}.related-products{padding:55px 15px 75px!important}.related-products .section-head{gap:15px}.related-products .section-head h2{font-size:27px}.related-products-grid{gap:10px}.related-products-grid .product-image{height:62vw}}
+
+
+/* ENYTM ADMIN ORDER DETAILS — additive styles; existing storefront styles retained */
+.admin-orders-table .admin-order-link{padding:0;border:0;background:none;color:#f5f5f2;text-align:left;text-decoration:underline;text-decoration-color:#555;text-underline-offset:4px;font-size:10px;font-weight:800;cursor:pointer}
+.admin-orders-table .admin-order-link:hover{color:#bcbcbc;text-decoration-color:#fff}
+.admin-order-detail{display:grid;gap:18px;max-width:1400px}
+.admin-order-detail-head{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:8px}
+.admin-order-detail-head h2{font-size:clamp(24px,3vw,38px);margin:0;overflow-wrap:anywhere}
+.admin-order-detail-head .eyebrow{margin-bottom:8px}
+.admin-order-muted{color:#888;font-size:11px;line-height:1.6}
+.admin-order-badges{display:flex;gap:10px;flex-wrap:wrap}
+.admin-order-badges span{border:1px solid #393939;background:#111;padding:10px 12px;color:#ddd;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.admin-order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.admin-order-card{min-width:0;background:#101010;border:1px solid #292929;padding:24px}
+.admin-order-card>.eyebrow{margin-bottom:16px}
+.admin-order-card h3{font-size:19px;margin:0 0 18px}
+.admin-order-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+.order-detail-field{min-width:0;padding:12px 0;border-bottom:1px solid #242424;display:flex;flex-direction:column;gap:7px}
+.order-detail-field span{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em}
+.order-detail-field strong{font-size:11px;color:#eee;font-weight:500;overflow-wrap:anywhere;white-space:pre-wrap}
+.admin-order-items{padding-bottom:12px}
+.admin-order-item-list{display:grid}
+.admin-order-item{display:grid;grid-template-columns:84px minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px 0;border-top:1px solid #292929}
+.admin-order-item-image{width:84px;height:105px;background:#191919;border:1px solid #333;display:grid;place-items:center;overflow:hidden;color:#777;font-size:9px;letter-spacing:.1em}
+.admin-order-item-image img{width:100%;height:100%;object-fit:cover}
+.admin-order-item-name{min-width:0;display:grid;gap:7px}
+.admin-order-item-name strong{font-size:13px;overflow-wrap:anywhere}
+.admin-order-item-name span,.admin-order-item-name small,.admin-order-item-price span{font-size:10px;color:#888}
+.admin-order-item-price{display:grid;gap:7px;text-align:right;white-space:nowrap}
+.admin-order-item-price strong{font-size:13px}
+.admin-order-totals{margin-left:auto;width:min(100%,420px);padding-top:10px}
+.admin-order-totals .order-detail-field{flex-direction:row;justify-content:space-between;align-items:center;gap:18px}
+.admin-order-totals .order-detail-field:last-child{border-bottom:0;border-top:1px solid #555;padding-top:17px}
+.admin-order-totals .order-detail-field:last-child strong{font-size:17px;font-weight:800}
+.admin-order-note{font-size:10px;color:#777;line-height:1.6}
+@media(max-width:800px){.admin-order-detail-grid{grid-template-columns:1fr}.admin-order-card{padding:18px}.admin-order-detail-head{align-items:flex-start}.admin-order-item{grid-template-columns:64px minmax(0,1fr);gap:12px}.admin-order-item-image{width:64px;height:82px}.admin-order-item-price{grid-column:2;text-align:left;display:flex;justify-content:space-between}.admin-order-fields{grid-template-columns:1fr}}
+@media print{.admin-side,.admin-top,.admin-order-detail-head>.btn,.admin-order-note{display:none!important}.admin-page{display:block}.admin-content{padding:0}.admin-order-card{break-inside:avoid;background:#fff;color:#111;border:1px solid #ccc}.admin-order-card *{color:#111!important}.admin-order-item-image{border:1px solid #ccc}}
+
+
+/* Targeted ENYTM admin product form repair */
+.admin-page .admin-content .admin-products .admin-product-editor {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  padding: 32px !important;
+}
+.admin-page .admin-content .admin-products .admin-product-form {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: start !important;
+  gap: 18px 22px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+.admin-page .admin-content .admin-products .admin-product-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  white-space: normal !important;
+}
+.admin-page .admin-content .admin-products .admin-product-field > span {
+  display: block !important;
+  width: 100% !important;
+  line-height: 1.4 !important;
+}
+.admin-page .admin-content .admin-products .admin-product-field input,
+.admin-page .admin-content .admin-products .admin-product-field select,
+.admin-page .admin-content .admin-products .admin-product-field textarea {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 46px !important;
+  padding: 0 13px !important;
+  background: #080808 !important;
+  color: #f5f5f2 !important;
+  border: 1px solid #303030 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 12px !important;
+}
+.admin-page .admin-content .admin-products .admin-product-field textarea {
+  height: auto !important;
+  min-height: 110px !important;
+  padding: 13px !important;
+}
+.admin-page .admin-content .admin-products .admin-product-wide {
+  grid-column: 1 / -1 !important;
+}
+.admin-page .admin-content .admin-products .admin-editor-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+}
+@media (max-width: 700px) {
+  .admin-page .admin-content .admin-products .admin-product-editor { padding: 18px !important; }
+  .admin-page .admin-content .admin-products .admin-product-form { grid-template-columns: minmax(0, 1fr) !important; }
+  .admin-page .admin-content .admin-products .admin-product-wide { grid-column: auto !important; }
+}
+
+
+/* Admin media uploads and coupon configuration */
+.admin-media-upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:8px}
+.admin-media-upload{min-width:0;border:1px solid #303030;background:#0c0c0c;padding:12px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:13px;align-items:center}
+.admin-media-preview{width:92px;height:112px;background:#151515;border:1px solid #292929;overflow:hidden;display:grid;place-items:center}
+.admin-media-preview img,.admin-media-preview video{width:100%;height:100%;object-fit:cover}
+.admin-media-empty{display:flex;flex-direction:column;align-items:center;gap:8px;color:#777;font-size:9px;letter-spacing:.12em}
+.admin-media-meta{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
+.admin-media-meta strong{font-size:10px;letter-spacing:.1em}
+.admin-media-meta small{font-size:10px;color:#888;line-height:1.5}
+.admin-upload-button{display:inline-flex;align-items:center;justify-content:center;background:#f5f5f2;color:#080808;padding:9px 11px;font-size:9px;font-weight:800;letter-spacing:.1em;cursor:pointer;max-width:100%}
+.admin-upload-button input{display:none}
+.admin-media-remove{border:0;background:transparent;color:#b8a38a;text-decoration:underline;font-size:9px;padding:0}
+.admin-media-error{color:#ff9d9d!important}
+.admin-coupon-checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.admin-coupon-checks label,.admin-coupon-active{display:flex;align-items:center;gap:8px;font-size:11px;color:#cfcfca}
+.admin-coupon-checks input,.admin-coupon-active input{accent-color:#fff}
+.admin-coupon-active{margin-top:15px}
+.checkout-coupon-row{display:flex;gap:10px;margin:14px 0 8px}
+.checkout-coupon-row input{flex:1;min-width:0;background:#0a0a0a;border:1px solid #333;color:#fff;padding:14px;text-transform:uppercase}
+.coupon-success{color:#b7d9a9;font-size:11px;margin:8px 0 20px}
+.coupon-summary-line{color:#b7d9a9!important}
+@media(max-width:700px){.admin-media-upload-grid{grid-template-columns:1fr}.admin-media-upload{grid-template-columns:80px minmax(0,1fr)}.admin-media-preview{width:80px;height:100px}.checkout-coupon-row{flex-wrap:wrap}.checkout-coupon-row input{flex-basis:100%}}
+
+
+/* ENYTM accessibility hotfix: keep button labels readable on every screen. */
+:root { --btn-bg:#c8b69a; --btn-fg:#080808; --btn-border:#c8b69a; }
+button, .btn, input[type="button"], input[type="submit"], input[type="reset"] { color:var(--text); }
+.btn.primary, .btn.light, .btn.full.primary, button.btn.primary,
+.order-actions-panel .btn.primary, .order-modal .btn.primary,
+.checkout-form button[type="submit"], .auth-card button[type="submit"],
+button.quick-add, .available-offer button, .coupon-apply,
+.admin-content button:not(.icon-btn):not(.admin-side button),
+.address-mini-btn {
+  background:var(--btn-bg) !important;
+  color:var(--btn-fg) !important;
+  border-color:var(--btn-border) !important;
+  text-shadow:none !important;
+  opacity:1 !important;
+}
+.btn.primary:disabled, button:disabled {
+  color:#333 !important; opacity:.65 !important;
+}
+.btn.outline, .btn:not(.primary):not(.light), .order-action-link, .text-link {
+  color:#f5f2ed;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline:2px solid #c8b69a !important; outline-offset:3px;
+}
+/* Checkout inputs must remain dark and legible, never browser-default pale blue. */
+.checkout-form input, .checkout-form select, .checkout-form textarea,
+.address-city-row input, .pincode-control input, .address-select {
+  background:#0b0b0b !important; color:#f5f2ed !important;
+  border:1px solid #454545 !important; color-scheme:dark;
+}
+.checkout-form input::placeholder, .pincode-control input::placeholder {color:#999 !important;}
+@media(max-width:700px) {
+  .checkout-layout,.cart-layout,.account-grid,.product-page,.order-detail-grid {grid-template-columns:minmax(0,1fr) !important;}
+  .checkout-layout,.cart-layout {padding-left:16px !important;padding-right:16px !important;gap:24px !important;}
+  .checkout-form,.checkout-page,.order-detail-page,.admin-content {min-width:0;max-width:100%;overflow-wrap:anywhere;}
+  .form-grid {grid-template-columns:minmax(0,1fr) !important;}
+  .form-grid .wide {grid-column:auto !important;}
+  .address-city-row {grid-template-columns:minmax(0,1fr) auto !important;}
+  .summary {position:static !important;}
+  .order-detail-top h1 {font-size:clamp(24px,7vw,42px) !important;overflow-wrap:anywhere;}
+  .admin-content {padding:18px !important;}
+}
+
+/* Final contrast guard for legacy white buttons whose text was also white. */
+.admin-page button, .admin-page .btn, .order-detail-page button, .order-detail-page .btn,
+.checkout-page button, .checkout-page .btn, .auth-page button, .auth-page .btn,
+.order-modal button, .order-modal .btn, .order-actions-panel button {
+  text-shadow:none !important;
+}
+.admin-page .btn.primary, .order-detail-page .btn.primary, .checkout-page .btn.primary,
+.auth-page .btn.primary, .order-modal .btn.primary, .order-actions-panel .btn.primary {
+  background:#c8b69a !important; color:#080808 !important; border-color:#c8b69a !important;
+}
+.admin-page button:not(.active):not(.icon-btn):not(.admin-order-link):not(.order-action-link),
+.checkout-page button:not(.icon-btn), .order-detail-page button:not(.icon-btn) {
+  text-shadow:none;
+}
+
+
+/* ENYTM targeted refinements: address form, wallet icon and profile editor */
+.saved-addresses-card{padding:clamp(22px,3vw,42px)!important;margin:0 7vw 70px!important;overflow:visible!important}
+.saved-addresses-card>.orders-title{align-items:center!important;gap:24px!important;margin-bottom:28px!important}
+.saved-addresses-card .orders-title h2{font-size:clamp(23px,2.4vw,32px)!important;letter-spacing:.08em!important}
+.saved-addresses-card .orders-title .muted{margin-top:10px!important;max-width:460px!important}
+.premium-address-form{margin-top:24px!important;padding:clamp(18px,3vw,34px)!important;background:linear-gradient(145deg,#151515,#0b0b0b)!important;border:1px solid #39342d!important;display:block!important}
+.address-form-intro{margin-bottom:25px!important;padding-bottom:20px!important;border-bottom:1px solid #302d28!important}
+.address-form-step{font-size:9px!important;letter-spacing:.2em!important;color:#c8b69a!important}
+.address-form-intro h3{font-size:clamp(19px,2vw,27px)!important;letter-spacing:.04em!important;margin:12px 0 8px!important;color:#f5f2ed!important}
+.address-form-intro p{font-size:12px!important;line-height:1.7!important;color:#999!important;max-width:650px!important;margin:0!important}
+.premium-address-form .address-fields-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+.premium-address-form .address-fields-grid>*{min-width:0!important}
+.premium-address-form input,.premium-address-form select,.premium-address-form textarea{width:100%!important;min-height:49px!important;background:#090909!important;border:1px solid #3b3b3b!important;color:#f5f5f5!important;padding:13px 15px!important;border-radius:0!important;outline:none!important}
+.premium-address-form input:focus,.premium-address-form select:focus,.premium-address-form textarea:focus{border-color:#c8b69a!important;box-shadow:0 0 0 1px rgba(200,182,154,.18)!important}
+.premium-address-form input::placeholder,.premium-address-form textarea::placeholder{color:#777!important}
+.premium-address-form .check{margin:20px 0!important;align-items:center!important;font-size:11px!important;color:#b9b9b9!important}
+.premium-address-form .check input{width:16px!important;min-height:16px!important;accent-color:#c8b69a!important;padding:0!important}
+.premium-address-form .account-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin-top:20px!important}
+.premium-address-form .account-actions .btn{min-height:54px!important}
+.saved-address-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;margin-top:24px!important}
+.saved-address{padding:22px!important;background:#0b0b0b!important;border:1px solid #303030!important}
+.saved-address.is-default{border-color:#c8b69a!important}
+.saved-address-top{gap:12px!important;align-items:center!important}
+.profile-edit-trigger{margin-top:14px!important;min-height:40px!important;padding:10px 13px!important;flex:none!important}
+.profile-edit-form{display:grid!important;gap:13px!important;margin:18px 0 12px!important;padding:18px!important;background:#090909!important;border:1px solid #303030!important}
+.profile-edit-form>label:not(.check){display:grid!important;gap:7px!important;color:#c8b69a!important;font-size:9px!important;letter-spacing:.13em!important}
+.profile-edit-form input:not([type=checkbox]){width:100%!important;min-height:44px!important;padding:12px!important;background:#111!important;color:#fff!important;border:1px solid #383838!important}
+.profile-edit-form .check{display:flex!important;align-items:center!important;gap:9px!important;color:#aaa!important;font-size:10px!important}
+.profile-edit-form .check input{accent-color:#c8b69a!important}
+.profile-feedback{padding:10px 12px!important;border:1px solid #4b463d!important;color:#d8c7aa!important;background:#15130f!important}
+.wallet-nav-link{width:42px!important;height:42px!important;margin:0 2px!important;border:1px solid #36312a!important;border-radius:50%!important;background:radial-gradient(circle at 35% 25%,#26221b,#090909 72%)!important;color:#d5c2a2!important;display:grid!important;place-items:center!important;transition:transform .2s,border-color .2s!important}
+.wallet-nav-link:hover{transform:translateY(-2px)!important;border-color:#c8b69a!important}
+.wallet-nav-symbol{display:grid!important;place-items:center!important;width:27px!important;height:27px!important;border:1px solid #c8b69a!important;border-radius:50%!important;font-size:19px!important;line-height:1!important;font-weight:800!important;color:#e4d3b6!important}
+.wallet-card{max-width:1180px!important;margin:0 auto 60px!important;padding:clamp(24px,4vw,48px)!important}
+.wallet-card>.eyebrow{margin-bottom:12px!important}
+.wallet-card>h2:first-of-type{font-size:clamp(48px,7vw,76px)!important;line-height:1!important;letter-spacing:-.05em!important}
+.wallet-topup{display:grid!important;grid-template-columns:minmax(180px,1fr) minmax(120px,220px) auto!important;align-items:center!important;gap:14px!important;margin:25px 0 38px!important;padding:20px!important;background:#0a0a0a!important;border:1px solid #303030!important}
+.wallet-topup label{font-size:10px!important;letter-spacing:.1em!important;color:#c7c0b4!important;line-height:1.6!important}
+.wallet-topup input{width:100%!important;min-height:49px!important;background:#111!important;color:#fff!important;border:1px solid #454545!important;padding:12px 14px!important}
+.wallet-topup .btn{min-height:49px!important;white-space:nowrap!important}
+.wallet-transaction{display:flex!important;justify-content:space-between!important;gap:15px!important;padding:17px 0!important;border-top:1px solid #292929!important}
+.wallet-transaction small{display:block!important;margin-top:6px!important;color:#777!important;font-size:10px!important}
+.order-change-size-button{display:inline-flex!important;align-items:center!important;gap:7px!important;padding:9px 12px!important;border:1px solid #625641!important;background:#18150f!important;color:#e0cfb2!important;text-decoration:none!important;min-height:36px!important;font-weight:800!important}
+.order-change-size-button:hover{background:#c8b69a!important;color:#080808!important}
+@media(max-width:760px){.saved-addresses-card{margin:0 16px 45px!important}.premium-address-form .address-fields-grid,.saved-address-grid{grid-template-columns:1fr!important}.premium-address-form .account-actions{grid-template-columns:1fr!important}.wallet-topup{grid-template-columns:1fr!important}.wallet-topup .btn{width:100%!important}.wallet-nav-link{width:38px!important;height:38px!important}}
