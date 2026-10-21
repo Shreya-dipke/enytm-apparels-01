@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -389,6 +388,211 @@ function validEmail(value) {
 function otpHash(code) {
   return crypto.createHash("sha256").update(String(code)).digest("hex");
 }
+
+// ============================================
+// PART 2 — HELPERS, NOTIFICATIONS & PUBLIC APIs
+// Continue directly after generateOtp() from Part 1
+// ============================================
+
+// Normalize phone number for WhatsApp notifications.
+// This helper does not send SMS verification codes.
+function normalizeWhatsAppPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `91${digits}`;
+  }
+
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return digits;
+  }
+
+  return "";
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(Number(amount || 0));
+}
+
+function getFrontendUrl() {
+  return String(
+    process.env.FRONTEND_URL ||
+    process.env.CLIENT_URL ||
+    "http://localhost:5173"
+  ).replace(/\/+$/, "");
+}
+
+function getBackendPublicUrl() {
+  return String(
+    process.env.PUBLIC_BACKEND_URL || ""
+  ).trim().replace(/\/+$/, "");
+}
+
+// Build a public URL for an uploaded file.
+// If PUBLIC_BACKEND_URL is configured, use the backend domain.
+// Otherwise, retain the relative URL for same-origin deployments.
+function getPublicUploadUrl(filename) {
+  const relativeUrl = `/uploads/${encodeURIComponent(filename)}`;
+  const backendUrl = getBackendPublicUrl();
+
+  return backendUrl ? `${backendUrl}${relativeUrl}` : relativeUrl;
+}
+
+// Send an order-related email.
+async function sendOrderEmail(order, subject, message) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS) {
+    console.warn("SMTP is not configured. Order email skipped.");
+    return false;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure:
+        String(process.env.SMTP_SECURE || "false").toLowerCase() ===
+        "true",
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    const customerEmail =
+      order?.customer?.email ||
+      order?.email ||
+      order?.shippingAddress?.email;
+
+    if (!customerEmail) {
+      console.warn("No customer email found for order:", order?.id);
+      return false;
+    }
+
+    await transporter.sendMail({
+      from:
+        process.env.SMTP_FROM ||
+        process.env.SMTP_USER,
+      to: customerEmail,
+      subject,
+      text: message,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Order email failed:", error.message);
+    return false;
+  }
+}
+
+// Notify the customer when the order status changes.
+// This function intentionally does not send SMS OTPs.
+async function notifyOrder(order, event) {
+  if (!order) return;
+
+  const statusMessages = {
+    confirmed: "Your ENYTM order has been confirmed.",
+    packed: "Your ENYTM order has been packed.",
+    shipped: "Your ENYTM order has been shipped.",
+    out_for_delivery: "Your ENYTM order is out for delivery.",
+    delivered: "Your ENYTM order has been delivered.",
+  };
+
+  const message =
+    statusMessages[event] ||
+    `Your ENYTM order status is now ${event}.`;
+
+  await sendOrderEmail(
+    order,
+    `ENYTM order update — ${event}`,
+    `${message}\n\nOrder ID: ${order.id || "N/A"}`
+  );
+
+  // WhatsApp notifications should use your existing configured
+  // WhatsApp integration, if one is already present in Part 3/4.
+  // Do not introduce Twilio SMS verification here.
+}
+
+// ============================================
+// RAZORPAY WEBHOOK
+// Keep this route before express.json() if your
+// original server uses express.raw() for the webhook.
+// Do not create a second webhook route if one already exists.
+// ============================================
+
+// NOTE:
+// Retain the Razorpay webhook implementation from your current
+// working index.js. Its raw request body is required for signature
+// validation. Do not replace it with a JSON-parsed body.
+
+// ============================================
+// PUBLIC PRODUCTS API
+// ============================================
+
+// Return the products saved in the database.
+app.get("/api/products", async (req, res) => {
+  try {
+    await db.read();
+
+    const products = Array.isArray(db.data.products)
+      ? db.data.products
+      : [];
+
+    res.json(products);
+  } catch (error) {
+    console.error("Failed to load products:", error.message);
+    res.status(500).json({
+      message: "Unable to load products",
+    });
+  }
+});
+
+// Return a single product by ID.
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    await db.read();
+
+    const products = Array.isArray(db.data.products)
+      ? db.data.products
+      : [];
+
+    const product = products.find(
+      (item) => String(item.id) === String(req.params.id)
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error("Failed to load product:", error.message);
+    res.status(500).json({
+      message: "Unable to load product",
+    });
+  }
+});
+
+// Public store settings.
+app.get("/api/settings", async (req, res) => {
+  try {
+    await db.read();
+
+    res.json(db.data.settings || {});
+  } catch (error) {
+    console.error("Failed to load settings:", error.message);
+    res.status(500).json({
+      message: "Unable to load settings",
+    });
+  }
+});
+
 
 function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
