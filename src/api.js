@@ -1,4 +1,6 @@
 
+const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
 export async function api(path, options = {}) {
   const isAdmin = path.startsWith("/admin");
 
@@ -19,13 +21,15 @@ export async function api(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`/api${path}`, {
+  const endpoint = `${API_BASE}/api${path.startsWith("/") ? path : `/${path}`}`;
+  const response = await fetch(endpoint, {
     ...options,
     headers,
   });
 
   const contentType = response.headers.get("content-type") || "";
-  const data = contentType.includes("application/json")
+  const isJson = contentType.includes("application/json");
+  const data = isJson
     ? await response.json()
     : await response.text();
 
@@ -35,6 +39,12 @@ export async function api(path, options = {}) {
         ? data.message
         : `Request failed with status ${response.status}`
     );
+  }
+
+  // If the server returned HTML (e.g. 404/200 rewrite to index.html on SPA hosting like Vercel),
+  // treat it as an error so that callers fall back to fallback data instead of crashing on raw HTML strings.
+  if (typeof data === "string" && (data.includes("<!DOCTYPE") || data.includes("<!doctype") || data.includes("<html"))) {
+    throw new Error("Received HTML page instead of API response");
   }
 
   return data;

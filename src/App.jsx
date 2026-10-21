@@ -1,5 +1,5 @@
 import React, {useEffect,useMemo,useRef,useState} from "react";
-import {Link,Route,Routes,useLocation,useNavigate} from "react-router-dom";
+import {Link,Route,Routes,useLocation,useNavigate,useParams} from "react-router-dom";
 import {
   ArrowRight,
   Search,
@@ -34,9 +34,33 @@ import {api} from "./api";
 import {fallbackProducts} from "./data/products";
 import "./index.css";
 
-function useProducts(){const [p,setP]=useState(fallbackProducts);useEffect(()=>{api("/products").then(setP).catch(()=>{});},[]);return p}
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?wishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
-function ProductCard({product}){const{addToCart,wishlist,toggleWishlist}=useCart();const liked=wishlist.includes(product.id);const[added,setAdded]=useState(false);const stock=Math.max(0,Number(product.stock||0));const outOfStock=stock<=0;const add=()=>{if(outOfStock)return;addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};const hasDiscount=Number(product.oldPrice)>Number(product.price);return <article className="product-card"><div className="product-image">{outOfStock?<span className="product-stock-badge out">OUT OF STOCK</span>:stock<6?<span className="product-stock-badge low">{stock===1?"ONLY 1 LEFT":`ONLY ${stock} LEFT`}</span>:null}{product.badge&&!outOfStock&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
+function useProducts(){
+  const [p,setP]=useState(fallbackProducts);
+  useEffect(()=>{
+    api("/products")
+      .then(data => {
+        if (Array.isArray(data) && data.length) {
+          setP(data);
+        } else if (data && Array.isArray(data.products) && data.products.length) {
+          setP(data.products);
+        }
+      })
+      .catch(()=>{});
+  },[]);
+  return Array.isArray(p) && p.length ? p : fallbackProducts;
+}
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
+function ProductCard({product}){
+  if (!product) return null;
+  const{addToCart,wishlist,toggleWishlist}=useCart();
+  const safeWishlist=Array.isArray(wishlist)?wishlist:[];
+  const liked=safeWishlist.includes(product.id);
+  const[added,setAdded]=useState(false);
+  const stock=Math.max(0,Number(product.stock||0));
+  const outOfStock=stock<=0;
+  const add=()=>{if(outOfStock)return;addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};
+  const hasDiscount=Number(product.oldPrice)>Number(product.price);
+  return <article className="product-card"><div className="product-image">{outOfStock?<span className="product-stock-badge out">OUT OF STOCK</span>:stock<6?<span className="product-stock-badge low">{stock===1?"ONLY 1 LEFT":`ONLY ${stock} LEFT`}</span>:null}{product.badge&&!outOfStock&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
 <img
   src={product.image || ""}
   alt={product.name}
@@ -142,110 +166,316 @@ function Shop(){
   </section>
  </main>
 }
+
 function ProductPage(){
- const products=useProducts();
- const id=Number(useLocation().pathname.split("/").pop());
- const product=products.find(p=>p.id===id)||products[0];
- const{addToCart,wishlist,toggleWishlist}=useCart();
- const[size,setSize]=useState("M");
- const[qty,setQty]=useState(1);
- const[added,setAdded]=useState(false);
- const[active,setActive]=useState(0);
- const[videoBlocked,setVideoBlocked]=useState(false);
- const liked=wishlist.includes(product.id);
- const stock=Math.max(0,Number(product.stock||0));
- const outOfStock=stock<=0;
- const videoRef=useRef(null);
- const gallery=[
-  {type:"image",src:product.image,label:"01 / FRONT"},
-  product.image2&&{type:"image",src:product.image2,label:"02 / BACK"},
-  product.image3&&{type:"image",src:product.image3,label:"03 / FABRIC"},
-  product.modelFront&&{type:"image",src:product.modelFront,label:"04 / MODEL FRONT"},
-  product.modelBack&&{type:"image",src:product.modelBack,label:"05 / MODEL BACK"},
-  product.video&&{type:"video",src:product.video,poster:product.image,label:"06 / MOTION"}
- ].filter(Boolean);
- const safeGallery=gallery.length?gallery:[{type:"image",src:product.image,label:"01 / FRONT"}];
- const add=()=>{if(outOfStock)return;if(qty>stock){setQty(stock);return}for(let i=0;i<qty;i++)addToCart(product,size);setAdded(true);setTimeout(()=>setAdded(false),1800)};
- const activeMedia=safeGallery[Math.min(active,safeGallery.length-1)];
- const startVideo=()=>{
-  const video=videoRef.current;
-  if(!video) return;
-  video.muted=true;
-  video.defaultMuted=true;
-  video.playsInline=true;
-  video.currentTime=0;
-  const promise=video.play();
-  if(promise?.then) promise.then(()=>setVideoBlocked(false)).catch(()=>setVideoBlocked(true));
- };
- useEffect(()=>{
-  setVideoBlocked(false);
-  if(activeMedia.type!=="video") return;
-  const video=videoRef.current;
-  if(!video) return;
-  video.muted=true;
-  video.defaultMuted=true;
-  video.playsInline=true;
-  video.currentTime=0;
-  const tryPlay=()=>{
-   const promise=video.play();
-   if(promise?.then) promise.then(()=>setVideoBlocked(false)).catch(()=>setVideoBlocked(true));
+  const products=useProducts();
+  const params=useParams();
+  const location=useLocation();
+  const rawId=params?.id ?? location.pathname.split("/").filter(Boolean).pop();
+  const productList = Array.isArray(products) && products.length ? products : fallbackProducts;
+  const product = productList.find(p=>String(p.id)===String(rawId)) || productList[0] || fallbackProducts[0];
+  const{addToCart,wishlist,toggleWishlist}=useCart();
+  const[size,setSize]=useState("M");
+  const[qty,setQty]=useState(1);
+  const[added,setAdded]=useState(false);
+  const[active,setActive]=useState(0);
+  const[videoBlocked,setVideoBlocked]=useState(false);
+  const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+  const liked = product ? safeWishlist.includes(product.id) : false;
+  const stock = Math.max(0, Number(product?.stock || 0));
+  const outOfStock = stock <= 0;
+  const videoRef = useRef(null);
+
+  if (!product) {
+    return (
+      <main className="product-page" style={{padding:"120px 4vw",textAlign:"center"}}>
+        <p className="eyebrow">ENYTM / APPARELS</p>
+        <h1>PRODUCT NOT FOUND</h1>
+        <p style={{color:"#888",margin:"20px 0 30px"}}>The piece you're looking for is unavailable.</p>
+        <Link className="btn primary" to="/shop">VIEW ALL PIECES</Link>
+      </main>
+    );
+  }
+
+  const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+  const gallery = [
+    product.image && { type: "image", src: product.image, label: "01 / FRONT" },
+    product.image2 && { type: "image", src: product.image2, label: "02 / BACK" },
+    product.image3 && { type: "image", src: product.image3, label: "03 / FABRIC" },
+    product.modelFront && { type: "image", src: product.modelFront, label: "04 / MODEL FRONT" },
+    product.modelBack && { type: "image", src: product.modelBack, label: "05 / MODEL BACK" },
+    product.video && { type: "video", src: product.video, poster: product.image || fallbackImg, label: "06 / MOTION" }
+  ].filter(Boolean);
+  const safeGallery = gallery.length ? gallery : [{ type: "image", src: product.image || fallbackImg, label: "01 / FRONT" }];
+  const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
+
+  const add = () => {
+    if (outOfStock) return;
+    if (qty > stock) { setQty(stock); return; }
+    for (let i = 0; i < qty; i++) addToCart(product, size);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
   };
-  video.addEventListener("loadedmetadata",tryPlay);
-  video.addEventListener("canplay",tryPlay);
-  const retry=setTimeout(tryPlay,700);
-  tryPlay();
-  return()=>{
-   clearTimeout(retry);
-   video.removeEventListener("loadedmetadata",tryPlay);
-   video.removeEventListener("canplay",tryPlay);
+
+  const startVideo = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.currentTime = 0;
+    const promise = video.play();
+    if (promise?.then) promise.then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
   };
- },[active,activeMedia.type,activeMedia.src]);
- return <main className="product-page">
-  <section className="product-gallery-wrap">
-   <div className="gallery-toolbar"><span>ENYTM / PRODUCT 0{product.id}</span><span>{safeGallery.length} MEDIA</span></div>
-   <div className="product-gallery-shell">
-    <div className="product-main-media">
-      {activeMedia.type==="video"?<div className="product-video-frame">
-       <video ref={videoRef} key={activeMedia.src} autoPlay muted defaultMuted playsInline loop preload="auto" poster={activeMedia.poster} onLoadedData={startVideo} onCanPlay={startVideo} onError={()=>setVideoBlocked(true)} onClick={startVideo}>
-        <source src={activeMedia.src} type="video/mp4"/>
-       </video>
-       {videoBlocked&&<button className="video-play-button" onClick={startVideo} aria-label="Play product video"><Play size={28} fill="currentColor"/></button>}
-      </div>:<img src={activeMedia.src} alt={`${product.name} ${activeMedia.label}`}/>}<span className="main-media-label">{activeMedia.label}</span>
-    </div>
-    <div className="product-thumbs">
-      {safeGallery.map((item,i)=><button key={item.label} className={`product-thumb ${active===i?"active":""}`} onClick={()=>setActive(i)} aria-label={`View ${item.label}`}>
-       {item.type==="video"?<><video muted playsInline preload="metadata" poster={item.poster}><source src={item.src} type="video/mp4"/></video><span className="thumb-play"><Play size={15} fill="currentColor"/></span></>:<img src={item.src} alt={`${product.name} ${item.label}`}/>}<span>{item.label}</span>
-      </button>)}
-    </div>
-   </div>
-  </section>
-  <section className="product-details">
-   <div className="product-detail-top"><p className="eyebrow">{product.category.toUpperCase()} / ENYTM</p><button className={`detail-wish ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart size={19} fill={liked?"currentColor":"none"}/><span>{liked?"SAVED":"SAVE"}</span></button></div>
-   <h1>{product.name}</h1>
-   <div className="rating"><span className="stars">★★★★★</span><span>4.9</span><a href="#reviews">28 reviews</a></div>
-   <div className="price-row"><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{product.oldPrice&&<del>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}<span className="price-note">INCLUSIVE OF TAXES</span></div>
-   <p className={`product-stock-message ${outOfStock?"out":"low"}`}>{outOfStock?"OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE.":stock<6?`HURRY — ONLY ${stock} LEFT IN STOCK.`:"IN STOCK · READY TO ORDER"}</p>
-   <p className="detail-copy">{product.description}</p>
-   <div className="detail-highlights"><span>{product.fabric?.match(/\d+\s*GSM/i)?.[0]||"PREMIUM"}</span><span>PREMIUM COTTON</span><span>OVERSIZED FIT</span></div>
-   <div className="spec"><span>FABRIC</span><b>{product.fabric}</b></div>
-   <div className="option"><div className="option-head"><span>SELECT SIZE</span><Link to="/size-guide">SIZE GUIDE ↗</Link></div><div className="sizes">{(product.sizes||["S","M","L","XL","XXL"]).map(s=><button key={s} className={size===s?"selected":""} onClick={()=>setSize(s)}>{s}</button>)}</div></div>
-   <div className="purchase-line">
-    <div className="quantity-block">
-      <span>QUANTITY</span>
-      <div className="quantity-control">
-        <button type="button" onClick={()=>setQty(Math.max(1,qty-1))} aria-label="Decrease quantity" disabled={outOfStock||qty<=1}><Minus size={15}/></button>
-        <strong>{qty}</strong>
-        <button type="button" onClick={()=>setQty(Math.min(stock,qty+1))} aria-label="Increase quantity" disabled={outOfStock||qty>=stock}><Plus size={15}/></button>
-      </div>
-    </div>
-    <button className="btn primary add-detail" onClick={add} disabled={outOfStock}>{outOfStock?<>OUT OF STOCK</>:added?<><CheckCircle size={18}/> ADDED TO BAG</>:<>ADD TO BAG <ShoppingBag size={18}/></>}</button>
-   </div>
-   {added&&<div className="detail-added"><CheckCircle size={15}/><span>Added to your bag</span><Link to="/cart">VIEW BAG →</Link></div>}
-   <div className="perks"><div><Truck/><span><b>FREE SHIPPING</b> ON ORDERS ₹1,999+</span></div><div><ShieldCheck/><span><b>SECURE PAYMENT</b> POWERED BY RAZORPAY</span></div><div><RotateCcw/><span><b>EASY RETURNS</b> WITHIN 48 HOURS</span></div></div>
-   <div className="product-accordion"><details open><summary>PRODUCT DETAILS <span>+</span></summary><p>Designed with a relaxed oversized silhouette, clean finishing and a premium hand-feel for everyday wear.</p></details><details><summary>SHIPPING & RETURNS <span>+</span></summary><p>Free shipping applies to eligible orders above ₹1,999. Returns are accepted within 48 HOURS subject to product condition.</p></details><details id="reviews"><summary>REVIEWS <span>4.9 / 5</span></summary><p>28 verified-style review entries can be connected to your live review system here.</p></details></div>
-  </section>
- </main>
+
+  useEffect(() => {
+    setVideoBlocked(false);
+    if (!activeMedia || activeMedia.type !== "video") return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.currentTime = 0;
+    const tryPlay = () => {
+      const promise = video.play();
+      if (promise?.then) promise.then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
+    };
+    video.addEventListener("loadedmetadata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+    const retry = setTimeout(tryPlay, 700);
+    tryPlay();
+    return () => {
+      clearTimeout(retry);
+      video.removeEventListener("loadedmetadata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+    };
+  }, [active, activeMedia?.type, activeMedia?.src]);
+
+  const sizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL", "XXL"];
+  const categoryLabel = String(product.category || "Oversized").toUpperCase();
+  const priceDisplay = Number(product.price || 0).toLocaleString("en-IN");
+  const oldPriceDisplay = product.oldPrice ? Number(product.oldPrice).toLocaleString("en-IN") : null;
+
+  return (
+    <main className="product-page">
+      <section className="product-gallery-wrap">
+        <div className="gallery-toolbar">
+          <span>ENYTM / PRODUCT 0{product.id}</span>
+          <span>{safeGallery.length} MEDIA</span>
+        </div>
+        <div className="product-gallery-shell">
+          <div className="product-main-media">
+            {activeMedia?.type === "video" ? (
+              <div className="product-video-frame">
+                <video
+                  ref={videoRef}
+                  key={activeMedia.src}
+                  autoPlay
+                  muted
+                  defaultMuted
+                  playsInline
+                  loop
+                  preload="auto"
+                  poster={activeMedia.poster}
+                  onLoadedData={startVideo}
+                  onCanPlay={startVideo}
+                  onError={() => setVideoBlocked(true)}
+                  onClick={startVideo}
+                >
+                  <source src={activeMedia.src} type="video/mp4" />
+                </video>
+                {videoBlocked && (
+                  <button className="video-play-button" onClick={startVideo} aria-label="Play product video">
+                    <Play size={28} fill="currentColor" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <img
+                src={activeMedia?.src || fallbackImg}
+                alt={`${product.name} ${activeMedia?.label || ""}`}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = fallbackImg;
+                }}
+              />
+            )}
+            <span className="main-media-label">{activeMedia?.label}</span>
+          </div>
+          <div className="product-thumbs">
+            {safeGallery.map((item, i) => (
+              <button
+                key={`${item.label}-${i}`}
+                className={`product-thumb ${active === i ? "active" : ""}`}
+                onClick={() => setActive(i)}
+                aria-label={`View ${item.label}`}
+              >
+                {item.type === "video" ? (
+                  <>
+                    <video muted playsInline preload="metadata" poster={item.poster}>
+                      <source src={item.src} type="video/mp4" />
+                    </video>
+                    <span className="thumb-play">
+                      <Play size={15} fill="currentColor" />
+                    </span>
+                  </>
+                ) : (
+                  <img
+                    src={item.src || fallbackImg}
+                    alt={`${product.name} ${item.label}`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = fallbackImg;
+                    }}
+                  />
+                )}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className="product-details">
+        <div className="product-detail-top">
+          <p className="eyebrow">{categoryLabel} / ENYTM</p>
+          <button className={`detail-wish ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}>
+            <Heart size={19} fill={liked ? "currentColor" : "none"} />
+            <span>{liked ? "SAVED" : "SAVE"}</span>
+          </button>
+        </div>
+        <h1>{product.name}</h1>
+        <div className="rating">
+          <span className="stars">★★★★★</span>
+          <span>4.9</span>
+          <a href="#reviews">28 reviews</a>
+        </div>
+        <div className="price-row">
+          <strong>₹{priceDisplay}</strong>
+          {oldPriceDisplay && <del>₹{oldPriceDisplay}</del>}
+          <span className="price-note">INCLUSIVE OF TAXES</span>
+        </div>
+        <p className={`product-stock-message ${outOfStock ? "out" : "low"}`}>
+          {outOfStock
+            ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
+            : stock < 6
+            ? `HURRY — ONLY ${stock} LEFT IN STOCK.`
+            : "IN STOCK · READY TO ORDER"}
+        </p>
+        <p className="detail-copy">{product.description || "Designed with a relaxed oversized silhouette, clean finishing and a premium hand-feel for everyday wear."}</p>
+        <div className="detail-highlights">
+          <span>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "PREMIUM"}</span>
+          <span>PREMIUM COTTON</span>
+          <span>OVERSIZED FIT</span>
+        </div>
+        {product.fabric && (
+          <div className="spec">
+            <span>FABRIC</span>
+            <b>{product.fabric}</b>
+          </div>
+        )}
+        <div className="option">
+          <div className="option-head">
+            <span>SELECT SIZE</span>
+            <Link to="/size-guide">SIZE GUIDE ↗</Link>
+          </div>
+          <div className="sizes">
+            {sizes.map((s) => (
+              <button key={s} className={size === s ? "selected" : ""} onClick={() => setSize(s)}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="purchase-line">
+          <div className="quantity-block">
+            <span>QUANTITY</span>
+            <div className="quantity-control">
+              <button
+                type="button"
+                onClick={() => setQty(Math.max(1, qty - 1))}
+                aria-label="Decrease quantity"
+                disabled={outOfStock || qty <= 1}
+              >
+                <Minus size={15} />
+              </button>
+              <strong>{qty}</strong>
+              <button
+                type="button"
+                onClick={() => setQty(Math.min(stock, qty + 1))}
+                aria-label="Increase quantity"
+                disabled={outOfStock || qty >= stock}
+              >
+                <Plus size={15} />
+              </button>
+            </div>
+          </div>
+          <button className="btn primary add-detail" onClick={add} disabled={outOfStock}>
+            {outOfStock ? (
+              <>OUT OF STOCK</>
+            ) : added ? (
+              <>
+                <CheckCircle size={18} /> ADDED TO BAG
+              </>
+            ) : (
+              <>
+                ADD TO BAG <ShoppingBag size={18} />
+              </>
+            )}
+          </button>
+        </div>
+        {added && (
+          <div className="detail-added">
+            <CheckCircle size={15} />
+            <span>Added to your bag</span>
+            <Link to="/cart">VIEW BAG →</Link>
+          </div>
+        )}
+        <div className="perks">
+          <div>
+            <Truck />
+            <span>
+              <b>FREE SHIPPING</b> ON ORDERS ₹1,999+
+            </span>
+          </div>
+          <div>
+            <ShieldCheck />
+            <span>
+              <b>SECURE PAYMENT</b> POWERED BY RAZORPAY
+            </span>
+          </div>
+          <div>
+            <RotateCcw />
+            <span>
+              <b>EASY RETURNS</b> WITHIN 48 HOURS
+            </span>
+          </div>
+        </div>
+        <div className="product-accordion">
+          <details open>
+            <summary>
+              PRODUCT DETAILS <span>+</span>
+            </summary>
+            <p>{product.description || "Designed with a relaxed oversized silhouette, clean finishing and a premium hand-feel for everyday wear."}</p>
+          </details>
+          <details>
+            <summary>
+              SHIPPING & RETURNS <span>+</span>
+            </summary>
+            <p>Free shipping applies to eligible orders above ₹1,999. Returns are accepted within 48 HOURS subject to product condition.</p>
+          </details>
+          <details id="reviews">
+            <summary>
+              REVIEWS <span>4.9 / 5</span>
+            </summary>
+            <p>28 verified-style review entries can be connected to your live review system here.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+  );
 }
+
 function Auth({register=false}){
  const nav=useNavigate();
  const[form,setForm]=useState({name:"",email:"",phone:"",password:"",whatsappOptIn:false,emailOptIn:true});
@@ -2064,6 +2294,73 @@ const enytmInventoryAndDeliveryStyles = `
 @media(max-width:650px){.admin-delivery-form{grid-template-columns:1fr}}
 `;
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="empty" style={{minHeight:"60vh",display:"grid",placeItems:"center",textAlign:"center",padding:"80px 20px"}}>
+          <div>
+            <p className="eyebrow">SOMETHING WENT WRONG</p>
+            <h1 style={{fontSize:"clamp(28px,4vw,48px)",margin:"15px 0"}}>PAGE COULD NOT LOAD</h1>
+            <p style={{color:"#888",maxWidth:440,margin:"0 auto 25px"}}>{this.state.error?.message || "An unexpected error occurred while rendering this page."}</p>
+            <a className="btn primary" href="/" onClick={()=>this.setState({hasError:false})}>RETURN HOME</a>
+          </div>
+        </main>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ScrollToTopOnRouteChange(){const route=useLocation();useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[route.pathname,route.search]);return null;}
-function App(){const[search,setSearch]=useState(false);const route=useLocation();const immersive=route.pathname==="/"||route.pathname==="/launch";return <><style>{enytmInventoryAndDeliveryStyles}</style><BrandIntro/><ScrollToTopOnRouteChange/>{!immersive&&!route.pathname.startsWith("/admin")&&<Navbar onSearch={()=>setSearch(true)}/>}<Routes><Route path="/" element={<PrelaunchHome/>}/><Route path="/launch" element={<LaunchCountdown/>}/><Route path="/collection" element={<Home/>}/><Route path="/shop" element={<Shop/>}/><Route path="/product/:id" element={<ProductPage/>}/><Route path="/cart" element={<Cart/>}/><Route path="/checkout" element={<Checkout/>}/><Route path="/order/:id" element={<OrderDetails/>}/><Route path="/order-success/:id" element={<OrderSuccess/>}/><Route path="/wishlist" element={<Wishlist/>}/><Route path="/about" element={<About/>}/><Route path="/login" element={<Auth/>}/><Route path="/register" element={<Auth register/>}/><Route path="/account" element={<Account/>}/><Route path="/wallet" element={<WalletPage/>}/><Route path="/admin" element={<Admin/>}/><Route path="*" element={<Home/>}/></Routes>{!immersive&&!route.pathname.startsWith("/admin")&&<Footer/>}{search&&<SearchOverlay close={()=>setSearch(false)}/>}</>}
+function App() {
+  const [search, setSearch] = useState(false);
+  const route = useLocation();
+  const immersive = route.pathname === "/" || route.pathname === "/launch";
+
+  return (
+    <>
+      <style>{enytmInventoryAndDeliveryStyles}</style>
+      <BrandIntro />
+      <ScrollToTopOnRouteChange />
+      {!immersive && !route.pathname.startsWith("/admin") && (
+        <Navbar onSearch={() => setSearch(true)} />
+      )}
+      <ErrorBoundary key={route.pathname}>
+        <Routes>
+          <Route path="/" element={<PrelaunchHome />} />
+          <Route path="/launch" element={<LaunchCountdown />} />
+          <Route path="/collection" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/order-success/:id" element={<OrderSuccess />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/register" element={<Auth register />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </ErrorBoundary>
+      {!immersive && !route.pathname.startsWith("/admin") && <Footer />}
+      {search && <SearchOverlay close={() => setSearch(false)} />}
+    </>
+  );
+}
+
 export default App;
