@@ -2040,3 +2040,27 @@
   .admin-page .admin-content .admin-products .admin-product-form { grid-template-columns: minmax(0, 1fr) !important; }
   .admin-page .admin-content .admin-products .admin-product-wide { grid-column: auto !important; }
 }
+
+
+/* Admin media uploads and coupon configuration */
+.admin-media-upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:8px}
+.admin-media-upload{min-width:0;border:1px solid #303030;background:#0c0c0c;padding:12px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:13px;align-items:center}
+.admin-media-preview{width:92px;height:112px;background:#151515;border:1px solid #292929;overflow:hidden;display:grid;place-items:center}
+.admin-media-preview img,.admin-media-preview video{width:100%;height:100%;object-fit:cover}
+.admin-media-empty{display:flex;flex-direction:column;align-items:center;gap:8px;color:#777;font-size:9px;letter-spacing:.12em}
+.admin-media-meta{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
+.admin-media-meta strong{font-size:10px;letter-spacing:.1em}
+.admin-media-meta small{font-size:10px;color:#888;line-height:1.5}
+.admin-upload-button{display:inline-flex;align-items:center;justify-content:center;background:#f5f5f2;color:#080808;padding:9px 11px;font-size:9px;font-weight:800;letter-spacing:.1em;cursor:pointer;max-width:100%}
+.admin-upload-button input{display:none}
+.admin-media-remove{border:0;background:transparent;color:#b8a38a;text-decoration:underline;font-size:9px;padding:0}
+.admin-media-error{color:#ff9d9d!important}
+.admin-coupon-checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.admin-coupon-checks label,.admin-coupon-active{display:flex;align-items:center;gap:8px;font-size:11px;color:#cfcfca}
+.admin-coupon-checks input,.admin-coupon-active input{accent-color:#fff}
+.admin-coupon-active{margin-top:15px}
+.checkout-coupon-row{display:flex;gap:10px;margin:14px 0 8px}
+.checkout-coupon-row input{flex:1;min-width:0;background:#0a0a0a;border:1px solid #333;color:#fff;padding:14px;text-transform:uppercase}
+.coupon-success{color:#b7d9a9;font-size:11px;margin:8px 0 20px}
+.coupon-summary-line{color:#b7d9a9!important}
+@media(max-width:700px){.admin-media-upload-grid{grid-template-columns:1fr}.admin-media-upload{grid-template-columns:80px minmax(0,1fr)}.admin-media-preview{width:80px;height:100px}.checkout-coupon-row{flex-wrap:wrap}.checkout-coupon-row input{flex-basis:100%}}
