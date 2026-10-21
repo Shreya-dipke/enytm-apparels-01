@@ -47,14 +47,17 @@ const uploadImageFile = multer({
   storage: uploadStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/webp",
-    ];
-    if (!allowed.includes(file.mimetype)) {
-      return cb(new Error("Only JPG, JPEG, PNG and WEBP images are allowed."));
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowed.includes(file.mimetype)) return cb(new Error("Only JPG, JPEG, PNG and WEBP images are allowed."));
+    cb(null, true);
+  },
+});
+const uploadVideoFile = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!["video/mp4", "video/webm", "video/quicktime"].includes(file.mimetype)) {
+      return cb(new Error("Upload an MP4, WEBM or MOV video."));
     }
     cb(null, true);
   },
@@ -81,7 +84,7 @@ const db = new Low(adapter, {
 await db.read();
 if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishlists: [], coupons: [], settings: {} };
 if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
-if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
+if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];\nif (!Array.isArray(db.data.coupons)) db.data.coupons = [];
 
 const seedProducts = [
   { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
@@ -617,12 +620,28 @@ app.post("/api/checkout/order", auth, async (req, res) => {
 
   const amount = totals(safeItems);
   if (!amount.total) return res.status(400).json({ message: "Invalid order amount." });
+  let appliedCoupon = null;
+  let discount = 0;
+  const couponCode = String(req.body?.couponCode || "").trim().toUpperCase();
+  if (couponCode) {
+    appliedCoupon = (db.data.coupons || []).find(c => String(c.code).toUpperCase() === couponCode);
+    const couponItems = safeItems.map(i => {
+      const product = db.data.products.find(p => p.id === i.productId);
+      return { ...i, category: product?.category || "" };
+    });
+    const couponError = getCouponError(appliedCoupon, amount.subtotal, couponItems, req.user.id);
+    if (couponError) return res.status(400).json({ message: couponError });
+    discount = couponDiscount(appliedCoupon, amount.subtotal, couponItems);
+    if (!discount) return res.status(400).json({ message: "This coupon does not apply to the current order." });
+  }
+  const orderTotal = Math.max(0, amount.total - discount);
+  if (orderTotal <= 0) return res.status(400).json({ message: "This coupon makes the order total zero. Please contact ENYTM for this promotion." });
 
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     return res.status(503).json({ message: "Razorpay is not configured. Add Razorpay test/live keys to .env." });
   }
 
-  const advanceAmount = Math.ceil(amount.total * 0.30);
+  const advanceAmount = Math.ceil(orderTotal * 0.30);
   const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
   const receipt = `ENYTM-${Date.now()}`;
   const rpOrder = await razorpay.orders.create({
@@ -635,15 +654,15 @@ app.post("/api/checkout/order", auth, async (req, res) => {
   const order = {
     id: crypto.randomUUID(), receipt, userId: req.user.id, items: safeItems,
     customer: { ...shippingAddress, email: db.data.users.find(u => u.id === req.user.id)?.email },
-    subtotal: amount.subtotal, shipping: amount.shipping, total: amount.total,
-    advanceAmount, advancePaid: 0, balanceAmount: amount.total - advanceAmount, balancePaid: 0,
+    subtotal: amount.subtotal, shipping: amount.shipping, discount, couponCode: appliedCoupon?.code || null, couponId: appliedCoupon?.id || null,
+    total: orderTotal, advanceAmount, advancePaid: 0, balanceAmount: orderTotal - advanceAmount, balancePaid: 0,
     paymentStage: "advance", paymentStatus: "created", paymentMethod: null, paymentId: null,
     razorpayOrderId: rpOrder.id, razorpayOrderIds: { advance: rpOrder.id }, paymentIds: [],
     status: "payment_pending", stockDeducted: false, createdAt: Date.now(), updatedAt: Date.now()
   };
   db.data.orders.push(order);
   await db.write();
-  res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: advanceAmount * 100, currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, advanceAmount, balanceAmount: order.balanceAmount, total: order.total });
+  res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: advanceAmount * 100, currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, advanceAmount, balanceAmount: order.balanceAmount, total: order.total, discount: order.discount, couponCode: order.couponCode });
 });
 
 app.post("/api/checkout/verify", auth, async (req, res) => {
@@ -660,6 +679,15 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
     order.advancePaid = amountPaid;
     order.paymentStatus = "partially_paid";
     order.status = "confirmed";
+    if (order.couponId && !order.couponUsageCounted) {
+      const coupon = (db.data.coupons || []).find(c => c.id === order.couponId);
+      if (coupon) {
+        coupon.usageCount = Number(coupon.usageCount || 0) + 1;
+        coupon.userUsage ||= {};
+        coupon.userUsage[req.user.id] = Number(coupon.userUsage[req.user.id] || 0) + 1;
+      }
+      order.couponUsageCounted = true;
+    }
     if (!order.stockDeducted) {
       for (const item of order.items || []) {
         const product = db.data.products.find(p => p.id === item.productId);
@@ -846,6 +874,13 @@ app.post("/api/admin/upload-image", adminAuth, (req, res) => {
     });
   });
 });
+app.post("/api/admin/upload-video", adminAuth, (req, res) => {
+  uploadVideoFile.single("video")(req, res, (err) => {
+    if (err) return res.status(400).json({ message: err.message || "Video upload failed." });
+    if (!req.file) return res.status(400).json({ message: "No video selected." });
+    res.json({ success: true, url: `/uploads/${req.file.filename}`, filename: req.file.filename });
+  });
+});
 app.post("/api/admin/products", adminAuth, async (req,res) => {
   const p = { ...req.body, id: Date.now(), price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S","M","L","XL","XXL"] };
   db.data.products.push(p); await db.write(); res.json(p);
@@ -856,6 +891,79 @@ app.put("/api/admin/products/:id", adminAuth, async (req,res) => {
 });
 app.delete("/api/admin/products/:id", adminAuth, async (req,res) => {
   db.data.products = db.data.products.filter(x=>x.id!==Number(req.params.id)); await db.write(); res.json({ok:true});
+});
+function couponDiscount(coupon, subtotal, items) {
+  const eligible = !coupon.productIds?.length && !coupon.categories?.length
+    ? subtotal
+    : items.filter(i => (!coupon.productIds?.length || coupon.productIds.includes(Number(i.productId))) &&
+        (!coupon.categories?.length || coupon.categories.includes(String(i.category || ""))))
+      .reduce((sum, i) => sum + Number(i.price || 0) * Number(i.qty || 0), 0);
+  if (eligible <= 0) return 0;
+  let discount = coupon.discountType === "fixed"
+    ? Number(coupon.discountValue || 0)
+    : eligible * Number(coupon.discountValue || 0) / 100;
+  if (coupon.discountType !== "fixed" && Number(coupon.maxDiscount || 0) > 0) discount = Math.min(discount, Number(coupon.maxDiscount));
+  return Math.max(0, Math.min(Math.round(discount), eligible));
+}
+function getCouponError(coupon, subtotal, items, userId) {
+  if (!coupon || coupon.active === false) return "This coupon is not active.";
+  const now = Date.now();
+  if (coupon.startsAt && now < new Date(coupon.startsAt).getTime()) return "This coupon is not available yet.";
+  if (coupon.expiresAt && now > new Date(coupon.expiresAt).getTime()) return "This coupon has expired.";
+  if (subtotal < Number(coupon.minOrderValue || 0)) return `Minimum order value for this coupon is ₹${Number(coupon.minOrderValue || 0).toLocaleString("en-IN")}.`;
+  if (Number(coupon.usageLimit || 0) > 0 && Number(coupon.usageCount || 0) >= Number(coupon.usageLimit)) return "This coupon has reached its usage limit.";
+  const userUses = Number(coupon.userUsage?.[userId] || 0);
+  if (Number(coupon.perCustomerLimit || 0) > 0 && userUses >= Number(coupon.perCustomerLimit)) return "You have reached the usage limit for this coupon.";
+  if (coupon.productIds?.length && !items.some(i => coupon.productIds.includes(Number(i.productId)))) return "This coupon does not apply to these products.";
+  if (coupon.categories?.length && !items.some(i => coupon.categories.includes(String(i.category || "")))) return "This coupon does not apply to these categories.";
+  return "";
+}
+app.post("/api/coupons/validate", auth, (req, res) => {
+  const code = String(req.body?.code || "").trim().toUpperCase();
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  const subtotal = items.reduce((sum, i) => sum + Number(i.price || 0) * Number(i.qty || 0), 0);
+  const coupon = db.data.coupons.find(c => String(c.code).toUpperCase() === code);
+  const error = getCouponError(coupon, subtotal, items.map(i => {
+    const product = db.data.products.find(p => p.id === Number(i.id || i.productId));
+    return { ...i, productId: Number(i.id || i.productId), category: product?.category || i.category };
+  }), req.user.id);
+  if (error) return res.status(400).json({ message: error });
+  const normalizedItems = items.map(i => {
+    const product = db.data.products.find(p => p.id === Number(i.id || i.productId));
+    return { ...i, productId: Number(i.id || i.productId), category: product?.category || i.category };
+  });
+  const discount = couponDiscount(coupon, subtotal, normalizedItems);
+  if (!discount) return res.status(400).json({ message: "This coupon does not apply to the current order." });
+  res.json({ code: coupon.code, discount, discountType: coupon.discountType, discountValue: coupon.discountValue, message: "Coupon applied successfully." });
+});
+app.get("/api/admin/coupons", adminAuth, (req, res) => res.json(db.data.coupons || []));
+app.post("/api/admin/coupons", adminAuth, async (req, res) => {
+  const code = String(req.body?.code || "").trim().toUpperCase().replace(/\s+/g, "");
+  const discountType = req.body?.discountType === "fixed" ? "fixed" : "percentage";
+  const discountValue = Number(req.body?.discountValue);
+  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return res.status(400).json({ message: "Coupon code must be 3–30 letters, numbers, hyphens or underscores." });
+  if ((db.data.coupons || []).some(c => String(c.code).toUpperCase() === code && c.id !== req.body.id)) return res.status(409).json({ message: "That coupon code already exists." });
+  if (!Number.isFinite(discountValue) || discountValue <= 0 || (discountType === "percentage" && discountValue > 100)) return res.status(400).json({ message: "Enter a valid discount value." });
+  const coupon = {
+    id: req.body.id || crypto.randomUUID(), code, title: String(req.body.title || "").trim(),
+    discountType, discountValue, maxDiscount: Number(req.body.maxDiscount || 0),
+    minOrderValue: Number(req.body.minOrderValue || 0), usageLimit: Number(req.body.usageLimit || 0),
+    perCustomerLimit: Number(req.body.perCustomerLimit || 1),
+    startsAt: req.body.startsAt || "", expiresAt: req.body.expiresAt || "",
+    categories: Array.isArray(req.body.categories) ? req.body.categories : [],
+    productIds: Array.isArray(req.body.productIds) ? req.body.productIds.map(Number) : [],
+    active: req.body.active !== false, usageCount: Number(req.body.usageCount || 0), userUsage: req.body.userUsage || {},
+    createdAt: req.body.createdAt || Date.now()
+  };
+  if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
+  const index = db.data.coupons.findIndex(c => c.id === coupon.id);
+  if (index >= 0) db.data.coupons[index] = { ...db.data.coupons[index], ...coupon };
+  else db.data.coupons.push(coupon);
+  await db.write(); res.json(coupon);
+});
+app.delete("/api/admin/coupons/:id", adminAuth, async (req, res) => {
+  db.data.coupons = (db.data.coupons || []).filter(c => c.id !== req.params.id);
+  await db.write(); res.json({ ok: true });
 });
 app.get("/api/admin/settings", adminAuth, (req,res)=>res.json(db.data.settings));
 app.put("/api/admin/settings", adminAuth, async (req,res)=>{ db.data.settings={...db.data.settings,...req.body}; await db.write(); res.json(db.data.settings); });
