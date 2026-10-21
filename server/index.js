@@ -84,7 +84,8 @@ const db = new Low(adapter, {
 await db.read();
 if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishlists: [], coupons: [], settings: {} };
 if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
-if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];\nif (!Array.isArray(db.data.coupons)) db.data.coupons = [];
+if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
+if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
 
 const seedProducts = [
   { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
@@ -393,29 +394,66 @@ app.use(express.json());
 app.get("/api/products", (req, res) => res.json(db.data.products));
 app.get("/api/settings", (req, res) => res.json(db.data.settings));
 
+
 app.post("/api/auth/register/send-otp", async (req, res) => {
   const { name, email, phone, password } = req.body;
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const normalizedPhone = normalizeIndianPhone(phone);
 
-  if (!name || !normalizedEmail || !password) return res.status(400).json({ message: "Name, email and password are required." });
-  if (!validEmail(normalizedEmail)) return res.status(400).json({ message: "Please enter a valid email address." });
-  if (!normalizedPhone) return res.status(400).json({ message: "Please enter a valid 10-digit Indian mobile number." });
-  if (String(password).length < 6) return res.status(400).json({ message: "Password must be at least 6 characters." });
-
-  if (db.data.users.some(u => String(u.email).toLowerCase() === normalizedEmail)) {
-    return res.status(409).json({ message: "This email is already registered. Please login instead." });
+  if (!name || !normalizedEmail || !password) {
+    return res.status(400).json({
+      message: "Name, email and password are required."
+    });
   }
-  if (db.data.users.some(u => normalizeIndianPhone(u.phone) === normalizedPhone)) {
-    return res.status(409).json({ message: "This mobile number is already registered. Please login instead." });
+
+  if (!validEmail(normalizedEmail)) {
+    return res.status(400).json({
+      message: "Please enter a valid email address."
+    });
+  }
+
+  if (!normalizedPhone) {
+    return res.status(400).json({
+      message: "Please enter a valid 10-digit Indian mobile number."
+    });
+  }
+
+  if (String(password).length < 6) {
+    return res.status(400).json({
+      message: "Password must be at least 6 characters."
+    });
+  }
+
+  if (db.data.users.some(
+    u => String(u.email).trim().toLowerCase() === normalizedEmail
+  )) {
+    return res.status(409).json({
+      message: "This email is already registered. Please login instead."
+    });
+  }
+
+  if (db.data.users.some(
+    u => normalizeIndianPhone(u.phone) === normalizedPhone
+  )) {
+    return res.status(409).json({
+      message: "This mobile number is already registered. Please login instead."
+    });
   }
 
   const now = Date.now();
-  const recent = db.data.pendingOtps.find(x => x.email === normalizedEmail && now - x.createdAt < 60000);
-  if (recent) return res.status(429).json({ message: "OTP was just sent. Please wait 60 seconds before requesting another." });
+  const recent = db.data.pendingOtps.find(
+    x => x.email === normalizedEmail && now - x.createdAt < 60000
+  );
+
+  if (recent) {
+    return res.status(429).json({
+      message: "OTP was just sent. Please wait 60 seconds before requesting another."
+    });
+  }
 
   const emailOtp = generateOtp();
   const challengeId = crypto.randomUUID();
+
   const challenge = {
     id: challengeId,
     name: String(name).trim(),
@@ -423,8 +461,6 @@ app.post("/api/auth/register/send-otp", async (req, res) => {
     phone: normalizedPhone,
     password,
     emailOtpHash: otpHash(emailOtp),
-    emailVerified: false,
-    phoneVerified: false,
     attempts: 0,
     createdAt: now,
     expiresAt: now + 10 * 60 * 1000
@@ -434,29 +470,139 @@ app.post("/api/auth/register/send-otp", async (req, res) => {
     const emailResult = await sendEmail(
       normalizedEmail,
       "Your ENYTM verification code",
-      `<div style="font-family:Arial,sans-serif"><h2>ENYTM APPARELS</h2><p>Your email verification code is:</p><p style="font-size:30px;font-weight:700;letter-spacing:8px">${emailOtp}</p><p>This code expires in 10 minutes.</p><p>If you did not request an ENYTM account, you can ignore this email.</p></div>`
+      `<div style="font-family:Arial,sans-serif">
+        <h2>ENYTM APPARELS</h2>
+        <p>Your email verification code is:</p>
+        <p style="font-size:30px;font-weight:700;letter-spacing:8px">${emailOtp}</p>
+        <p>This code expires in 10 minutes.</p>
+        <p>If you did not request an ENYTM account, you can ignore this email.</p>
+      </div>`
     );
 
-    const smsResult = await startTwilioSmsVerification(normalizedPhone);
-    if (String(process.env.OTP_DEV_MODE) === "true") {
-      console.log(`[ENYTM DEV OTP] Email ${normalizedEmail}: ${emailOtp} | Phone ${normalizedPhone}: use ${process.env.DEV_PHONE_OTP || "the code shown by your local test provider"}`);
+    if (emailResult.skipped && process.env.OTP_DEV_MODE !== "true") {
+      throw new Error("Email OTP is not configured. Check SMTP credentials in .env.");
     }
 
-    if (emailResult.skipped && String(process.env.OTP_DEV_MODE) !== "true") throw new Error("Email OTP is not configured. Add SMTP credentials to .env.");
-    if (smsResult.skipped && String(process.env.OTP_DEV_MODE) !== "true") throw new Error("Mobile OTP is not configured. Add Twilio Verify credentials to .env.");
-
-    db.data.pendingOtps = db.data.pendingOtps.filter(x => x.email !== normalizedEmail && x.phone !== normalizedPhone);
+    db.data.pendingOtps = db.data.pendingOtps.filter(
+      x => x.email !== normalizedEmail
+    );
     db.data.pendingOtps.push(challenge);
     await db.write();
 
-    res.json({
+    if (process.env.OTP_DEV_MODE === "true") {
+      console.log(`[ENYTM DEV OTP] ${normalizedEmail}: ${emailOtp}`);
+    }
+
+    return res.json({
       challengeId,
-      message: `Verification OTPs sent to ${normalizedEmail} and ${normalizedPhone.slice(0,3)}******${normalizedPhone.slice(-2)}.`
+      message: `Email verification code sent to ${normalizedEmail}.`
     });
-  } catch (e) {
-    return res.status(503).json({ message: e.message || "Could not send verification OTPs." });
+  } catch (error) {
+    console.error("[ENYTM EMAIL OTP]", error.message);
+    return res.status(503).json({
+      message: error.message || "Could not send email verification code."
+    });
   }
 });
+
+app.post("/api/auth/register/verify-otp", async (req, res) => {
+  const {
+    challengeId,
+    emailOtp,
+    whatsappOptIn = false,
+    emailOptIn = true
+  } = req.body;
+
+  const challenge = db.data.pendingOtps.find(
+    x => x.id === challengeId
+  );
+
+  if (!challenge) {
+    return res.status(400).json({
+      message: "Verification session expired. Please request a new email OTP."
+    });
+  }
+
+  if (Date.now() > challenge.expiresAt) {
+    db.data.pendingOtps = db.data.pendingOtps.filter(
+      x => x.id !== challengeId
+    );
+    await db.write();
+
+    return res.status(400).json({
+      message: "Email OTP expired. Please request a new one."
+    });
+  }
+
+  if (challenge.attempts >= 5) {
+    return res.status(429).json({
+      message: "Too many incorrect attempts. Please request a new email OTP."
+    });
+  }
+
+  if (otpHash(String(emailOtp || "")) !== challenge.emailOtpHash) {
+    challenge.attempts += 1;
+    await db.write();
+
+    return res.status(400).json({
+      message: "Incorrect email OTP. Please check the code and try again."
+    });
+  }
+
+  if (db.data.users.some(
+    u => String(u.email).trim().toLowerCase() === challenge.email
+  )) {
+    db.data.pendingOtps = db.data.pendingOtps.filter(
+      x => x.id !== challengeId
+    );
+    await db.write();
+
+    return res.status(409).json({
+      message: "This email is already registered. Please login instead."
+    });
+  }
+
+  if (db.data.users.some(
+    u => normalizeIndianPhone(u.phone) === challenge.phone
+  )) {
+    db.data.pendingOtps = db.data.pendingOtps.filter(
+      x => x.id !== challengeId
+    );
+    await db.write();
+
+    return res.status(409).json({
+      message: "This mobile number is already registered. Please login instead."
+    });
+  }
+
+  const user = {
+    id: crypto.randomUUID(),
+    name: challenge.name,
+    email: challenge.email,
+    phone: challenge.phone,
+    passwordHash: await bcrypt.hash(challenge.password, 12),
+    whatsappOptIn: Boolean(whatsappOptIn),
+    emailOptIn: Boolean(emailOptIn),
+    emailVerified: true,
+    phoneVerified: false,
+    role: "customer",
+    createdAt: Date.now(),
+    lastLoginAt: Date.now()
+  };
+
+  db.data.users.push(user);
+  db.data.pendingOtps = db.data.pendingOtps.filter(
+    x => x.id !== challengeId
+  );
+  await db.write();
+
+  return res.json({
+    token: signUser(user),
+    user: publicUser(user),
+    message: "Account created and email verified successfully."
+  });
+});
+
 
 app.post("/api/auth/register/verify-otp", async (req, res) => {
   const { challengeId, emailOtp, phoneOtp, whatsappOptIn = false, emailOptIn = true } = req.body;
