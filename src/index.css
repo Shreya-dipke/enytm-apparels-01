@@ -924,9 +924,10 @@
 
 /* ENYTM BLACK LABEL V3 — screenshot refinements */
 .home-v3 .announcement{background:#4b0008;color:#fff;height:31px;justify-content:flex-start;overflow:hidden;white-space:nowrap;gap:0;font-size:9px;letter-spacing:.09em}
-.announcement-ticker-track{display:flex;align-items:center;gap:34px;min-width:max-content;animation:enytmTicker 28s linear infinite;padding-left:3vw}
-.announcement-ticker-track span{display:inline-flex;align-items:center;gap:13px}.announcement-ticker-track b{font-size:10px;color:#aaa}
-@keyframes enytmTicker{to{transform:translateX(-50%)}}
+.announcement-ticker-track{display:flex;align-items:center;gap:32px;min-width:max-content;animation:enytmTicker 55s linear infinite;padding:0;will-change:transform}
+.announcement-ticker-track span{display:inline-flex;align-items:center;gap:12px;flex-shrink:0}
+.announcement-ticker-track b{font-size:10px;color:#c8b69a}
+@keyframes enytmTicker{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-50%,0,0)}}
 .home-v3 .craft-strip-v2{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important}
 .home-v3 .craft-strip-v2>div{min-width:0;padding:28px 24px 30px!important;border-right:1px solid #2b2b2b}
 .home-v3 .craft-strip-v2>div:last-child{border-right:0}
@@ -1928,18 +1929,19 @@
 
 
 /* ENYTM product price clarity + recommendations */
+.product-page-container{display:flex;flex-direction:column;width:100%;min-height:calc(100vh - 106px);background:#080808;position:relative}
 .product-card-pricing{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;white-space:nowrap}
 .product-card-pricing strong{font-size:12px;color:#f5f2ed}
 .product-card-pricing del{font-size:10px;color:#777}
 .product-card-pricing span,.discount-pill{display:inline-flex;align-items:center;background:#d7c3a5;color:#090909;padding:4px 6px;font-size:8px;font-weight:900;letter-spacing:.06em}
 .price-row .discount-pill{font-size:9px;padding:6px 8px}
-.related-products{border-top:1px solid #292929;padding-top:70px!important;margin-top:30px}
-.related-products .section-head{align-items:end}
+.related-products{border-top:1px solid #222;padding-top:70px!important;margin-top:0;background:#080808;position:relative;z-index:2}
+.related-products .section-head{align-items:end;margin-bottom:36px}
 .related-products .section-head h2{font-size:clamp(28px,4vw,48px);letter-spacing:-.05em;margin:0}
-.related-products-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.related-products-grid .product-image{height:clamp(220px,30vw,390px)}
-@media(max-width:900px){.related-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.product-card-pricing{justify-content:flex-start;margin-top:8px}.related-products{padding:55px 15px 75px!important}.related-products .section-head{gap:15px}.related-products .section-head h2{font-size:27px}.related-products-grid{gap:10px}.related-products-grid .product-image{height:62vw}}
+.related-products-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.related-products-grid .product-image{height:clamp(260px,30vw,420px)}
+@media(max-width:900px){.related-products-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media(max-width:560px){.product-card-pricing{justify-content:flex-start;margin-top:8px}.related-products{padding:50px 16px 75px!important}.related-products .section-head{gap:15px;margin-bottom:24px}.related-products .section-head h2{font-size:27px}.related-products-grid{gap:10px}.related-products-grid .product-image{height:62vw}}
 
 
 /* ENYTM ADMIN ORDER DETAILS — additive styles; existing storefront styles retained */
@@ -2238,13 +2240,30 @@ a.btn.outline {
   align-items: center !important;
   gap: 32px !important;
   min-width: max-content !important;
-  animation: enytmTicker 26s linear infinite !important;
-  padding-left: 0 !important;
+  animation: enytmTicker 55s linear infinite !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  will-change: transform !important;
+}
+
+.announcement .announcement-ticker-track span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+.announcement .announcement-ticker-track .ticker-highlight {
+  color: #f5f2ed !important;
+  font-weight: 700 !important;
+  letter-spacing: .14em !important;
 }
 
 .announcement .announcement-ticker-track b {
   color: #c8b69a !important;
   margin: 0 4px !important;
+  opacity: 0.8 !important;
 }
 
 /* ================= ENYTM AUTH & LOGIN RESPONSIVE SYSTEM ================= */
@@ -4250,5 +4269,826 @@ a.btn.outline {
   color: #dfcfb7;
   font-weight: 600;
 }
+
+/* --- BILLING PAGE FINAL AMOUNT IN BOLD --- */
+.checkout-final-total-row,
+.cart-final-total-row,
+.summary .total {
+  font-size: 15px !important;
+  color: #fff !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-top: 18px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid #2e2c28 !important;
+}
+
+.checkout-final-total-row span,
+.cart-final-total-row span,
+.summary .total span {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  color: #dfcfb7 !important;
+  text-transform: uppercase !important;
+}
+
+.checkout-final-amount,
+.cart-final-amount,
+.summary .total b {
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  color: #ffffff !important;
+  text-shadow: 0 0 16px rgba(223, 207, 183, 0.35) !important;
+  display: inline-block !important;
+}
+
+.price-panel .grand b,
+.order-panel .grand b {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: #fff !important;
+}
+
+/* --- OVERSIZED T-SHIRT WASH & FINISH BOXES (SILICON WASH, BIO WASH, GOLD FINISH) --- */
+.detail-highlights .gsm-box {
+  background: #171614;
+  border: 1px solid #3a3733;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.detail-highlights .wash-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #3d3a35;
+  color: #dfcfb7;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 8px 12px;
+  font-size: 8px;
+  transition: all 0.2s ease;
+}
+
+.detail-highlights .wash-box:hover {
+  background: rgba(223, 207, 183, 0.12);
+  border-color: #dfcfb7;
+}
+
+.detail-highlights .wash-box.gold-box {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.14), rgba(223, 207, 183, 0.06));
+  border: 1px solid #d4af37;
+  color: #f6e6b8;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+}
+
+.oversized-wash-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.wash-box-card {
+  background: #121210;
+  border: 1px solid #292723;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.wash-box-card:hover {
+  border-color: #dfcfb7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.wash-box-card.gold-finish {
+  background: linear-gradient(180deg, #181610 0%, #12110d 100%);
+  border-color: #a68936;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.08);
+}
+
+.wash-box-card.gold-finish:hover {
+  border-color: #e5c365;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.22);
+}
+
+.wash-box-tag {
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #8c8880;
+  text-transform: uppercase;
+}
+
+.wash-box-card.gold-finish .wash-box-tag {
+  color: #c9ab57;
+}
+
+.wash-box-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #f5f5f2;
+}
+
+.wash-box-card.gold-finish .wash-box-title {
+  color: #fcedbe;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.wash-box-desc {
+  font-size: 9px;
+  color: #8c8880;
+  line-height: 1.35;
+  letter-spacing: 0.03em;
+}
+
+.wash-box-card.gold-finish .wash-box-desc {
+  color: #baa472;
+}
+
+@media (max-width: 600px) {
+  .oversized-wash-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* Footer Instagram Link Styling */
+.footer-insta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #141311;
+  border: 1px solid #2a2723;
+  color: #dfcfb7;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+}
+
+.footer-insta-pill:hover {
+  background: #dfcfb7;
+  color: #080808;
+  border-color: #dfcfb7;
+}
+
+/* --- CHECKOUT IN-PAGE QUANTITY CONTROLS & MOBILE ORDER SUMMARY --- */
+.checkout-item-card {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #222;
+  align-items: start;
+}
+.checkout-item-card:last-child {
+  border-bottom: none;
+}
+.checkout-item-img-wrap {
+  width: 58px;
+  height: 72px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.checkout-item-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.checkout-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.checkout-item-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.checkout-item-row-top h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  color: #f5f2ed;
+  line-height: 1.35;
+  letter-spacing: .02em;
+}
+.checkout-item-price {
+  font-size: 13px;
+  color: #fff;
+  white-space: nowrap;
+  font-weight: 800;
+}
+.checkout-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.checkout-item-size-badge {
+  background: #191919;
+  border: 1px solid #333;
+  color: #d8d8d3;
+  padding: 2px 7px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+.checkout-item-rate {
+  font-size: 10px;
+  color: #777;
+}
+.checkout-stock-pill {
+  font-size: 8px;
+  padding: 2px 6px;
+  background: rgba(200, 182, 154, 0.15);
+  color: #c8b69a;
+  border: 1px solid rgba(200, 182, 154, 0.35);
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.checkout-stock-pill.out {
+  background: rgba(220, 60, 60, 0.15);
+  color: #ff8b8b;
+  border-color: rgba(220, 60, 60, 0.4);
+}
+.checkout-item-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+}
+.checkout-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: #0d0d0d;
+  border: 1px solid #333;
+  height: 32px;
+}
+.checkout-qty-stepper .qty-btn {
+  background: transparent;
+  border: 0;
+  color: #eee;
+  width: 32px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.checkout-qty-stepper .qty-btn:hover {
+  background: #222;
+  color: #c8b69a;
+}
+.checkout-qty-stepper .qty-btn:active {
+  background: #2a2a2a;
+}
+.checkout-qty-stepper .qty-count {
+  min-width: 28px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+.checkout-item-remove {
+  background: none;
+  border: 0;
+  color: #666;
+  font-size: 9px;
+  letter-spacing: .12em;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color 0.15s;
+}
+.checkout-item-remove:hover {
+  color: #ff6b6b;
+}
+
+/* Mobile Collapsible Order Summary */
+.mobile-order-summary-wrapper {
+  display: none;
+  width: 100%;
+  margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+  .mobile-order-summary-wrapper {
+    display: block;
+    order: 0;
+  }
+}
+.mobile-order-summary-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 16px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  color: #f5f2ed;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+.mobile-order-summary-bar:hover {
+  background: #161616;
+  border-color: #3e3e3e;
+}
+.mobile-summary-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.mobile-summary-bar-left .summary-arrow {
+  transition: transform 0.25s ease;
+  color: #c8b69a;
+}
+.mobile-summary-bar-left .summary-arrow.open {
+  transform: rotate(180deg);
+}
+.mobile-summary-bar-right {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.mobile-summary-bar-right small {
+  font-size: 8px;
+  color: #777;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.mobile-summary-bar-right strong {
+  font-size: 15px;
+  color: #fff;
+  font-weight: 800;
+}
+.mobile-order-summary-drawer {
+  background: #090909;
+  border: 1px solid #262626;
+  border-top: 0;
+  padding: 16px;
+}
+.mobile-summary-subtotals {
+  border-top: 1px solid #222;
+  margin-top: 14px;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mobile-summary-subtotals > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #999;
+}
+.mobile-summary-subtotals b {
+  color: #fff;
+}
+.mobile-summary-advance-preview {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed #333;
+  color: #c8b69a !important;
+}
+.mobile-summary-advance-preview strong {
+  font-size: 15px;
+  color: #c8b69a;
+}
+
+.summary-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #222;
+}
+.summary-title-row h2 {
+  margin: 0 !important;
+  font-size: 13px !important;
+  letter-spacing: .12em !important;
+}
+.summary-edit-cart-link {
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: #888;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color .2s;
+}
+.summary-edit-cart-link:hover {
+  color: #fff;
+}
+.checkout-preorder-summary-split {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #131313;
+  border: 1px solid #282828;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.checkout-preorder-summary-split > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #aaa;
+}
+.checkout-preorder-summary-split b {
+  color: #c8b69a;
+}
+
+/* ==========================================================================
+   ENYTM AUTHENTIC BRAND WORDMARK & LOGO SYSTEM
+   ========================================================================== */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.brand-logo-img {
+  height: 22px;
+  width: auto;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.logo .brand-logo-img {
+  height: 24px;
+}
+
+.footer-logo .brand-logo-img {
+  height: 22px;
+}
+
+.prelaunch-logo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.prelaunch-logo .brand-logo-img {
+  height: clamp(24px, 3.4vw, 32px);
+}
+
+.admin-side .logo {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.admin-side .logo .brand-logo-img {
+  height: 22px;
+}
+
+.enytm-intro-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enytm-intro-logo .brand-logo-img {
+  height: clamp(52px, 10vw, 86px);
+  filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.28));
+}
+
+.manifesto-signature {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.manifesto-signature .brand-logo-img {
+  height: 18px;
+}
+
+.quote-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.quote-brand .brand-logo-img {
+  height: 22px;
+}
+
+.quote-apparels-tag {
+  font-size: 11px;
+  letter-spacing: .25em;
+  color: #c8b69a;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.admin-product-placeholder {
+  display: grid;
+  place-items: center;
+}
+
+.admin-product-placeholder .brand-logo-img {
+  height: 14px;
+  opacity: 0.65;
+}
+
+/* Account Mark 3-bar signature watermark */
+.account-mark {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  opacity: 0.14 !important;
+  user-select: none;
+}
+
+.account-mark-bars {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 130px;
+  height: 115px;
+}
+
+.account-mark-bars span {
+  display: block;
+  width: 100%;
+  height: 25px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/* ========================================================
+   ENYTM CHECKOUT: PAYMENT PLAN SELECTOR (FULL vs ADVANCE)
+   ======================================================== */
+.payment-plan-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.payment-plan-card {
+  position: relative;
+  background: #111111;
+  border: 1px solid #292929;
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.payment-plan-card:hover {
+  border-color: #555555;
+  transform: translateY(-1px);
+}
+
+.payment-plan-card.active {
+  border-color: #c8b69a;
+  background: linear-gradient(135deg, rgba(200, 182, 154, 0.08) 0%, rgba(20, 19, 17, 0.96) 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(200, 182, 154, 0.2);
+}
+
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.plan-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #555;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.plan-radio-circle.selected {
+  border-color: #c8b69a;
+}
+
+.plan-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c8b69a;
+}
+
+.plan-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.plan-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.plan-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #f5f5f2;
+}
+
+.plan-save-pill {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #c8b69a 0%, #e2d3be 100%);
+  color: #080808;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(200, 182, 154, 0.35);
+  animation: pulse-badge 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.plan-split-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.plan-subtitle {
+  font-size: 11px;
+  color: #888888;
+  line-height: 1.4;
+}
+
+.plan-amount-group {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.plan-amount-highlight {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.payment-plan-card.active .plan-amount-highlight {
+  color: #c8b69a;
+}
+
+.plan-strikethrough {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  text-decoration: line-through;
+  margin-top: 1px;
+}
+
+.plan-amount-note {
+  display: block;
+  font-size: 10px;
+  color: #777;
+  letter-spacing: 0.04em;
+}
+
+.plan-active-perks {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(200, 182, 154, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.plan-perk-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #d1cdc7;
+}
+
+.plan-perk-row b {
+  color: #ffffff;
+}
+
+.text-gold {
+  color: #c8b69a !important;
+}
+
+.gold-text {
+  color: #c8b69a !important;
+}
+
+.full-plan-note,
+.full-payment-selected-note {
+  border-color: rgba(200, 182, 154, 0.35) !important;
+  background: linear-gradient(135deg, rgba(200, 182, 154, 0.06) 0%, rgba(17, 17, 17, 0.9) 100%) !important;
+}
+
+.full-payment-discount-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  margin: 12px 0;
+  color: #4ade80;
+}
+
+.full-discount-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.checkout-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .plan-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .plan-amount-group {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-left: 34px;
+  }
+}
+
+
 
 

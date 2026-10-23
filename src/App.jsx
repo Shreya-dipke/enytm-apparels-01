@@ -59,7 +59,31 @@ function useProducts(){
   },[]);
   return Array.isArray(p) && p.length ? p : fallbackProducts;
 }
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/">ENYTM<span>™</span></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/shop?category=Hoodies" onClick={()=>setOpen(false)}>HOODIES</Link><Link to="/shop?category=Lowers" onClick={()=>setOpen(false)}>LOWERS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement"><div className="announcement-ticker-track"><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span><span>PRE-ORDER IS LIVE (ADVANCE PAYMENT ONLY) <b>✳</b></span><span>COD AVAILABLE ON REGULAR LAUNCH <b>✳</b></span></div></div></>}
+
+export function BrandLogo({ className = "", alt = "ENYTM™", style = {} }) {
+  return (
+    <span className={`brand-mark ${className}`.trim()} style={style} aria-label="ENYTM">
+      <img
+        src="/enytm-brand-logo.png"
+        alt={alt}
+        className="brand-logo-img"
+        loading="eager"
+        decoding="sync"
+      />
+    </span>
+  );
+}
+
+const TICKER_ITEMS = [
+  { text: "BUY 2, GET 10% OFF", highlight: true },
+  { text: "BUY 3, GET 15% OFF", highlight: true },
+  { text: "ONLINE PAYMENT: EXTRA 5% OFF", highlight: false },
+  { text: "FREE SHIPPING ACROSS INDIA", highlight: false },
+  { text: "PRE-ORDER IS LIVE · COD (30% ADVANCE)", highlight: false }
+];
+const TICKER_TRACK_ITEMS = Array.from({ length: 12 }, () => TICKER_ITEMS).flat();
+
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/shop?category=Hoodies" onClick={()=>setOpen(false)}>HOODIES</Link><Link to="/shop?category=Lowers" onClick={()=>setOpen(false)}>LOWERS</Link><Link to={token?"/orders":"/login"} onClick={()=>setOpen(false)}>ORDERS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" aria-label="Orders" title="Orders" to={token?"/orders":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track">{TICKER_TRACK_ITEMS.map((item, idx) => (<span key={idx}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></>}
 function ProductCard({product}){
   if (!product) return null;
   const{addToCart,wishlist,toggleWishlist}=useCart();
@@ -106,8 +130,8 @@ function PrelaunchHome(){
       @media(max-width:600px){.prelaunch-top-note{font-size:8px;max-width:125px;line-height:1.6}.prelaunch-hero{background-position:58% center;padding-top:140px;padding-bottom:110px}.prelaunch-title{font-size:clamp(53px,15vw,88px)}.prelaunch-bottom{font-size:8px;line-height:1.6}.countdown-grid{gap:6px}.countdown-unit{padding:18px 2px}.countdown-label{font-size:7px;letter-spacing:.12em}.countdown-footer{font-size:8px;line-height:1.6}.countdown-footer span:last-child{text-align:right}}
       @media(prefers-reduced-motion:reduce){.prelaunch-explore{transition:none}}
     `}</style>
-    <header className="prelaunch-top"><Link className="prelaunch-logo" to="/">ENYTM<sup>™</sup></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br/>PUNE, INDIA · EST. 2026</span></header>
-    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br/>CLOTHING.<br/><em>A FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18}/></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How does pre-order payment work?<span aria-hidden="true">＋</span></summary><p>For eligible pre-launch offers, pay 30% online to reserve your order. The remaining 70% must be paid online before dispatch. Cash on Delivery is not available for pre-orders.</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch and after the remaining balance has been paid in full. We’ll share order updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section>
+    <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br/>PUNE, INDIA · EST. 2026</span></header>
+    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br/>CLOTHING.<br/><em>A FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18}/></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section>
   </main>
 }
 function LaunchCountdown(){
@@ -122,7 +146,7 @@ function LaunchCountdown(){
     {number:"03",name:"OVERSIZED HOODIES",detail:"Comfort with presence",image:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85",query:"Oversized%20Hoodies"},
     {number:"04",name:"BAGGY LOWER",detail:"Move your way",image:"https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85",query:"Baggy%20Lower"}
   ];
-  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/">ENYTM<sup>™</sup></Link><Link className="countdown-back" to="/">← BACK TO INTRO</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
+  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><Link className="countdown-back" to="/">← BACK TO INTRO</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
 }
 
 function Home() {
@@ -207,13 +231,13 @@ function Home() {
           <span>EVERYDAY, ELEVATED</span><b>✳</b>
           <span>EXTRA 10% OFF PREPAID</span><b>✳</b>
           <span>MORE THAN A MOMENT</span><b>✳</b>
-          <span>FREE SHIPPING OVER ₹1,999</span><b>✳</b>
+          <span>FREE SHIPPING ON ALL ORDERS</span><b>✳</b>
           <span>EVERYDAY, ELEVATED</span><b>✳</b>
         </div>
       </div>
 
       <section className="manifesto manifesto-black-label manifesto-v2">
-        <div className="manifesto-number">ENYTM™ — 001</div>
+        <div className="manifesto-number"><BrandLogo style={{ height: 14 }} /> — 001</div>
         <p className="eyebrow">01 / A DIFFERENT KIND OF ESSENTIAL</p>
         <h2>
           NOT MADE<br />
@@ -225,7 +249,7 @@ function Home() {
             Considered fits. Better-feeling heavyweight fabrics. Pieces that earn their place in your everyday rotation without screaming for attention.
           </p>
           <div className="manifesto-signature">
-            ENYTM™ <span>MORE THAN A MOMENT</span>
+            <BrandLogo /> <span>MORE THAN A MOMENT</span>
           </div>
         </div>
       </section>
@@ -367,9 +391,9 @@ function Home() {
           BUILT FOR TODAY.<br />
           <em>BEYOND THE MOMENT.</em>
         </h2>
-        <p className="quote-brand">
-          ENYTM APPARELS <span>™</span>
-        </p>
+        <div className="quote-brand">
+          <BrandLogo /> <span className="quote-apparels-tag">APPARELS</span>
+        </div>
         <Link to="/shop" className="quote-shop-link">
           FIND YOUR PIECE <ArrowRight size={15} />
         </Link>
@@ -398,7 +422,7 @@ function Home() {
               What offers are currently active?<span aria-hidden="true">＋</span>
             </summary>
             <p>
-              We offer <b>Extra 10% off on all prepaid orders</b> via Razorpay, <b>Buy 2, Get 20% off</b> automatically applied in cart, and <b>Free Shipping on orders above ₹1,999</b> across India.
+              We offer <b>Extra 5% off on online payments</b> via Razorpay, <b>Buy 2 Get 10% off & Buy 3 Get 15% off</b> automatically applied in your bag, and <b>Free Shipping on all orders</b> across India.
             </p>
           </details>
           <details>
@@ -406,7 +430,7 @@ function Home() {
               How does pre-order production work?<span aria-hidden="true">＋</span>
             </summary>
             <p>
-              Pre-orders require 100% advance payment. Production takes approximately 3.5 weeks to complete, followed by 4–5 working days for courier delivery once dispatched. Cancellation with full refund is available within 24 hours of payment.
+              Pre-orders require 100% advance payment. Production takes approximately 2.5 weeks to complete, followed by 7–10 days for courier delivery once dispatched. Cancellation with full refund is available within 24 hours of payment.
             </p>
           </details>
           <details>
@@ -510,6 +534,31 @@ function ProductPage(){
   const outOfStock = stock <= 0;
   const videoRef = useRef(null);
 
+  useEffect(() => {
+    setActive(0);
+    setQty(1);
+    setAdded(false);
+    setShowSizeGuide(false);
+    setZoomImage(null);
+    if (product?.sizes && product.sizes.length > 0) {
+      setSize(product.sizes[0]);
+    } else {
+      setSize("M");
+    }
+  }, [product?.id]);
+
+  const recommendations = useMemo(() => {
+    if (!product) return [];
+    const otherProducts = productList.filter((p) => String(p.id) !== String(product.id));
+    const sameCategory = otherProducts.filter(
+      (p) => p.category && product.category && String(p.category).toLowerCase() === String(product.category).toLowerCase()
+    );
+    const differentCategory = otherProducts.filter(
+      (p) => !p.category || !product.category || String(p.category).toLowerCase() !== String(product.category).toLowerCase()
+    );
+    return [...sameCategory, ...differentCategory].slice(0, 4);
+  }, [productList, product]);
+
   if (!product) {
     return (
       <main className="product-page" style={{padding:"120px 4vw",textAlign:"center"}}>
@@ -590,14 +639,16 @@ function ProductPage(){
 
   const sizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL", "XXL"];
   const categoryLabel = String(product.category || "Oversized").toUpperCase();
+  const isOversized = String(product.category || "").toLowerCase() === "oversized" || /oversized/i.test(product.name || "");
   const priceDisplay = Number(product.price || 0).toLocaleString("en-IN");
   const oldPriceDisplay = product.oldPrice ? Number(product.oldPrice).toLocaleString("en-IN") : null;
-  const prepaidPrice = Math.round(Number(product.price || 0) * 0.90);
+  const prepaidPrice = Math.round(Number(product.price || 0) * 0.95);
   const savings = (product.oldPrice && Number(product.oldPrice) > Number(product.price)) ? Number(product.oldPrice) - Number(product.price) : 0;
   const discountPct = (product.oldPrice && Number(product.oldPrice) > Number(product.price)) ? Math.round(((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice)) * 100) : 0;
 
   return (
-    <main className="product-page">
+    <div className="product-page-container">
+      <main className="product-page">
       <section className="product-gallery-wrap">
         <div className="gallery-toolbar">
           <span>ENYTM / PRODUCT 0{product.id}</span>
@@ -692,12 +743,6 @@ function ProductPage(){
 
         <h1>{product.name}</h1>
 
-        <div className="rating">
-          <span className="stars">★★★★★</span>
-          <span className="rating-score">4.9</span>
-          <a href="#reviews" className="rating-count">28 verified reviews</a>
-        </div>
-
         <div className="price-row">
           <strong className="selling-price">₹{priceDisplay}</strong>
           {oldPriceDisplay && <del className="mrp-price">₹{oldPriceDisplay}</del>}
@@ -729,29 +774,29 @@ function ProductPage(){
               <div className="offer-bullet"><Tag size={13} /></div>
               <div className="offer-content">
                 <div className="offer-heading-row">
-                  <strong>Extra 10% off on prepaid orders</strong>
+                  <strong>Extra 5% off on online payment</strong>
                   <span className="offer-calc-price">₹{prepaidPrice.toLocaleString("en-IN")}</span>
                 </div>
-                <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> via Razorpay (UPI, Cards, NetBanking, Wallets).</p>
+                <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> with 100% full online payment via Razorpay (UPI, Cards, NetBanking).</p>
               </div>
             </div>
             <div className="offer-item">
               <div className="offer-bullet"><Sparkles size={13} /></div>
               <div className="offer-content">
                 <div className="offer-heading-row">
-                  <strong>Buy 2, get 20% off</strong>
-                  <span className="offer-tag-pill">CART OFFER</span>
+                  <strong>Buy 2, get 10% off · Buy 3, get 15% off</strong>
+                  <span className="offer-tag-pill">VOLUME SAVINGS</span>
                 </div>
-                <p>Add any 2 or more pieces to your bag. 20% quantity discount applies automatically at checkout.</p>
+                <p>Add 2 pieces to get 10% off, or 3+ pieces to get 15% off automatically in your bag.</p>
               </div>
             </div>
             <div className="offer-item">
               <div className="offer-bullet"><Truck size={13} /></div>
               <div className="offer-content">
                 <div className="offer-heading-row">
-                  <strong>Free shipping on orders above ₹1,999</strong>
+                  <strong>Free shipping on all orders</strong>
                 </div>
-                <p>Insured expedited delivery across all serviceable pincodes in India.</p>
+                <p>Insured expedited delivery across all serviceable pincodes in India with zero delivery charge.</p>
               </div>
             </div>
           </div>
@@ -762,11 +807,38 @@ function ProductPage(){
         </p>
 
         <div className="detail-highlights">
-          <span>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
+          <span className="gsm-box">{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
+          {isOversized && (
+            <>
+              <span className="wash-box">SILICON WASH</span>
+              <span className="wash-box">BIO WASH</span>
+              <span className="wash-box gold-box">GOLD FINISH</span>
+            </>
+          )}
           <span>100% COMBED COTTON</span>
           <span>OVERSIZED FIT</span>
           <span>DROP SHOULDER</span>
         </div>
+
+        {isOversized && (
+          <div className="oversized-wash-row">
+            <div className="wash-box-card">
+              <span className="wash-box-tag">TREATMENT 01</span>
+              <strong className="wash-box-title">SILICON WASH</strong>
+              <small className="wash-box-desc">Ultra-soft silky handfeel</small>
+            </div>
+            <div className="wash-box-card">
+              <span className="wash-box-tag">TREATMENT 02</span>
+              <strong className="wash-box-title">BIO WASH</strong>
+              <small className="wash-box-desc">Enzyme-treated anti-pilling</small>
+            </div>
+            <div className="wash-box-card gold-finish">
+              <span className="wash-box-tag">FINISH 03</span>
+              <strong className="wash-box-title">GOLD FINISH</strong>
+              <small className="wash-box-desc">Lustrous premium sheen</small>
+            </div>
+          </div>
+        )}
 
         {product.fabric && (
           <div className="spec">
@@ -847,7 +919,7 @@ function ProductPage(){
           <div>
             <Truck />
             <span>
-              <b>FREE SHIPPING</b> ON ORDERS ₹1,999+
+              <b>FREE SHIPPING</b> ON ALL ORDERS
             </span>
           </div>
           <div>
@@ -864,7 +936,7 @@ function ProductPage(){
           </div>
         </div>
 
-        {/* 5 EXPANDABLE ACCORDIONS */}
+        {/* EXPANDABLE ACCORDIONS */}
         <div className="product-accordions">
           <details open>
             <summary>
@@ -876,6 +948,9 @@ function ProductPage(){
               <div className="acc-specs-grid">
                 <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
                 <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
+                {isOversized && (
+                  <div><span>FINISH & WASH</span><b>SILICON WASH · BIO WASH · GOLD FINISH</b></div>
+                )}
                 <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
                 <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
                 <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
@@ -892,16 +967,15 @@ function ProductPage(){
             <div className="acc-content">
               <div className="acc-notice-box">
                 <strong>PRE-ORDER PRODUCTION & DISPATCH TIMELINE</strong>
-                <p>Please keep in mind that this is a Pre Order. Pre Order production may take up to 3.5 weeks to complete.</p>
+                <p>Please keep in mind that this is a Pre Order. Pre Order production may take up to 2.5 weeks to complete.</p>
                 <p>Once your order is ready we will inform you and dispatch it immediately.</p>
-                <p>After dispatch delivery may take an additional 4 to 5 working days depending on the courier service.</p>
+                <p>After dispatch delivery may take an additional 7 to 10 days depending on the courier service.</p>
                 <p className="tiny-muted">Our Pre Order batch is being produced first while the regular drop will launch separately. Please place your Pre Order only if you are comfortable with this production timeline.</p>
               </div>
 
               <div className="acc-shipping-rates">
                 <h4>DISPATCH & DELIVERY</h4>
-                <p>• <b>Free Shipping:</b> Orders of ₹1,999 and above unlock free delivery across India.</p>
-                <p>• <b>Standard Shipping:</b> Flat ₹99 for orders below ₹1,999.</p>
+                <p>• <b>Free Shipping:</b> Enjoy 100% free delivery across all serviceable pincodes in India on every order.</p>
                 <p>• <b>In-Stock Pieces:</b> Dispatched within 24–48 business hours with live SMS/email tracking.</p>
               </div>
 
@@ -945,62 +1019,6 @@ function ProductPage(){
             </div>
           </details>
 
-          <details id="reviews">
-            <summary>
-              <span className="acc-title">CUSTOMER REVIEWS</span>
-              <span className="acc-rating-badge">★ 4.9 · 28 Reviews</span>
-              <ChevronDown size={16} className="acc-chevron" />
-            </summary>
-            <div className="acc-content">
-              <div className="reviews-summary-card">
-                <div className="score-col">
-                  <h2>4.9</h2>
-                  <div className="stars">★★★★★</div>
-                  <span>Based on 28 verified customer reviews</span>
-                </div>
-                <div className="rating-bars">
-                  <div className="bar-row"><span>5★</span><div className="bar"><div style={{width:"92%"}}></div></div><span>26</span></div>
-                  <div className="bar-row"><span>4★</span><div className="bar"><div style={{width:"8%"}}></div></div><span>2</span></div>
-                  <div className="bar-row"><span>3★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
-                  <div className="bar-row"><span>2★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
-                  <div className="bar-row"><span>1★</span><div className="bar"><div style={{width:"0%"}}></div></div><span>0</span></div>
-                </div>
-              </div>
-              <div className="reviews-list">
-                <div className="review-card">
-                  <div className="rev-head">
-                    <strong>Arjun M.</strong>
-                    <span className="verified-badge">✓ Verified Buyer</span>
-                    <span className="rev-date">2 days ago</span>
-                  </div>
-                  <div className="stars">★★★★★</div>
-                  <p className="rev-title">Heavyweight perfection</p>
-                  <p className="rev-body">The drape on this is unreal. Substantial GSM fabric that holds its boxy streetwear shape all day without feeling stiff. Collar rib doesn't bacon after washes.</p>
-                </div>
-                <div className="review-card">
-                  <div className="rev-head">
-                    <strong>Kabir S.</strong>
-                    <span className="verified-badge">✓ Verified Buyer</span>
-                    <span className="rev-date">1 week ago</span>
-                  </div>
-                  <div className="stars">★★★★★</div>
-                  <p className="rev-title">International luxury feel at this price</p>
-                  <p className="rev-body">Honestly rivals high-end brands like Represent or Fear of God Essentials. Sizing is properly oversized, so ordering true to size gives the ideal drop shoulder look.</p>
-                </div>
-                <div className="review-card">
-                  <div className="rev-head">
-                    <strong>Rohan D.</strong>
-                    <span className="verified-badge">✓ Verified Buyer</span>
-                    <span className="rev-date">2 weeks ago</span>
-                  </div>
-                  <div className="stars">★★★★★</div>
-                  <p className="rev-title">Attention to finishing</p>
-                  <p className="rev-body">Clean seams, rich matte black hue, and premium breathability. Highly recommend pairing with the Heavyweight Lowers.</p>
-                </div>
-              </div>
-            </div>
-          </details>
-
           <details>
             <summary>
               <span className="acc-title">PRIVACY & PRE-ORDER PAYMENT TERMS</span>
@@ -1008,11 +1026,11 @@ function ProductPage(){
             </summary>
             <div className="acc-content">
               <div className="acc-preorder-terms">
-                <h4>PRE-ORDER PAYMENT TERMS</h4>
-                <p>All pre-orders require 100% advance payment.</p>
-                <p>After making the payment, please send us a payment screenshot to confirm your order.</p>
-                <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a full refund.</p>
-                <p>After 24 hours, the order will be considered confirmed and the advance payment will become non-refundable, as production will be started specifically against your pre-order.</p>
+                <h4>PAYMENT & PRE-ORDER OPTIONS</h4>
+                <p><b>1. Online Payment (Prepaid):</b> Pay 100% online at checkout to unlock an <b>instant extra 5% discount</b>. Zero balance due on delivery.</p>
+                <p><b>2. Cash on Delivery (COD):</b> Pay a <b>30% advance online today</b> to confirm your order booking, and pay the remaining 70% in cash or UPI upon delivery.</p>
+                <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a 100% full refund.</p>
+                <p>After 24 hours, custom manufacturing begins specifically against your booking.</p>
               </div>
               <hr className="acc-divider" />
               <div className="acc-privacy-summary">
@@ -1024,70 +1042,91 @@ function ProductPage(){
           </details>
         </div>
       </section>
-
-      {/* SIZE GUIDE MODAL */}
-      {showSizeGuide && (
-        <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
-          <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <p className="eyebrow">ENYTM APPARELS</p>
-                <h3>GARMENT SIZE GUIDE</h3>
-              </div>
-              <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
-              <div className="size-table-wrap">
-                <table className="size-table">
-                  <thead>
-                    <tr>
-                      <th>SIZE</th>
-                      <th>CHEST (IN)</th>
-                      <th>LENGTH (IN)</th>
-                      <th>SHOULDER (IN)</th>
-                      <th>SLEEVE (IN)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
-                    <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
-                    <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
-                    <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
-                    <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="size-guide-tips">
-                <div className="tip-box">
-                  <strong>OVERSIZED FIT:</strong>
-                  <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
-                </div>
-                <div className="tip-box">
-                  <strong>NEED SIZING ASSISTANCE?</strong>
-                  <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LIGHTBOX MODAL */}
-      {zoomImage && (
-        <div className="modal-backdrop lightbox-backdrop" onClick={() => setZoomImage(null)}>
-          <button className="lightbox-close" onClick={() => setZoomImage(null)} aria-label="Close image zoom">
-            <X size={24} />
-          </button>
-          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-            <img src={zoomImage} alt="Product zoom inspection" />
-            <span className="lightbox-caption">{product.name} — Fabric & Finishing Inspection</span>
-          </div>
-        </div>
-      )}
     </main>
+
+    {/* RECOMMENDATIONS SECTION BELOW THE PRODUCT */}
+    {recommendations.length > 0 && (
+      <section className="section related-products">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">CURATED FOR YOU · COMPLETE THE ROTATION</p>
+            <h2>YOU MAY ALSO LIKE</h2>
+          </div>
+          <Link className="text-link" to="/shop">
+            VIEW ALL PIECES <ArrowRight size={14} />
+          </Link>
+        </div>
+        <div className="product-grid related-products-grid">
+          {recommendations.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* SIZE GUIDE MODAL */}
+    {showSizeGuide && (
+      <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
+        <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <p className="eyebrow">ENYTM APPARELS</p>
+              <h3>GARMENT SIZE GUIDE</h3>
+            </div>
+            <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="modal-body">
+            <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
+            <div className="size-table-wrap">
+              <table className="size-table">
+                <thead>
+                  <tr>
+                    <th>SIZE</th>
+                    <th>CHEST (IN)</th>
+                    <th>LENGTH (IN)</th>
+                    <th>SHOULDER (IN)</th>
+                    <th>SLEEVE (IN)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
+                  <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
+                  <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
+                  <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
+                  <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="size-guide-tips">
+              <div className="tip-box">
+                <strong>OVERSIZED FIT:</strong>
+                <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
+              </div>
+              <div className="tip-box">
+                <strong>NEED SIZING ASSISTANCE?</strong>
+                <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* LIGHTBOX MODAL */}
+    {zoomImage && (
+      <div className="modal-backdrop lightbox-backdrop" onClick={() => setZoomImage(null)}>
+        <button className="lightbox-close" onClick={() => setZoomImage(null)} aria-label="Close image zoom">
+          <X size={24} />
+        </button>
+        <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+          <img src={zoomImage} alt="Product zoom inspection" />
+          <span className="lightbox-caption">{product.name} — Fabric & Finishing Inspection</span>
+        </div>
+      </div>
+    )}
+    </div>
   );
 }
 
@@ -1151,7 +1190,7 @@ function Auth({register=false}){
    const data=await api("/auth/register/verify-otp",{method:"POST",body:JSON.stringify({emailOtp:otp.email,challengeId,whatsappOptIn:form.whatsappOptIn,emailOptIn:form.emailOptIn})});
    localStorage.setItem("enytm-token",data.token);
    localStorage.setItem("enytm-user",JSON.stringify(data.user));
-   const redirect=sessionStorage.getItem("enytm-after-login")||"/account";
+   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
    sessionStorage.removeItem("enytm-after-login");
    nav(redirect);
   }catch(err){
@@ -1206,7 +1245,7 @@ function Auth({register=false}){
    if(!data?.token)throw new Error("Login succeeded but no session token was returned.");
    localStorage.setItem("enytm-token",data.token);
    localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
-   const redirect=sessionStorage.getItem("enytm-after-login")||"/account";
+   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
    sessionStorage.removeItem("enytm-after-login");
    nav(redirect,{replace:true});
   }catch(err){
@@ -1408,7 +1447,8 @@ function AddressLookupFields({form,setForm,setError,compact=false}){
 }
 
 function Checkout(){
-  const { cart, subtotal, shipping, total, clearCart } = useCart();
+  const { cart, subtotal, shipping, total, clearCart, updateQty, removeFromCart } = useCart();
+  const products = useProducts();
   const nav = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1417,13 +1457,35 @@ function Checkout(){
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponBusy, setCouponBusy] = useState(false);
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("online");
+
+  useEffect(() => {
+    if (error && error.toLowerCase().includes("item")) {
+      setShowMobileSummary(true);
+    }
+  }, [error]);
 
   const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-  const buy2Discount = (!appliedCoupon && totalQty >= 2) ? Math.round(subtotal * 0.20) : 0;
-  const isFreeShipping = subtotal >= 1999;
-  const shippingFee = subtotal === 0 || isFreeShipping ? 0 : 99;
+  const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
+  const buy2Discount = (!appliedCoupon && qtyDiscountPct > 0) ? Math.round(subtotal * qtyDiscountPct) : 0;
+  const isFreeShipping = true;
+  const shippingFee = 0;
   const couponDiscountVal = Number(appliedCoupon?.discount || 0);
-  const finalPayable = Math.max(0, subtotal - buy2Discount - couponDiscountVal + shippingFee);
+  const basePayable = Math.max(0, subtotal - buy2Discount - couponDiscountVal + shippingFee);
+
+  // Online payment gets instant extra 5% discount (no advance needed, full payment)
+  const isOnline = paymentMethod === "online";
+  const onlineDiscount = Math.round(basePayable * 0.05);
+  const onlinePayable = Math.max(0, basePayable - onlineDiscount);
+
+  // Cash on Delivery (COD) requires 30% advance online today to confirm booking
+  const advanceDue = Math.ceil(basePayable * 0.30);
+  const balanceDue = basePayable - advanceDue;
+
+  // Active payment calculations based on chosen payment method
+  const payableToday = isOnline ? onlinePayable : advanceDue;
+  const finalPayable = isOnline ? onlinePayable : basePayable;
 
   useEffect(() => {
     let alive = true;
@@ -1488,7 +1550,12 @@ function Checkout(){
     try {
       const data = await api("/checkout/order", {
         method: "POST",
-        body: JSON.stringify({ items: cart, shippingAddress: form, couponCode: appliedCoupon?.code || "" })
+        body: JSON.stringify({
+          items: cart,
+          shippingAddress: form,
+          couponCode: appliedCoupon?.code || "",
+          paymentMethod
+        })
       });
       if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection.");
       const digits = String(form.phone || "").replace(/\D/g, "").slice(-10);
@@ -1498,7 +1565,7 @@ function Checkout(){
         amount: data.amount,
         currency: data.currency,
         name: "ENYTM APPARELS",
-        description: "ENYTM order",
+        description: isOnline ? "ENYTM prepaid full order (5% off)" : "ENYTM COD 30% advance confirmation",
         order_id: data.razorpayOrderId,
         prefill: { name: form.name, email: user?.email, contact: digits },
         theme: { color: "#111111" },
@@ -1539,8 +1606,107 @@ function Checkout(){
       </main>
     );
 
-  const advanceDue = Math.ceil(finalPayable * 0.30);
-  const balanceDue = finalPayable - advanceDue;
+  if (!cart.length)
+    return (
+      <main className="empty">
+        <ShoppingBag size={50} />
+        <h2>YOUR BAG IS EMPTY</h2>
+        <p style={{ color: "#888", margin: "16px 0 24px" }}>Add pieces to your bag to proceed with checkout.</p>
+        <Link className="btn primary" to="/shop">
+          EXPLORE PRODUCTS
+        </Link>
+      </main>
+    );
+
+  const handleIncrease = (item) => {
+    setError("");
+    const productObj = products?.find((p) => String(p.id) === String(item.id));
+    const maxStock = typeof productObj?.stock === "number" ? productObj.stock : (typeof item.stock === "number" ? item.stock : null);
+    if (maxStock !== null && maxStock > 0 && item.qty >= maxStock) {
+      setError(`${item.name} has only ${maxStock} items available in stock.`);
+      return;
+    }
+    updateQty(item.key, item.qty + 1);
+  };
+
+  const handleDecrease = (item) => {
+    setError("");
+    if (item.qty > 1) {
+      updateQty(item.key, item.qty - 1);
+    } else {
+      removeFromCart(item.key);
+    }
+  };
+
+  const handleRemove = (item) => {
+    setError("");
+    removeFromCart(item.key);
+  };
+
+  const renderCheckoutItem = (i) => {
+    const productObj = products?.find((p) => String(p.id) === String(i.id));
+    const stockCount = typeof productObj?.stock === "number" ? productObj.stock : (typeof i.stock === "number" ? i.stock : null);
+    const isLowStock = stockCount !== null && stockCount < 6;
+    const isOverStock = stockCount !== null && i.qty > stockCount;
+
+    return (
+      <div key={i.key} className="checkout-item-card">
+        <div className="checkout-item-img-wrap">
+          <img src={i.image || fallbackProducts[0]?.image} alt={i.name} />
+        </div>
+        <div className="checkout-item-details">
+          <div className="checkout-item-row-top">
+            <h4>{i.name}</h4>
+            <strong className="checkout-item-price">
+              ₹{(Number(i.price) * Number(i.qty)).toLocaleString("en-IN")}
+            </strong>
+          </div>
+          <div className="checkout-item-meta">
+            <span className="checkout-item-size-badge">SIZE {i.size}</span>
+            <span className="checkout-item-rate">₹{Number(i.price).toLocaleString("en-IN")} each</span>
+            {isOverStock ? (
+              <span className="checkout-stock-pill out">Only {stockCount} in stock</span>
+            ) : isLowStock ? (
+              <span className="checkout-stock-pill">Only {stockCount} left</span>
+            ) : null}
+          </div>
+          <div className="checkout-item-controls">
+            <div className="checkout-qty-stepper">
+              <button
+                type="button"
+                className="qty-btn"
+                onClick={() => handleDecrease(i)}
+                aria-label={`Decrease quantity of ${i.name}`}
+                title="Decrease quantity"
+              >
+                <Minus size={13} />
+              </button>
+              <span className="qty-count">{i.qty}</span>
+              <button
+                type="button"
+                className="qty-btn"
+                onClick={() => handleIncrease(i)}
+                aria-label={`Increase quantity of ${i.name}`}
+                title="Increase quantity"
+              >
+                <Plus size={13} />
+              </button>
+            </div>
+            <button
+              type="button"
+              className="checkout-item-remove"
+              onClick={() => handleRemove(i)}
+              aria-label={`Remove ${i.name} from bag`}
+              title="Remove item"
+            >
+              <Trash2 size={13} />
+              <span>REMOVE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <main className="checkout-page">
@@ -1549,6 +1715,79 @@ function Checkout(){
         <h1>COMPLETE YOUR ORDER</h1>
       </div>
       <div className="checkout-layout">
+        {/* MOBILE COLLAPSIBLE ORDER SUMMARY WITH QUANTITY ADJUSTMENT */}
+        <div className="mobile-order-summary-wrapper">
+          <button
+            type="button"
+            className="mobile-order-summary-bar"
+            onClick={() => setShowMobileSummary((prev) => !prev)}
+            aria-expanded={showMobileSummary}
+          >
+            <div className="mobile-summary-bar-left">
+              <ShoppingBag size={17} />
+              <span>
+                {showMobileSummary ? "Hide order items" : "Review & adjust items"} ({totalQty} {totalQty === 1 ? "piece" : "pieces"})
+              </span>
+              <ChevronDown size={16} className={`summary-arrow ${showMobileSummary ? "open" : ""}`} />
+            </div>
+            <div className="mobile-summary-bar-right">
+              <small>{isOnline ? "PAY ONLINE (5% OFF)" : "COD ADVANCE (30%)"}</small>
+              <strong>₹{payableToday.toLocaleString("en-IN")}</strong>
+            </div>
+          </button>
+
+          {showMobileSummary && (
+            <div className="mobile-order-summary-drawer">
+              <div className="mobile-order-items-list">
+                {cart.map(renderCheckoutItem)}
+              </div>
+              <div className="mobile-summary-subtotals">
+                <div>
+                  <span>Subtotal ({totalQty} items)</span>
+                  <b>₹{subtotal.toLocaleString("en-IN")}</b>
+                </div>
+                {buy2Discount > 0 && (
+                  <div className="promo-line">
+                    <span>Promotional Discount (Buy {totalQty >= 3 ? "3, Get 15%" : "2, Get 10%"} Off)</span>
+                    <b className="discount-green">−₹{buy2Discount.toLocaleString("en-IN")}</b>
+                  </div>
+                )}
+                {appliedCoupon && (
+                  <div className="coupon-summary-line">
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <b className="discount-green">−₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</b>
+                  </div>
+                )}
+                {isOnline && onlineDiscount > 0 && (
+                  <div className="promo-line">
+                    <span className="full-discount-label">
+                      <Sparkles size={12} /> Online Payment Discount (Extra 5% Off)
+                    </span>
+                    <b className="discount-green">−₹{onlineDiscount.toLocaleString("en-IN")}</b>
+                  </div>
+                )}
+                <div>
+                  <span>Shipping</span>
+                  <b>FREE</b>
+                </div>
+                <div className="mobile-summary-advance-preview">
+                  {isOnline ? (
+                    <>
+                      <span>Payable in full online today (5% off applied):</span>
+                      <strong className="gold-text">₹{onlinePayable.toLocaleString("en-IN")}</strong>
+                    </>
+                  ) : (
+                    <>
+                      <span>COD advance due today (30%):</span>
+                      <strong>₹{advanceDue.toLocaleString("en-IN")}</strong>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <form className="checkout-form" onSubmit={pay}>
           <h2>1. DELIVERY DETAILS</h2>
           <div className="form-grid">
@@ -1585,7 +1824,102 @@ function Checkout(){
             </p>
           )}
 
-          <h2>3. PAYMENT & PRE-ORDER TERMS</h2>
+          <h2>3. CHOOSE PAYMENT METHOD</h2>
+
+          <div className="payment-plan-selector" role="radiogroup" aria-label="Payment Method Options">
+            {/* OPTION 1: ONLINE PAYMENT (100% PREPAID WITH 5% DISCOUNT) */}
+            <div
+              className={`payment-plan-card ${isOnline ? "active" : ""}`}
+              onClick={() => setPaymentMethod("online")}
+              role="radio"
+              aria-checked={isOnline}
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPaymentMethod("online"); } }}
+            >
+              <div className="plan-card-header">
+                <div className="plan-radio-row">
+                  <span className={`plan-radio-circle ${isOnline ? "selected" : ""}`}>
+                    {isOnline && <span className="plan-radio-dot" />}
+                  </span>
+                  <div className="plan-title-group">
+                    <div className="plan-title-row">
+                      <strong className="plan-title">ONLINE PAYMENT (PREPAID)</strong>
+                      <span className="plan-save-pill">⚡ EXTRA 5% OFF</span>
+                    </div>
+                    <span className="plan-subtitle">Pay 100% online now (UPI, Cards, NetBanking, Cred) · No advance needed</span>
+                  </div>
+                </div>
+                <div className="plan-amount-group">
+                  <strong className="plan-amount-highlight">₹{onlinePayable.toLocaleString("en-IN")}</strong>
+                  <del className="plan-strikethrough">₹{basePayable.toLocaleString("en-IN")}</del>
+                </div>
+              </div>
+
+              {isOnline && (
+                <div className="plan-active-perks">
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-gold" />
+                    <span>Instant <b>5% prepaid discount (save ₹{onlineDiscount.toLocaleString("en-IN")})</b> applied</span>
+                  </div>
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-gold" />
+                    <span><b>Zero advance split</b> — pay once online with 100% secure settlement</span>
+                  </div>
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-gold" />
+                    <span><b>Priority dispatch</b> when Drop 001 collection ships</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* OPTION 2: CASH ON DELIVERY (COD - 30% ADVANCE TO CONFIRM) */}
+            <div
+              className={`payment-plan-card ${!isOnline ? "active" : ""}`}
+              onClick={() => setPaymentMethod("cod")}
+              role="radio"
+              aria-checked={!isOnline}
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPaymentMethod("cod"); } }}
+            >
+              <div className="plan-card-header">
+                <div className="plan-radio-row">
+                  <span className={`plan-radio-circle ${!isOnline ? "selected" : ""}`}>
+                    {!isOnline && <span className="plan-radio-dot" />}
+                  </span>
+                  <div className="plan-title-group">
+                    <div className="plan-title-row">
+                      <strong className="plan-title">CASH ON DELIVERY (COD)</strong>
+                      <span className="plan-split-pill">30% ADVANCE REQUIRED</span>
+                    </div>
+                    <span className="plan-subtitle">Pay 30% advance now to confirm order · Remaining 70% in cash on delivery</span>
+                  </div>
+                </div>
+                <div className="plan-amount-group">
+                  <strong className="plan-amount-highlight">₹{advanceDue.toLocaleString("en-IN")}</strong>
+                  <span className="plan-amount-note">due today online</span>
+                </div>
+              </div>
+
+              {!isOnline && (
+                <div className="plan-active-perks">
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-muted" />
+                    <span>Pay 30% advance today online: <b>₹{advanceDue.toLocaleString("en-IN")}</b> to confirm booking</span>
+                  </div>
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-muted" />
+                    <span>Remaining 70% cash balance: <b>₹{balanceDue.toLocaleString("en-IN")}</b> payable upon delivery</span>
+                  </div>
+                  <div className="plan-perk-row">
+                    <CheckCircle size={13} className="text-muted" />
+                    <span>100% full refund available if cancelled within 24 hours</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="payment-box">
             <LockKeyhole />
             <div>
@@ -1597,28 +1931,53 @@ function Checkout(){
 
           {error && <div className="error">{error}</div>}
 
-          <div className="preorder-payment-note">
-            <div className="preorder-badge-title">
-              <Sparkles size={14} /> <b>ENYTM PRE-ORDER TERMS · DROP 001</b>
+          {isOnline ? (
+            <div className="preorder-payment-note full-payment-selected-note">
+              <div className="preorder-badge-title">
+                <Sparkles size={14} /> <b>ONLINE PREPAID PERK · EXTRA 5% OFF UNLOCKED</b>
+              </div>
+              <p>
+                You selected <b>Online Payment</b>. Pay 100% in full today and receive an <b>exclusive extra 5% discount (₹{onlineDiscount.toLocaleString("en-IN")})</b>. No advance split or cash payment needed at delivery.
+              </p>
+              <p className="preorder-cancel-rule">
+                Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, custom manufacturing begins.
+              </p>
+              <div className="preorder-split-row">
+                <span>Amount payable today (100% with 5% off)</span>
+                <strong>₹{onlinePayable.toLocaleString("en-IN")}</strong>
+              </div>
+              <div className="preorder-split-row">
+                <span>Balance due on delivery</span>
+                <strong style={{ color: "#4ade80" }}>₹0 (Fully Settled Online)</strong>
+              </div>
             </div>
-            <p>
-              Pay 30% advance now to confirm production against your order. The remaining 70% is payable online before dispatch.
-            </p>
-            <p className="preorder-cancel-rule">
-              Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, production begins and advance becomes non-refundable.
-            </p>
-            <div className="preorder-split-row">
-              <span>Advance due today (30%)</span>
-              <strong>₹{advanceDue.toLocaleString("en-IN")}</strong>
+          ) : (
+            <div className="preorder-payment-note">
+              <div className="preorder-badge-title">
+                <Sparkles size={14} /> <b>CASH ON DELIVERY (COD) TERMS · 30% ADVANCE</b>
+              </div>
+              <p>
+                To prevent unverified bookings and confirm garment manufacturing, <b>COD requires a 30% advance payment online today</b> via Razorpay. The remaining 70% is collected in cash or UPI at your doorstep upon delivery.
+              </p>
+              <p className="preorder-cancel-rule">
+                Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, production begins and advance becomes non-refundable.
+              </p>
+              <div className="preorder-split-row">
+                <span>Advance due today online (30%)</span>
+                <strong>₹{advanceDue.toLocaleString("en-IN")}</strong>
+              </div>
+              <div className="preorder-split-row">
+                <span>Cash due on delivery (70%)</span>
+                <strong>₹{balanceDue.toLocaleString("en-IN")}</strong>
+              </div>
             </div>
-            <div className="preorder-split-row">
-              <span>Balance due before dispatch (70%)</span>
-              <strong>₹{balanceDue.toLocaleString("en-IN")}</strong>
-            </div>
-          </div>
+          )}
 
-          <button className="btn primary full">
-            PAY ADVANCE ₹{advanceDue.toLocaleString("en-IN")} <ArrowRight />
+          <button className="btn primary full checkout-pay-btn" type="submit">
+            {isOnline
+              ? `PAY ONLINE ₹${onlinePayable.toLocaleString("en-IN")} (5% OFF) `
+              : `PAY 30% ADVANCE ₹${advanceDue.toLocaleString("en-IN")} TO CONFIRM COD `}
+            <ArrowRight />
           </button>
           <p className="tiny">
             Payments are securely encrypted and processed by Razorpay. ENYTM does not store your card, UPI or bank details.
@@ -1626,17 +1985,13 @@ function Checkout(){
         </form>
 
         <aside className="summary">
-          <h2>YOUR BAG ({totalQty} PIECES)</h2>
-          {cart.map((i) => (
-            <div key={i.key} className="mini-item">
-              <img src={i.image} alt={i.name} />
-              <span>
-                {i.name}
-                <small>Size {i.size} × {i.qty}</small>
-              </span>
-              <b>₹{(i.price * i.qty).toLocaleString("en-IN")}</b>
-            </div>
-          ))}
+          <div className="summary-title-row">
+            <h2>YOUR BAG ({totalQty} {totalQty === 1 ? "PIECE" : "PIECES"})</h2>
+            <Link to="/cart" className="summary-edit-cart-link">FULL BAG →</Link>
+          </div>
+          <div className="checkout-summary-items-list">
+            {cart.map(renderCheckoutItem)}
+          </div>
           <hr />
           <div>
             <span>Subtotal</span>
@@ -1644,7 +1999,7 @@ function Checkout(){
           </div>
           {buy2Discount > 0 && (
             <div className="promo-line">
-              <span>Promotional Discount (Buy 2, Get 20% Off)</span>
+              <span>Promotional Discount (Buy {totalQty >= 3 ? "3, Get 15%" : "2, Get 10%"} Off)</span>
               <b className="discount-green">−₹{buy2Discount.toLocaleString("en-IN")}</b>
             </div>
           )}
@@ -1654,14 +2009,47 @@ function Checkout(){
               <b className="discount-green">−₹{Number(appliedCoupon.discount).toLocaleString("en-IN")}</b>
             </div>
           )}
+          {isOnline && onlineDiscount > 0 && (
+            <div className="full-payment-discount-line">
+              <span className="full-discount-label">
+                <Sparkles size={12} /> Online Payment Perk (Extra 5% Off)
+              </span>
+              <b className="discount-green">−₹{onlineDiscount.toLocaleString("en-IN")}</b>
+            </div>
+          )}
           <div>
             <span>Shipping</span>
-            <b>{shippingFee ? "₹" + shippingFee : "FREE"}</b>
+            <b>FREE</b>
           </div>
           <hr />
-          <div className="total">
+          <div className="total checkout-final-total-row">
             <span>TOTAL ORDER VALUE</span>
-            <b>₹{finalPayable.toLocaleString("en-IN")}</b>
+            <b className="checkout-final-amount">₹{finalPayable.toLocaleString("en-IN")}</b>
+          </div>
+          <div className="checkout-preorder-summary-split">
+            {isOnline ? (
+              <>
+                <div>
+                  <span>Payable online today (100%):</span>
+                  <b style={{ color: "#c8b69a" }}>₹{onlinePayable.toLocaleString("en-IN")}</b>
+                </div>
+                <div>
+                  <span>Balance due on delivery:</span>
+                  <b style={{ color: "#4ade80" }}>₹0 (Fully Settled)</b>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span>Advance due today online (30%):</span>
+                  <b>₹{advanceDue.toLocaleString("en-IN")}</b>
+                </div>
+                <div>
+                  <span>Cash balance due on delivery (70%):</span>
+                  <b>₹{balanceDue.toLocaleString("en-IN")}</b>
+                </div>
+              </>
+            )}
           </div>
           <div className="checkout-trust-points">
             <span><ShieldCheck size={14} /> 100% Authentic Garments</span>
@@ -1696,7 +2084,7 @@ function OrderDetails(){
  const payBalance=async()=>{setActionBusy(true);setMessage("");try{const data=await api(`/orders/${id}/balance/order`,{method:"POST"});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM pre-order balance",order_id:data.razorpayOrderId,theme:{color:"#111111"},handler:async response=>{try{const result=await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});setOrder(result.order);setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch.");}catch(e){setMessage(e.message||"Payment verification is pending. Refresh the order shortly.");}},modal:{ondismiss:()=>setActionBusy(false)}});rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Balance payment failed. Please try again.");setActionBusy(false)});rzp.open();}catch(e){setMessage(e.message||"Could not start balance payment.");setActionBusy(false)}};
  const changeSize=async()=>{if(!sizeItem||!sizeValue)return;setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/change-size`,{method:"POST",body:JSON.stringify({productId:sizeItem.productId,size:sizeValue})});setOrder(o);setSizeItem(null);setSizeValue("");setMessage("Size updated successfully.")}catch(e){setMessage(e.message||"Could not change the size.")}finally{setActionBusy(false)}};
  if(loading)return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
- if(error||!order)return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/account">BACK TO MY ORDERS</Link></main>;
+ if(error||!order)return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/orders">BACK TO MY ORDERS</Link></main>;
  const steps=[
   ["confirmed","ORDER CONFIRMED","We received your order."],
   ["packed","PACKED","Your order is being prepared."],
@@ -1705,7 +2093,7 @@ function OrderDetails(){
   ["delivered","DELIVERED","Delivered to your address."]
  ];
  return <main className="order-detail-page">
-  <div className="order-detail-top"><div><p className="eyebrow">ENYTM / ORDER DETAILS</p><h1>{order.receipt||order.id}</h1><p className="muted">Placed on {new Date(order.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div><Link className="text-link" to="/account">← MY ORDERS</Link></div>
+  <div className="order-detail-top"><div><p className="eyebrow">ENYTM / ORDER DETAILS</p><h1>{order.receipt||order.id}</h1><p className="muted">Placed on {new Date(order.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div><Link className="text-link" to="/orders">← MY ORDERS</Link></div>
   {message&&<div className="order-action-message">{message}</div>}
   <section className="order-status-card">
    <div className="order-status-head"><div><span className={`order-status-big ${cancelled?"cancelled":""}`}>{cancelled?"ORDER CANCELLED":statusLabel}</span><h2>{cancelled?"This order has been cancelled.":deliveryDate?`Estimated delivery: ${formatDate(deliveryDate)}`:"Delivery date will be updated soon."}</h2></div>{!cancelled&&<Truck size={30}/>}</div>
@@ -1715,11 +2103,10 @@ function OrderDetails(){
    <section className="order-detail-main">
     <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p>{!shipped&&!cancelled&&<button type="button" className="order-action-link order-change-size-button" onClick={()=>{setSizeItem(item);setSizeValue(item.size||"")}}><Pencil size={13}/> CHANGE T-SHIRT SIZE</button>}</div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
     {order.tracking?.trackingNumber&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK SHIPMENT</h2><span>{order.tracking.courier}</span></div><div className="tracking-row"><Package size={22}/><div><b>{order.tracking.trackingNumber}</b><small>Tracking number</small></div>{order.tracking.trackingUrl&&<a className="btn outline" href={order.tracking.trackingUrl} target="_blank" rel="noreferrer">TRACK NOW <ArrowRight size={15}/></a>}</div></div>}
-    {!order.tracking?.trackingNumber&&!cancelled&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK YOUR ORDER</h2><span>LIVE STATUS</span></div><div className="tracking-placeholder"><Truck size={24}/><div><b>Tracking details will appear after dispatch.</b><small>You can follow every delivery stage above.</small></div></div></div>}
     <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18}/></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
    </section>
    <aside className="order-detail-side">
-    <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal||0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping||0)?`₹${Number(order.shipping).toLocaleString("en-IN")}`:"FREE"}</b></div>{Number(order.codFee||0)>0&&<div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr/><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total||0).toLocaleString("en-IN")}</b></div>{(order.advanceAmount!==undefined)&&<><div><span>Advance paid</span><b>₹{Number(order.advancePaid||0).toLocaleString("en-IN")}</b></div><div><span>Balance due</span><b>₹{Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}</b></div></>}<p className="payment-meta">Payment: {String(order.paymentMethod||"online").toUpperCase()} · {String(order.paymentStatus||"").replace(/_/g," ").toUpperCase()}</p>{!cancelled&&order.paymentStatus!=="paid"&&Number(order.advancePaid||0)>0&&<button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy?"PROCESSING...":`PAY BALANCE ₹${Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}`}</button>}</div>
+    <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal||0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping||0)?`₹${Number(order.shipping).toLocaleString("en-IN")}`:"FREE"}</b></div>{Number(order.buy2Discount||0)>0&&<div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount||0)>0&&!order.buy2Discount&&<div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount||0)>0&&<div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee||0)>0&&<div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr/><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total||0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Cash on Delivery (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid||0).toLocaleString("en-IN")}</b></div><div><span>Cash due on delivery (70%)</span><b>₹{Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid||order.total||0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod||"online").toUpperCase()} · {String(order.paymentStatus||"").replace(/_/g," ").toUpperCase()}</p>{!cancelled&&order.paymentStatus!=="paid"&&order.paymentMethod!=="cod"&&Number(order.advancePaid||0)>0&&<button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy?"PROCESSING...":`PAY BALANCE ₹${Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}`}</button>}</div>
     <div className="order-panel delivery-summary"><div className="panel-head"><h2>DELIVERY</h2><CalendarDays size={18}/></div><b>{deliveryDate?formatDate(deliveryDate):"To be confirmed"}</b><p className="muted">Standard delivery</p></div>
     <div className="order-actions-panel">{!cancelled&&<><button className="btn primary full" disabled={actionBusy||shipped} onClick={cancelOrder}>{shipped?"CANCELLATION CLOSED":actionBusy?"PROCESSING...":"CANCEL ORDER"}</button><p className="action-note">Cancellation and size change are available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
    </aside>
@@ -1757,12 +2144,13 @@ function Cart(){
   const { cart, updateQty, removeFromCart, subtotal } = useCart();
   const nav = useNavigate();
   const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-  const buy2Discount = totalQty >= 2 ? Math.round(subtotal * 0.20) : 0;
-  const isFreeShipping = subtotal >= 1999;
-  const shippingFee = subtotal === 0 || isFreeShipping ? 0 : 99;
-  const finalPayable = Math.max(0, subtotal - buy2Discount + shippingFee);
-  const neededForFree = Math.max(0, 1999 - subtotal);
-  const progressPct = Math.min(100, Math.round((subtotal / 1999) * 100));
+  const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
+  const buy2Discount = Math.round(subtotal * qtyDiscountPct);
+  const isFreeShipping = true;
+  const shippingFee = 0;
+  const finalPayable = Math.max(0, subtotal - buy2Discount);
+  const neededForFree = 0;
+  const progressPct = 100;
 
   return (
     <main className="cart-page">
@@ -1786,29 +2174,30 @@ function Cart(){
                 <div className="shipping-icon-label">
                   <Truck size={17} />
                   <span>
-                    {isFreeShipping ? (
-                      <span className="shipping-unlocked-text">✓ You unlocked <b>FREE SHIPPING</b> across India!</span>
-                    ) : (
-                      <>Add <b>₹{neededForFree.toLocaleString("en-IN")}</b> more to unlock <b>FREE SHIPPING</b></>
-                    )}
+                    <span className="shipping-unlocked-text">✓ You unlocked <b>FREE SHIPPING</b> across India!</span>
                   </span>
                 </div>
-                <span className="shipping-pct">{progressPct}%</span>
+                <span className="shipping-pct">100%</span>
               </div>
               <div className="shipping-progress-track">
-                <div className="shipping-progress-fill" style={{ width: `${progressPct}%` }} />
+                <div className="shipping-progress-fill" style={{ width: "100%" }} />
               </div>
             </div>
 
-            {totalQty >= 2 ? (
+            {totalQty >= 3 ? (
               <div className="cart-promo-banner active">
                 <Sparkles size={16} />
-                <span><b>BUY 2 GET 20% OFF UNLOCKED!</b> Automatic 20% discount (saving ₹{buy2Discount.toLocaleString("en-IN")}) applied.</span>
+                <span><b>BUY 3, GET 15% OFF UNLOCKED!</b> Automatic 15% volume discount (saving ₹{buy2Discount.toLocaleString("en-IN")}) applied.</span>
+              </div>
+            ) : totalQty === 2 ? (
+              <div className="cart-promo-banner active">
+                <Sparkles size={16} />
+                <span><b>BUY 2, GET 10% OFF UNLOCKED!</b> Automatic 10% discount (saving ₹{buy2Discount.toLocaleString("en-IN")}) applied — <b>Add 1 more piece to unlock 15% OFF!</b></span>
               </div>
             ) : (
               <div className="cart-promo-banner hint">
                 <Tag size={16} />
-                <span><b>BUY 2, GET 20% OFF:</b> Add 1 more piece to unlock automatic 20% savings on your entire bag!</span>
+                <span><b>VOLUME SAVINGS:</b> Buy 2, get <b>10% OFF</b> · Buy 3 or more, get <b>15% OFF</b>! Add pieces to your bag to unlock.</span>
               </div>
             )}
 
@@ -1850,22 +2239,22 @@ function Cart(){
             </div>
             {buy2Discount > 0 && (
               <div className="promo-line">
-                <span>Promotional Offer (Buy 2, Get 20% Off)</span>
+                <span>Promotional Offer (Buy {totalQty >= 3 ? "3, Get 15%" : "2, Get 10%"} Off)</span>
                 <b className="discount-green">−₹{buy2Discount.toLocaleString("en-IN")}</b>
               </div>
             )}
             <div>
               <span>Shipping</span>
-              <b>{shippingFee ? "₹" + shippingFee : "FREE"}</b>
+              <b>FREE</b>
             </div>
             <div className="cart-prepaid-hint">
               <Tag size={13} />
-              <span>Extra 10% discount applies when paying online via Razorpay at checkout!</span>
+              <span>Extra 5% discount applies when paying online via Razorpay at checkout!</span>
             </div>
             <hr />
-            <div className="total">
+            <div className="total cart-final-total-row">
               <span>FINAL TOTAL</span>
-              <b>₹{finalPayable.toLocaleString("en-IN")}</b>
+              <b className="cart-final-amount">₹{finalPayable.toLocaleString("en-IN")}</b>
             </div>
             <button
               className="btn primary full"
@@ -2270,8 +2659,13 @@ function Account() {
           </p>
         </div>
 
-        <div className="account-mark">
-          E<span>™</span>
+        <div className="account-mark" aria-hidden="true">
+          <span className="account-mark-bars">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span>™</span>
         </div>
 
       </section>
@@ -2846,7 +3240,7 @@ function PrivacyPolicyPage() {
           <p>We use your personal data strictly for:</p>
           <ul>
             <li>Order verification, garment tailoring, and pre-order batch scheduling.</li>
-            <li>Safe and insured dispatch through verified courier partners (BlueDart, Delhivery, DTDC).</li>
+            <li>Safe and insured dispatch through verified courier partners.</li>
             <li>Sending essential order tracking updates via SMS, email, and WhatsApp (if opted in).</li>
             <li>Processing refunds, exchanges, or customer support queries.</li>
           </ul>
@@ -2901,9 +3295,9 @@ function ShippingReturnsPage() {
         <section className="policy-section policy-highlight-box">
           <h2>1. Pre-Order Production & Delivery Timeline</h2>
           <div className="verbatim-card">
-            <p>“Please keep in mind that this is a Pre Order. Pre Order production may take up to 3.5 weeks to complete.</p>
+            <p>“Please keep in mind that this is a Pre Order. Pre Order production may take up to 2.5 weeks to complete.</p>
             <p>Once your order is ready we will inform you and dispatch it immediately.</p>
-            <p>After dispatch delivery may take an additional 4 to 5 working days depending on the courier service.</p>
+            <p>After dispatch delivery may take an additional 7 to 10 days depending on the courier service.</p>
             <p>Our Pre Order batch is being produced first while the regular drop will launch separately.</p>
             <p>Please place your Pre Order only if you are comfortable with this production timeline.”</p>
           </div>
@@ -2922,14 +3316,9 @@ function ShippingReturnsPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td><b>₹1,999 and above</b></td>
+                  <td><b>All Orders (No Minimum Value)</b></td>
                   <td><span className="free-tag">FREE SHIPPING</span></td>
-                  <td>4–5 Business Days after dispatch</td>
-                </tr>
-                <tr>
-                  <td>Below ₹1,999</td>
-                  <td>Flat ₹99</td>
-                  <td>4–5 Business Days after dispatch</td>
+                  <td>7–10 Days after dispatch</td>
                 </tr>
               </tbody>
             </table>
@@ -3047,14 +3436,14 @@ function TermsPage() {
         <section className="policy-section">
           <h2>2. Pricing & Offers</h2>
           <p>
-            All prices are stated in Indian Rupees (₹ INR) and include applicable taxes. We reserve the right to revise pricing or promotional offers (such as 10% prepaid discount and Buy 2 Get 20% Off) without prior notice. Discounts cannot be stacked unless explicitly permitted.
+            All prices are stated in Indian Rupees (₹ INR) and include applicable taxes. We reserve the right to revise pricing or promotional offers (such as 5% online prepaid discount and Buy 2 Get 10% Off / Buy 3 Get 15% Off) without prior notice. Discounts cannot be stacked unless explicitly permitted.
           </p>
         </section>
 
         <section className="policy-section">
           <h2>3. Pre-Orders & Production</h2>
           <p>
-            Pre-order items represent bespoke production runs. Production requires approximately 3.5 weeks, with delivery in 4–5 working days post-dispatch. Cancellation for full refund is allowed within 24 hours of payment.
+            Pre-order items represent bespoke production runs. Production requires approximately 2.5 weeks, with delivery in 7–10 days post-dispatch. Cancellation for full refund is allowed within 24 hours of payment.
           </p>
         </section>
 
@@ -3155,7 +3544,7 @@ function TrackOrderPage() {
               </div>
               <div className="timeline-step active">
                 <div className="dot">●</div>
-                <span>Production & Tailoring (~3.5 weeks)</span>
+                <span>Production & Tailoring (~2.5 weeks)</span>
               </div>
               <div className="timeline-step">
                 <div className="dot">○</div>
@@ -3163,7 +3552,7 @@ function TrackOrderPage() {
               </div>
               <div className="timeline-step">
                 <div className="dot">○</div>
-                <span>Dispatched (4–5 days transit)</span>
+                <span>Dispatched (7–10 days transit)</span>
               </div>
               <div className="timeline-step">
                 <div className="dot">○</div>
@@ -3287,11 +3676,16 @@ function Footer(){
       <footer>
         <div className="footer-main">
           <div className="footer-brand-col">
-            <Link className="logo footer-logo" to="/">ENYTM<span>™</span></Link>
+            <Link className="logo footer-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link>
             <p className="footer-tagline">“MORE THAN A MOMENT.”</p>
             <p className="footer-desc">
               Architectural streetwear crafted with heavyweight fabrics, considered proportions, and uncompromising standards. Designed to stay in your rotation.
             </p>
+            <div className="footer-brand-insta">
+              <a href="https://www.instagram.com/enytm_official/?__d=1%253Futm_source%253Dig_embed" target="_blank" rel="noreferrer" className="footer-insta-pill">
+                <Instagram size={14} /> @enytm_official
+              </a>
+            </div>
           </div>
           <div className="footer-col">
             <h4>COLLECTIONS</h4>
@@ -3316,7 +3710,7 @@ function Footer(){
             <Link to="/refund-policy">Returns & Refunds</Link>
             <Link to="/terms">Terms & Conditions</Link>
             <div className="footer-social-links">
-              <a href="https://instagram.com/enytmapparels" target="_blank" rel="noreferrer">
+              <a href="https://www.instagram.com/enytm_official/?__d=1%253Futm_source%253Dig_embed" target="_blank" rel="noreferrer">
                 <Instagram size={17} /> Instagram
               </a>
             </div>
@@ -3401,7 +3795,7 @@ function Admin(){
   finally{setBusy(false)}
  };
  if(!logged)return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>{error&&<div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy?"CHECKING...":"LOGIN"}</button></div></main>;
- return <main className="admin-page"><aside className="admin-side"><div className="logo">ENYTM<span>™</span></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders} reload={load}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
+ return <main className="admin-page"><aside className="admin-side"><div className="logo"><BrandLogo /></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders} reload={load}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
 function AdminOrders({ orders, reload }) {
  const [selected, setSelected] = useState(null);
  const [status, setStatus] = useState("confirmed");
@@ -3886,7 +4280,7 @@ function AdminProducts({ products, reload }) {
                           />
                         ) : (
                           <div className="admin-product-placeholder">
-                            ENYTM
+                            <BrandLogo />
                           </div>
                         )}
 
@@ -4001,7 +4395,7 @@ function AdminProducts({ products, reload }) {
 
     </div>
   );
-}function AdminSettings(){const[s,setS]=useState({shippingFreeAbove:1999,shippingCharge:99});useEffect(()=>{api("/admin/settings").then(setS)},[]);return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Free shipping above <input value={s.shippingFreeAbove||""} onChange={e=>setS({...s,shippingFreeAbove:e.target.value})}/></label><label>Standard shipping charge <input value={s.shippingCharge||""} onChange={e=>setS({...s,shippingCharge:e.target.value})}/></label><button className="btn primary" onClick={async()=>{await api("/admin/settings",{method:"PUT",body:JSON.stringify(s)});alert("Settings saved")}}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div>}
+}function AdminSettings(){const[s,setS]=useState({shippingFreeAbove:0,shippingCharge:0});useEffect(()=>{api("/admin/settings").then(setS)},[]);return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Free shipping above <input value={s.shippingFreeAbove||""} onChange={e=>setS({...s,shippingFreeAbove:e.target.value})}/></label><label>Standard shipping charge <input value={s.shippingCharge||""} onChange={e=>setS({...s,shippingCharge:e.target.value})}/></label><button className="btn primary" onClick={async()=>{await api("/admin/settings",{method:"PUT",body:JSON.stringify(s)});alert("Settings saved")}}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div>}
 function BrandIntro(){
   const [visible, setVisible] = useState(true);
   useEffect(() => {
@@ -4025,7 +4419,7 @@ function BrandIntro(){
         @keyframes enytmIntroOut{to{opacity:0;visibility:hidden;pointer-events:none}}
         @media(prefers-reduced-motion:reduce){.enytm-intro,.enytm-intro::before,.enytm-intro-logo,.enytm-intro-line,.enytm-intro-tag{animation-duration:.01ms!important;animation-delay:0ms!important}.enytm-intro{animation-delay:1.5s!important}}
       `}</style>
-      <div className="enytm-intro-logo">ENYTM<span>™</span></div>
+      <div className="enytm-intro-logo"><BrandLogo /></div>
       <div className="enytm-intro-line" />
       <p className="enytm-intro-tag">MORE THAN A MOMENT</p>
     </div>

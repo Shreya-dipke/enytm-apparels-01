@@ -76,8 +76,8 @@ const db = new Low(adapter, {
     tagline: "more than a moment",
     whatsapp: "",
     supportEmail: "",
-    shippingFreeAbove: 1999,
-    shippingCharge: 99
+    shippingFreeAbove: 0,
+    shippingCharge: 0
   }
 });
 
@@ -98,7 +98,7 @@ const seedProducts = [
 ];
 
 if (!db.data.products.length) db.data.products = seedProducts;
-if (!db.data.settings.shippingFreeAbove) db.data.settings = { ...db.data.settings, shippingFreeAbove: 1999, shippingCharge: 99 };
+if (!db.data.settings.shippingFreeAbove && db.data.settings.shippingFreeAbove !== 0) db.data.settings = { ...db.data.settings, shippingFreeAbove: 0, shippingCharge: 0 };
 await db.write();
 
 const app = express();
@@ -144,7 +144,7 @@ app.use("/api/", apiLimiter);
 
 function totals(items) {
   const subtotal = items.reduce((s, i) => s + Number(i.price) * Number(i.qty), 0);
-  const shipping = subtotal === 0 || subtotal >= Number(db.data.settings.shippingFreeAbove || 1999) ? 0 : Number(db.data.settings.shippingCharge || 99);
+  const shipping = 0;
   return { subtotal, shipping, total: subtotal + shipping };
 }
 
@@ -370,15 +370,28 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
     const event = JSON.parse(req.body.toString("utf8"));
     const payment = event.payload?.payment?.entity;
     if (payment && event.event === "payment.captured") {
-      const order = db.data.orders.find(o => o.razorpayOrderId === payment.order_id || o.razorpayOrderIds?.advance === payment.order_id || o.razorpayOrderIds?.balance === payment.order_id);
+      const order = db.data.orders.find(o => o.razorpayOrderId === payment.order_id || o.razorpayOrderIds?.advance === payment.order_id || o.razorpayOrderIds?.balance === payment.order_id || o.razorpayOrderIds?.full === payment.order_id);
       if (order) {
         order.paymentIds ||= [];
         if (!order.paymentIds.some(p => p.id === payment.id)) {
-          const stage = order.razorpayOrderIds?.balance === payment.order_id ? "balance" : "advance";
+          const stage = order.razorpayOrderIds?.balance === payment.order_id ? "balance" : (order.paymentPlan === "full" ? "full" : "advance");
           const amount = Number(payment.amount || 0) / 100;
-          if (stage === "balance") {
-            order.balancePaid = amount;
+          if (stage === "balance" || stage === "full") {
+            if (stage === "full") {
+              order.advancePaid = amount;
+              order.balancePaid = 0;
+              order.balanceAmount = 0;
+            } else {
+              order.balancePaid = amount;
+            }
             order.paymentStatus = "paid";
+            if (!order.stockDeducted) {
+              for (const item of order.items || []) {
+                const product = db.data.products.find(p => p.id === item.productId);
+                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+              }
+              order.stockDeducted = true;
+            }
           } else {
             order.advancePaid = amount;
             order.paymentStatus = "partially_paid";
@@ -396,7 +409,7 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
           order.status = "confirmed";
           order.updatedAt = Date.now();
           await db.write();
-          if (stage === "advance") await notifyOrder(order, "placed");
+          if (stage === "advance" || stage === "full") await notifyOrder(order, "placed");
         }
       }
     }
@@ -860,50 +873,106 @@ app.post("/api/checkout/order", auth, async (req, res) => {
     discount = couponDiscount(appliedCoupon, amount.subtotal, couponItems);
     if (!discount) return res.status(400).json({ message: "This coupon does not apply to the current order." });
   }
-  const orderTotal = Math.max(0, amount.total - discount);
-  if (orderTotal <= 0) return res.status(400).json({ message: "This coupon makes the order total zero. Please contact ENYTM for this promotion." });
+
+  const totalSafeQty = safeItems.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const qtyDiscountPct = totalSafeQty >= 3 ? 0.15 : (totalSafeQty >= 2 ? 0.10 : 0);
+  const buy2Discount = (!appliedCoupon && qtyDiscountPct > 0) ? Math.round(amount.subtotal * qtyDiscountPct) : 0;
+  if (!appliedCoupon && buy2Discount > 0) {
+    discount = buy2Discount;
+  }
+  const baseOrderTotal = Math.max(0, amount.total - discount);
+  if (baseOrderTotal <= 0) return res.status(400).json({ message: "This coupon makes the order total zero. Please contact ENYTM for this promotion." });
+
+  const paymentMethod = (req.body?.paymentMethod === "cod" || req.body?.paymentPlan === "cod" || req.body?.paymentPlan === "advance") ? "cod" : "online";
+  const isOnline = paymentMethod === "online";
+  let fullPaymentDiscount = 0;
+  let orderTotal = baseOrderTotal;
+  let advanceAmount = 0;
+  let balanceAmount = 0;
+  let chargeAmount = 0;
+  let paymentStage = isOnline ? "full" : "advance";
+  let paymentPlan = isOnline ? "full" : "cod_advance";
+
+  if (isOnline) {
+    // Online payment: Full payment with extra 5% off! No advance split.
+    fullPaymentDiscount = Math.round(baseOrderTotal * 0.05);
+    orderTotal = Math.max(0, baseOrderTotal - fullPaymentDiscount);
+    advanceAmount = orderTotal;
+    balanceAmount = 0;
+    chargeAmount = orderTotal;
+  } else {
+    // COD: Customer pays 30% advance online today to confirm COD order; remaining 70% in cash on delivery.
+    advanceAmount = Math.ceil(baseOrderTotal * 0.30);
+    balanceAmount = baseOrderTotal - advanceAmount;
+    chargeAmount = advanceAmount;
+  }
 
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     return res.status(503).json({ message: "Razorpay is not configured. Add Razorpay test/live keys to .env." });
   }
 
-  const advanceAmount = Math.ceil(orderTotal * 0.30);
   const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
   const receipt = `ENYTM-${Date.now()}`;
   const rpOrder = await razorpay.orders.create({
-    amount: Math.round(advanceAmount * 100),
+    amount: Math.round(chargeAmount * 100),
     currency: "INR",
     receipt,
-    notes: { customerId: req.user.id, brand: "ENYTM APPARELS", paymentStage: "advance" }
+    notes: { customerId: req.user.id, brand: "ENYTM APPARELS", paymentStage, paymentMethod, paymentPlan }
   });
 
   const order = {
     id: crypto.randomUUID(), receipt, userId: req.user.id, items: safeItems,
     customer: { ...shippingAddress, email: db.data.users.find(u => u.id === req.user.id)?.email },
     subtotal: amount.subtotal, shipping: amount.shipping, discount, couponCode: appliedCoupon?.code || null, couponId: appliedCoupon?.id || null,
-    total: orderTotal, advanceAmount, advancePaid: 0, balanceAmount: orderTotal - advanceAmount, balancePaid: 0,
-    paymentStage: "advance", paymentStatus: "created", paymentMethod: null, paymentId: null,
-    razorpayOrderId: rpOrder.id, razorpayOrderIds: { advance: rpOrder.id }, paymentIds: [],
+    buy2Discount: buy2Discount || 0,
+    fullPaymentDiscount,
+    paymentMethod,
+    paymentPlan,
+    total: orderTotal, advanceAmount, advancePaid: 0, balanceAmount, balancePaid: 0,
+    paymentStage, paymentStatus: "created", paymentId: null,
+    razorpayOrderId: rpOrder.id, razorpayOrderIds: { [paymentStage]: rpOrder.id }, paymentIds: [],
     status: "payment_pending", stockDeducted: false, createdAt: Date.now(), updatedAt: Date.now()
   };
   db.data.orders.push(order);
   await db.write();
-  res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: advanceAmount * 100, currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, advanceAmount, balanceAmount: order.balanceAmount, total: order.total, discount: order.discount, couponCode: order.couponCode });
+  res.json({
+    orderId: order.id,
+    razorpayOrderId: rpOrder.id,
+    amount: Math.round(chargeAmount * 100),
+    currency: "INR",
+    keyId: process.env.RAZORPAY_KEY_ID,
+    paymentMethod,
+    paymentPlan,
+    chargeAmount,
+    advanceAmount,
+    balanceAmount: order.balanceAmount,
+    total: order.total,
+    discount: order.discount,
+    fullPaymentDiscount,
+    couponCode: order.couponCode
+  });
 });
 
 app.post("/api/checkout/verify", auth, async (req, res) => {
   const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   const order = db.data.orders.find(o => o.id === orderId && o.userId === req.user.id);
   if (!order) return res.status(404).json({ message: "Order not found." });
-  const stage = order.razorpayOrderIds?.balance === razorpay_order_id ? "balance" : "advance";
+  const stage = order.razorpayOrderIds?.balance === razorpay_order_id ? "balance" : (order.paymentPlan === "full" ? "full" : "advance");
   const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
   const expectedOrderId = order.razorpayOrderIds?.[stage] || order.razorpayOrderId;
   if (expected !== razorpay_signature || expectedOrderId !== razorpay_order_id) return res.status(400).json({ message: "Payment verification failed." });
   if ((order.paymentIds || []).some(p => p.id === razorpay_payment_id)) return res.json({ ok: true, order });
-  const amountPaid = stage === "balance" ? Number(order.balanceAmount || 0) : Number(order.advanceAmount || order.total);
-  if (stage === "advance") {
-    order.advancePaid = amountPaid;
-    order.paymentStatus = "partially_paid";
+  const amountPaid = stage === "balance" ? Number(order.balanceAmount || 0) : (stage === "full" ? Number(order.total) : Number(order.advanceAmount || order.total));
+  if (stage === "balance" || stage === "full") {
+    if (stage === "full") {
+      order.advancePaid = amountPaid;
+      order.balancePaid = 0;
+      order.balanceAmount = 0;
+      order.paymentMethod = "online";
+    } else {
+      order.balancePaid = amountPaid;
+    }
+    order.paymentStatus = "paid";
     order.status = "confirmed";
     if (order.couponId && !order.couponUsageCounted) {
       const coupon = (db.data.coupons || []).find(c => c.id === order.couponId);
@@ -924,17 +993,36 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
       if (cart) { cart.items = []; cart.updatedAt = Date.now(); }
     }
   } else {
-    order.balancePaid = amountPaid;
-    order.paymentStatus = "paid";
+    // stage === "advance" (COD 30% advance paid to confirm order)
+    order.advancePaid = amountPaid;
+    order.paymentStatus = "partially_paid";
+    order.paymentMethod = "cod";
     order.status = "confirmed";
+    if (order.couponId && !order.couponUsageCounted) {
+      const coupon = (db.data.coupons || []).find(c => c.id === order.couponId);
+      if (coupon) {
+        coupon.usageCount = Number(coupon.usageCount || 0) + 1;
+        coupon.userUsage ||= {};
+        coupon.userUsage[req.user.id] = Number(coupon.userUsage[req.user.id] || 0) + 1;
+      }
+      order.couponUsageCounted = true;
+    }
+    if (!order.stockDeducted) {
+      for (const item of order.items || []) {
+        const product = db.data.products.find(p => p.id === item.productId);
+        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+      }
+      order.stockDeducted = true;
+      const cart = db.data.carts.find(c => c.userId === req.user.id);
+      if (cart) { cart.items = []; cart.updatedAt = Date.now(); }
+    }
   }
   order.paymentId = razorpay_payment_id;
   order.paymentIds ||= [];
   order.paymentIds.push({ id: razorpay_payment_id, stage, amount: amountPaid, capturedAt: Date.now() });
-  order.paymentMethod = "online";
   order.updatedAt = Date.now();
   await db.write();
-  if (stage === "advance") await notifyOrder(order, "placed");
+  if (stage === "advance" || stage === "full") await notifyOrder(order, "placed");
   res.json({ ok: true, order });
 });
 
@@ -942,7 +1030,7 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
   const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
   if (!order) return res.status(404).json({ message: "Order not found." });
   if (order.status === "cancelled") return res.status(409).json({ message: "This order is cancelled." });
-  if (order.paymentStatus === "paid") return res.status(409).json({ message: "The balance is already paid." });
+  if (order.paymentStatus === "paid" || order.paymentPlan === "full") return res.status(409).json({ message: "The order is already fully paid." });
   if (Number(order.advancePaid || 0) <= 0) return res.status(409).json({ message: "Pay the advance first." });
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return res.status(503).json({ message: "Razorpay is not configured." });
   const balanceAmount = Number(order.total) - Number(order.advancePaid);
@@ -1263,13 +1351,18 @@ app.put("/api/admin/orders/:id/status", adminAuth, async (req,res)=>{
   if (!allowed.includes(status)) return res.status(400).json({message:"Invalid order status."});
   if (["shipped","out_for_delivery","delivered"].includes(status)) {
     const balanceDue = Number(order.balanceAmount ?? (Number(order.total || 0) - Number(order.advancePaid || 0)));
-    const fullyPaid = order.paymentStatus === "paid" || (Number(order.advancePaid || 0) > 0 && Number(order.balancePaid || 0) >= balanceDue);
+    const isCod = order.paymentMethod === "cod";
+    const fullyPaid = order.paymentStatus === "paid" || (isCod && Number(order.advancePaid || 0) > 0) || (Number(order.advancePaid || 0) > 0 && Number(order.balancePaid || 0) >= balanceDue);
     if (!fullyPaid) return res.status(400).json({message:"Collect the full order balance before dispatching this pre-order."});
     const launchDate = new Date("2026-11-08T00:00:00+05:30").getTime();
     if (Date.now() < launchDate) return res.status(400).json({message:"ENYTM pre-orders can only be dispatched from 8 November 2026."});
   }
   const previousStatus = order.status;
   order.status = status;
+  if (status === "delivered" && order.paymentMethod === "cod") {
+    order.paymentStatus = "paid";
+    order.balancePaid = Number(order.balanceAmount || 0);
+  }
   if (req.body?.tracking && typeof req.body.tracking === "object") {
     order.tracking = {
       ...(order.tracking || {}),

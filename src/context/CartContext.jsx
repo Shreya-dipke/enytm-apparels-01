@@ -47,7 +47,7 @@ export function CartProvider({children}) {
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const cartCount=safeCart.reduce((s,i)=>s+(Number(i.qty)||0),0);
   const subtotal=safeCart.reduce((s,i)=>s+((Number(i.price)||0)*(Number(i.qty)||0)),0);
-  const shipping=subtotal===0||subtotal>=1999?0:99;
+  const shipping=0;
   return <CartContext.Provider value={{cart:safeCart,wishlist:safeWishlist,addToCart,updateQty,removeFromCart,toggleWishlist,clearCart,cartCount,subtotal,shipping,total:subtotal+shipping}}>{children}</CartContext.Provider>
 }
 export const useCart=()=>useContext(CartContext);
