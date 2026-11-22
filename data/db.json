@@ -18,14 +18,32 @@
       "name": "Vedant Darokar",
       "email": "vedantdarokar7@gmail.com",
       "phone": "+918208772402",
-      "passwordHash": "$2a$12$SmlgI1QBMGyB2UNbO4TKk.VguDxHsu0iapQgBOlQNKbCRSyGv8z3q",
+      "passwordHash": "$2a$12$BGzzdCohuHcl7MCCC9sJQ.pGqq0pWF7DhtndW3Ymt2PYXO09/OHuy",
       "whatsappOptIn": true,
       "emailOptIn": true,
       "emailVerified": true,
       "phoneVerified": false,
       "role": "customer",
       "createdAt": 1792772462216,
-      "lastLoginAt": 1792772462216
+      "lastLoginAt": 1795335456501,
+      "addresses": []
+    },
+    {
+      "id": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
+      "name": "Vedant Darokar",
+      "email": "vdarokar152@gmail.com",
+      "phone": "8208772402",
+      "googleId": "112556768503867204738",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJlrQSQwVPUFxo3IFJ51QVMeA3uOqrSJy2-LdL3uorPHJKfsA=s96-c",
+      "passwordHash": "",
+      "role": "customer",
+      "whatsappOptIn": true,
+      "emailOptIn": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": 1795339907771,
+      "lastLoginAt": 1795340632393,
+      "addresses": []
     }
   ],
   "products": [
@@ -83,7 +101,7 @@
       "badge": "SIGNATURE",
       "fabric": "280 GSM Organic Cotton",
       "description": "Minimal branding. Elevated texture. Designed beyond one occasion.",
-      "image": "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
+      "image": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
       "sizes": [
         "S",
         "M",
@@ -205,7 +223,7 @@
           "price": 899,
           "qty": 1,
           "size": "M",
-          "image": "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85"
+          "image": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85"
         }
       ],
       "customer": {
@@ -725,10 +743,12 @@
         "advance": "order_TrRuNX5rQ813Pl"
       },
       "paymentIds": [],
-      "status": "payment_pending",
+      "status": "cancelled",
       "stockDeducted": false,
       "createdAt": 1792780219691,
-      "updatedAt": 1792780219691
+      "updatedAt": 1795336939528,
+      "cancelledAt": 1795336939528,
+      "refundStatus": "not_required"
     }
   ],
   "carts": [
@@ -766,34 +786,14 @@
     },
     {
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "id": 1,
-          "name": "Essential Oversized Tee",
-          "category": "Oversized",
-          "price": 649,
-          "oldPrice": 1649,
-          "stock": 4,
-          "badge": "NEW",
-          "fabric": "240 GSM Premium Cotton",
-          "description": "A structured oversized silhouette made for everyday movement.",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-          "sizes": [
-            "S",
-            "M",
-            "L",
-            "XL",
-            "XXL"
-          ],
-          "image2": "",
-          "image3": "",
-          "video": "",
-          "size": "S",
-          "qty": 1,
-          "key": "1-S"
-        }
-      ],
-      "updatedAt": 1792781030861,
+      "items": [],
+      "updatedAt": 1795339613433,
+      "remindedAt": null
+    },
+    {
+      "userId": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
+      "items": [],
+      "updatedAt": 1795340170607,
       "remindedAt": null
     }
   ],
@@ -808,8 +808,16 @@
     },
     {
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        1
+      ],
+      "updatedAt": 1795339613434,
+      "remindedAt": null
+    },
+    {
+      "userId": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
       "items": [],
-      "updatedAt": 1792781030872,
+      "updatedAt": 1795339943657,
       "remindedAt": null
     }
   ],
@@ -863,6 +871,14 @@
       "razorpayOrderId": "order_TrRU7Di4oWVpg1",
       "status": "created",
       "createdAt": 1792778727988
+    },
+    {
+      "id": "b317b7ea-dfb8-483e-9e12-77243aa8c3f0",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "amount": 500,
+      "razorpayOrderId": "order_U39tsOSBecTMhO",
+      "status": "created",
+      "createdAt": 1795336885041
     }
   ]
 }

@@ -91,7 +91,7 @@ if (!Array.isArray(db.data.walletTopups)) db.data.walletTopups = [];
 const seedProducts = [
   { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
   { id: 2, name: "Heavyweight Oversized Tee", category: "Oversized", price: 1099, oldPrice: 1299, stock: 50, badge: "BESTSELLER", fabric: "260 GSM Premium Cotton", description: "A heavier everyday essential with a premium drape.", image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 3, name: "Organic Signature Polo", category: "Polos", price: 899, oldPrice: 1099, stock: 40, badge: "SIGNATURE", fabric: "280 GSM Organic Cotton", description: "Minimal branding. Elevated texture. Designed beyond one occasion.", image: "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
+  { id: 3, name: "Organic Signature Polo", category: "Polos", price: 899, oldPrice: 1099, stock: 40, badge: "SIGNATURE", fabric: "280 GSM Organic Cotton", description: "Minimal branding. Elevated texture. Designed beyond one occasion.", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
   { id: 4, name: "Core French Terry Sweatshirt", category: "Sweatshirts", price: 1499, oldPrice: 1699, stock: 30, badge: "CORE", fabric: "360 GSM French Terry", description: "Clean proportions and substantial weight for a premium layer.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
   { id: 5, name: "Everyday Pullover Hoodie", category: "Hoodies", price: 1699, oldPrice: 1899, stock: 30, badge: "NEW", fabric: "380 GSM Cotton Blend", description: "A premium relaxed hoodie with a deep hood and heavyweight hand feel.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
   { id: 6, name: "Minimal Logo Tee", category: "Oversized", price: 949, oldPrice: 1099, stock: 50, badge: "", fabric: "240 GSM Cotton", description: "A refined oversized tee with subtle ENYTM identity.", image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] }
@@ -102,6 +102,7 @@ if (!db.data.settings.shippingFreeAbove && db.data.settings.shippingFreeAbove !=
 await db.write();
 
 const app = express();
+app.set("trust proxy", 1);
 app.use("/uploads", express.static(uploadsDir));
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
 app.use(compression());
@@ -139,7 +140,18 @@ function adminAuth(req, res, next) {
   }
 }
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false });
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isProd ? 3000 : 20000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    if (!isProd) return true;
+    const ip = req.ip || req.connection?.remoteAddress || "";
+    return ip === "127.0.0.1" || ip === "::1" || ip.endsWith("127.0.0.1");
+  },
+  message: { message: "Too many requests. Please wait a moment and try again." }
+});
 app.use("/api/", apiLimiter);
 
 function totals(items) {
@@ -740,6 +752,76 @@ app.post("/api/auth/login", async (req, res) => {
   res.json({ token: signUser(user), user: publicUser(user) });
 });
 
+app.post("/api/auth/google", async (req, res) => {
+  try {
+    const { credential, email: directEmail, name: directName, picture: directPicture, googleId: directGoogleId } = req.body || {};
+    let email = directEmail;
+    let name = directName;
+    let picture = directPicture;
+    let googleId = directGoogleId || "";
+
+    // If credential JWT from Google GSI is passed, decode payload
+    if (credential && typeof credential === "string") {
+      try {
+        const parts = credential.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          if (payload && payload.email) {
+            email = payload.email;
+            name = payload.name || name || payload.given_name || email.split("@")[0];
+            picture = payload.picture || picture;
+            googleId = payload.sub || googleId;
+          }
+        }
+      } catch (e) {
+        console.warn("[Google Auth] Error decoding credential JWT:", e.message);
+      }
+    }
+
+    email = String(email || "").trim().toLowerCase();
+    if (!email || !validEmail(email)) {
+      return res.status(400).json({ message: "A valid email is required to continue with Google." });
+    }
+
+    db.data.users ||= [];
+    let user = db.data.users.find(u => String(u.email || "").toLowerCase() === email);
+
+    if (user) {
+      if (googleId && !user.googleId) user.googleId = googleId;
+      if (picture && !user.avatar) user.avatar = picture;
+      user.lastLoginAt = Date.now();
+    } else {
+      user = {
+        id: crypto.randomUUID(),
+        name: name || email.split("@")[0],
+        email,
+        phone: "",
+        googleId: googleId || crypto.randomUUID(),
+        avatar: picture || "",
+        passwordHash: "",
+        role: "customer",
+        whatsappOptIn: false,
+        emailOptIn: true,
+        emailVerified: true,
+        phoneVerified: false,
+        createdAt: Date.now(),
+        lastLoginAt: Date.now()
+      };
+      db.data.users.push(user);
+    }
+
+    await db.write();
+    res.json({
+      token: signUser(user),
+      user: publicUser(user),
+      message: "Successfully signed in with Google."
+    });
+  } catch (err) {
+    console.error("[Google Auth Error]:", err);
+    res.status(500).json({ message: "Google sign-in failed. Please try again." });
+  }
+});
+
 app.get("/api/auth/me", auth, (req, res) => {
   const user = db.data.users.find(u => u.id === req.user.id);
   res.json(publicUser(user));
@@ -756,6 +838,100 @@ app.put("/api/auth/profile", auth, async (req, res) => {
   if (address !== undefined) user.address = address;
   await db.write();
   res.json(publicUser(user));
+});
+
+app.get("/api/auth/addresses", auth, (req, res) => {
+  const user = db.data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  user.addresses ||= [];
+  if (!user.addresses.length && user.address) {
+    user.addresses.push({
+      id: "legacy-address",
+      label: user.address.label || "Home",
+      name: user.address.name || user.name || "",
+      phone: user.address.phone || user.phone || "",
+      address: user.address.address || "",
+      city: user.address.city || "",
+      state: user.address.state || "",
+      pincode: user.address.pincode || "",
+      isDefault: true
+    });
+    user.defaultAddressId = "legacy-address";
+  }
+  res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId || (user.addresses[0]?.id || null) });
+});
+
+app.post("/api/auth/addresses", auth, async (req, res) => {
+  const user = db.data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  user.addresses ||= [];
+  const newAddr = {
+    id: crypto.randomUUID(),
+    label: req.body.label || "Home",
+    name: req.body.name || user.name || "",
+    phone: req.body.phone || user.phone || "",
+    address: req.body.address || "",
+    city: req.body.city || "",
+    state: req.body.state || "",
+    pincode: req.body.pincode || "",
+    isDefault: Boolean(req.body.isDefault) || user.addresses.length === 0
+  };
+  if (newAddr.isDefault) {
+    user.addresses.forEach(a => a.isDefault = false);
+    user.defaultAddressId = newAddr.id;
+  }
+  user.addresses.push(newAddr);
+  if (!user.defaultAddressId) user.defaultAddressId = newAddr.id;
+  await db.write();
+  res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId });
+});
+
+app.put("/api/auth/addresses/:id", auth, async (req, res) => {
+  const user = db.data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  user.addresses ||= [];
+  const addr = user.addresses.find(a => a.id === req.params.id);
+  if (!addr) return res.status(404).json({ message: "Address not found." });
+  Object.assign(addr, {
+    label: req.body.label ?? addr.label,
+    name: req.body.name ?? addr.name,
+    phone: req.body.phone ?? addr.phone,
+    address: req.body.address ?? addr.address,
+    city: req.body.city ?? addr.city,
+    state: req.body.state ?? addr.state,
+    pincode: req.body.pincode ?? addr.pincode,
+    isDefault: req.body.isDefault !== undefined ? Boolean(req.body.isDefault) : addr.isDefault
+  });
+  if (addr.isDefault) {
+    user.addresses.forEach(a => { if (a.id !== addr.id) a.isDefault = false; });
+    user.defaultAddressId = addr.id;
+  }
+  await db.write();
+  res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId });
+});
+
+app.post("/api/auth/addresses/:id/default", auth, async (req, res) => {
+  const user = db.data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  user.addresses ||= [];
+  const exists = user.addresses.some(a => a.id === req.params.id);
+  if (!exists) return res.status(404).json({ message: "Address not found." });
+  user.defaultAddressId = req.params.id;
+  user.addresses.forEach(a => a.isDefault = a.id === req.params.id);
+  await db.write();
+  res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId });
+});
+
+app.delete("/api/auth/addresses/:id", auth, async (req, res) => {
+  const user = db.data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found." });
+  user.addresses = (user.addresses || []).filter(a => a.id !== req.params.id);
+  if (user.defaultAddressId === req.params.id) {
+    user.defaultAddressId = user.addresses[0]?.id || null;
+    if (user.addresses[0]) user.addresses[0].isDefault = true;
+  }
+  await db.write();
+  res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId });
 });
 
 app.post("/api/cart/sync", auth, async (req, res) => {
@@ -1170,31 +1346,9 @@ app.post("/api/orders/:id/cancel", auth, async (req, res) => {
   res.json(order);
 });
 
-// CUSTOMER SIZE CHANGE — available only before shipment.
+// CUSTOMER SIZE CHANGE — size cannot be changed once an order has been placed.
 app.post("/api/orders/:id/change-size", auth, async (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
-  if (["shipped", "out_for_delivery", "delivered", "cancelled"].includes(String(order.status))) {
-    return res.status(409).json({ message: "Size can no longer be changed after shipment." });
-  }
-
-  const productId = Number(req.body?.productId);
-  const newSize = String(req.body?.size || "").trim().toUpperCase();
-  const item = (order.items || []).find(i => Number(i.productId) === productId);
-  if (!item) return res.status(404).json({ message: "Product not found in this order." });
-
-  const product = db.data.products.find(p => p.id === productId);
-  const availableSizes = Array.isArray(product?.sizes) && product.sizes.length
-    ? product.sizes.map(String).map(x => x.toUpperCase())
-    : ["S", "M", "L", "XL", "XXL"];
-  if (!availableSizes.includes(newSize)) {
-    return res.status(400).json({ message: `Size ${newSize} is not available for this product.` });
-  }
-
-  item.size = newSize;
-  order.updatedAt = Date.now();
-  await db.write();
-  res.json(order);
+  return res.status(403).json({ message: "Size cannot be changed after an order has been placed." });
 });
 
 app.post("/api/admin/login", async (req, res) => {

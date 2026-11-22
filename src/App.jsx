@@ -81,9 +81,9 @@ const TICKER_ITEMS = [
   { text: "FREE SHIPPING ACROSS INDIA", highlight: false },
   { text: "PRE-ORDER IS LIVE · COD (30% ADVANCE)", highlight: false }
 ];
-const TICKER_TRACK_ITEMS = Array.from({ length: 12 }, () => TICKER_ITEMS).flat();
+const TICKER_GROUP_ITEMS = Array.from({ length: 6 }, () => TICKER_ITEMS).flat();
 
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const[open,setOpen]=useState(false);const token=localStorage.getItem("enytm-token");const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><button className="icon-btn mobile-menu" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className={open?"nav-links mobile-open":"nav-links"}><Link to="/shop" onClick={()=>setOpen(false)}>SHOP</Link><Link to="/shop?category=Oversized" onClick={()=>setOpen(false)}>OVERSIZED</Link><Link to="/shop?category=Polos" onClick={()=>setOpen(false)}>POLOS</Link><Link to="/shop?category=Hoodies" onClick={()=>setOpen(false)}>HOODIES</Link><Link to="/shop?category=Lowers" onClick={()=>setOpen(false)}>LOWERS</Link><Link to={token?"/orders":"/login"} onClick={()=>setOpen(false)}>ORDERS</Link><Link to="/about" onClick={()=>setOpen(false)}>ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch}><Search/></button><Link className="icon-btn badge-icon" to="/wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" aria-label="Orders" title="Orders" to={token?"/orders":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track">{TICKER_TRACK_ITEMS.map((item, idx) => (<span key={idx}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></>}
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const location=useLocation();const[token,setToken]=useState(()=>localStorage.getItem("enytm-token"));useEffect(()=>{setToken(localStorage.getItem("enytm-token"));},[location.pathname]);const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className="nav-links"><Link to="/shop">SHOP</Link><Link to="/shop?category=Oversized">OVERSIZED</Link><Link to="/shop?category=Polos">POLOS</Link><Link to="/shop?category=Hoodies">HOODIES</Link><Link to="/shop?category=Lowers">LOWERS</Link><Link to={token?"/account":"/login"}>ORDERS</Link><Link to="/about">ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch} aria-label="Search"><Search/></button><Link className="icon-btn badge-icon nav-wishlist-btn" to="/wishlist" aria-label="Wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart" aria-label="Cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" aria-label="Account" title={token?"My Account & Orders":"Login"} to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track"><div className="ticker-group">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g1-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div><div className="ticker-group" aria-hidden="true">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g2-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></div></>}
 function ProductCard({product}){
   if (!product) return null;
   const{addToCart,wishlist,toggleWishlist}=useCart();
@@ -108,7 +108,7 @@ function ProductCard({product}){
 
     const fallbackImages = {
       1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-      3: "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
+      3: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
     };
 
     img.src =
@@ -120,18 +120,35 @@ function ProductCard({product}){
 function PrelaunchHome(){
   return <main className="enytm-prelaunch-home">
     <style>{`
-      .enytm-prelaunch-home,.enytm-countdown-page{min-height:100svh;background:#080808;color:#f5f2ed;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
-      .prelaunch-top{position:absolute;z-index:2;top:0;left:0;right:0;padding:25px clamp(20px,5vw,76px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.18)}
-      .prelaunch-logo{font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:.18em;color:#fff;text-decoration:none}.prelaunch-logo sup{font-size:10px;letter-spacing:0}
-      .prelaunch-top-note{font-size:10px;letter-spacing:.22em;color:#d0c6b8;text-align:right}
-      .prelaunch-hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:120px clamp(24px,9vw,140px) 80px;background:linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.54) 48%,rgba(0,0,0,.15) 100%),linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=2200&q=90') center 38%/cover no-repeat}
-      .prelaunch-copy{max-width:760px;position:relative;z-index:1}.prelaunch-kicker{font-size:10px;letter-spacing:.3em;color:#d1bfa2;margin:0 0 24px}.prelaunch-title{font-size:clamp(54px,10.5vw,150px);line-height:.86;letter-spacing:-.075em;font-weight:800;margin:0;text-transform:uppercase}.prelaunch-title em{font-style:normal;color:#c8b69a}.prelaunch-description{max-width:410px;color:#dedbd5;line-height:1.8;font-size:clamp(14px,1.5vw,17px);margin:30px 0 32px}.prelaunch-explore{display:inline-flex;align-items:center;gap:28px;background:#f5f2ed;color:#080808;padding:19px 25px;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:.18em;transition:background .2s,transform .2s}.prelaunch-explore:hover{background:#c8b69a;transform:translateY(-2px)}.prelaunch-bottom{position:absolute;bottom:24px;left:clamp(24px,5vw,76px);right:clamp(24px,5vw,76px);display:flex;justify-content:space-between;gap:20px;color:#c8c2b8;font-size:9px;letter-spacing:.2em}.prelaunch-bottom span:last-child{text-align:right}
-      .enytm-countdown-page{display:flex;flex-direction:column;position:relative}.countdown-top{padding:25px clamp(20px,5vw,76px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.14)}.countdown-main{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:70px 22px 90px;position:relative;background:radial-gradient(ellipse at 50% 30%,#25221d 0%,#111 40%,#080808 76%)}.countdown-inner{width:min(100%,900px)}.countdown-overline{font-size:10px;letter-spacing:.34em;color:#c8b69a;margin:0 0 24px}.countdown-title{font-size:clamp(42px,8vw,100px);letter-spacing:-.06em;line-height:.92;text-transform:uppercase;margin:0;font-weight:800}.countdown-title em{font-style:normal;color:#c8b69a}.countdown-subtitle{color:#c5c0b7;line-height:1.8;margin:25px auto 36px;max-width:520px;font-size:14px}.countdown-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,2vw,18px);max-width:740px;margin:0 auto}.countdown-unit{border:1px solid rgba(200,182,154,.45);background:rgba(255,255,255,.025);padding:clamp(14px,3vw,30px) 5px}.countdown-number{font-variant-numeric:tabular-nums;font-size:clamp(30px,6.5vw,70px);font-weight:700;letter-spacing:-.05em;line-height:1}.countdown-label{margin-top:12px;color:#c8b69a;font-size:9px;letter-spacing:.22em;text-transform:uppercase}.countdown-launch-date{font-size:10px;letter-spacing:.22em;color:#a9a39a;margin:27px 0 0}.countdown-footer{padding:22px clamp(20px,5vw,76px);display:flex;justify-content:space-between;gap:15px;color:#9e988f;font-size:9px;letter-spacing:.2em;border-top:1px solid rgba(255,255,255,.12)}.countdown-back{color:#f5f2ed;text-decoration:none;font-size:10px;letter-spacing:.16em}.countdown-shop{display:inline-flex;margin-top:30px;padding:17px 24px;background:#f5f2ed;color:#080808;text-decoration:none;font-size:11px;letter-spacing:.16em;font-weight:800}
-      @media(max-width:600px){.prelaunch-top-note{font-size:8px;max-width:125px;line-height:1.6}.prelaunch-hero{background-position:58% center;padding-top:140px;padding-bottom:110px}.prelaunch-title{font-size:clamp(53px,15vw,88px)}.prelaunch-bottom{font-size:8px;line-height:1.6}.countdown-grid{gap:6px}.countdown-unit{padding:18px 2px}.countdown-label{font-size:7px;letter-spacing:.12em}.countdown-footer{font-size:8px;line-height:1.6}.countdown-footer span:last-child{text-align:right}}
+      .enytm-prelaunch-home{min-height:100svh;background:#080808;color:#f5f2ed;font-family:Arial,Helvetica,sans-serif;position:relative}
+      .enytm-countdown-page{min-height:100svh;background:#080808;color:#f5f2ed;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+      .prelaunch-top{position:absolute;z-index:10;top:0;left:0;right:0;padding:12px clamp(16px,4vw,48px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.16);box-sizing:border-box}
+      .prelaunch-logo{font-size:clamp(16px,2vh,20px);font-weight:800;letter-spacing:.18em;color:#fff;text-decoration:none;display:inline-flex;align-items:center}
+      .prelaunch-logo .brand-logo-img{height:clamp(16px,2.2vw,20px);width:auto;object-fit:contain}
+      .prelaunch-top-note{font-size:clamp(7.5px,1.1vh,9px);letter-spacing:.2em;color:#d0c6b8;text-align:right;line-height:1.4}
+      .prelaunch-hero{position:relative;height:100vh;height:100svh;height:100dvh;min-height:100vh;min-height:100svh;min-height:100dvh;max-height:100vh;max-height:100svh;max-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:clamp(65px,10vh,95px) clamp(24px,7vw,110px) clamp(55px,8vh,75px);background:linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.54) 48%,rgba(0,0,0,.15) 100%),linear-gradient(0deg,rgba(0,0,0,.45),transparent 55%),url('https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=2200&q=90') center 38%/cover no-repeat}
+      .prelaunch-copy{max-width:min(760px,86vw);position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+      .prelaunch-kicker{font-size:clamp(8.5px,min(0.9vw,1.3vh),10.5px);letter-spacing:.3em;color:#d1bfa2;margin:0 0 clamp(8px,1.8vh,20px);font-weight:600;text-transform:uppercase}
+      .prelaunch-title{font-size:clamp(34px,min(7.5vw,10.2vh),96px);line-height:.88;letter-spacing:-.07em;font-weight:800;margin:0;text-transform:uppercase;color:#fff}
+      .prelaunch-title em{font-style:normal;color:#c8b69a}
+      .prelaunch-description{max-width:clamp(280px,32vw,430px);color:#dedbd5;line-height:clamp(1.5,1.65,1.75);font-size:clamp(12px,min(1.1vw,1.7vh),15.5px);margin:clamp(12px,2vh,24px) 0 clamp(16px,2.6vh,28px)}
+      .prelaunch-explore{display:inline-flex!important;align-items:center!important;gap:clamp(18px,2vw,28px)!important;background:linear-gradient(115deg,#f5f2ed 0%,#e3d1b5 48%,#f5f2ed 100%)!important;color:#080808!important;padding:clamp(11px,1.6vh,17px) clamp(20px,2vw,28px)!important;min-height:clamp(44px,5.2vh,56px)!important;text-decoration:none!important;font-size:clamp(10px,1.1vh,11px)!important;font-weight:800!important;letter-spacing:.18em!important;transition:background .2s,transform .2s,box-shadow .25s!important}
+      .prelaunch-explore:hover{background:#c8b69a!important;transform:translateY(-2px)!important}
+      .prelaunch-bottom{position:absolute;z-index:2;bottom:clamp(14px,2.4vh,24px);left:clamp(20px,5vw,76px);right:clamp(20px,5vw,76px);display:flex;justify-content:space-between;align-items:center;gap:20px;color:#c8c2b8;font-size:clamp(8px,1.15vh,9.5px);letter-spacing:.2em}
+      .prelaunch-bottom span:last-child{text-align:right}
+      @media(max-height:680px){
+        .prelaunch-hero{padding-top:55px;padding-bottom:45px}
+        .prelaunch-title{font-size:clamp(28px,9.5vh,58px)}
+        .prelaunch-description{margin:8px 0 14px;font-size:11.5px;line-height:1.45}
+        .prelaunch-kicker{margin-bottom:8px}
+        .prelaunch-explore{min-height:38px!important;padding:8px 18px!important;gap:16px!important}
+      }
+      .enytm-countdown-page{display:flex;flex-direction:column;position:relative}.countdown-top{padding:12px clamp(16px,4vw,48px);min-height:44px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.14)}.countdown-top .prelaunch-logo .brand-logo-img{height:clamp(16px,2.2vw,20px)!important}.countdown-back{color:#cfcfca;text-decoration:none;font-size:9.5px;letter-spacing:.16em;font-weight:700;opacity:.85;transition:opacity .2s}.countdown-back:hover{opacity:1;color:#fff}.countdown-main{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:70px 22px 90px;position:relative;background:radial-gradient(ellipse at 50% 30%,#25221d 0%,#111 40%,#080808 76%)}.countdown-inner{width:min(100%,900px)}.countdown-overline{font-size:10px;letter-spacing:.34em;color:#c8b69a;margin:0 0 24px}.countdown-title{font-size:clamp(42px,8vw,100px);letter-spacing:-.06em;line-height:.92;text-transform:uppercase;margin:0;font-weight:800}.countdown-title em{font-style:normal;color:#c8b69a}.countdown-subtitle{color:#c5c0b7;line-height:1.8;margin:25px auto 36px;max-width:520px;font-size:14px}.countdown-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,2vw,18px);max-width:740px;margin:0 auto}.countdown-unit{border:1px solid rgba(200,182,154,.45);background:rgba(255,255,255,.025);padding:clamp(14px,3vw,30px) 5px}.countdown-number{font-variant-numeric:tabular-nums;font-size:clamp(30px,6.5vw,70px);font-weight:700;letter-spacing:-.05em;line-height:1}.countdown-label{margin-top:12px;color:#c8b69a;font-size:9px;letter-spacing:.22em;text-transform:uppercase}.countdown-launch-date{font-size:10px;letter-spacing:.22em;color:#a9a39a;margin:27px 0 0}.countdown-footer{padding:14px clamp(16px,4vw,48px);display:flex;justify-content:space-between;gap:15px;color:#9e988f;font-size:9px;letter-spacing:.2em;border-top:1px solid rgba(255,255,255,.12)}.countdown-shop{display:inline-flex;margin-top:30px;padding:17px 24px;background:#f5f2ed;color:#080808;text-decoration:none;font-size:11px;letter-spacing:.16em;font-weight:800}
+      @media(max-width:600px){.prelaunch-top-note{font-size:8px;max-width:125px;line-height:1.5}.prelaunch-hero{background-position:58% center;padding-left:20px;padding-right:20px;padding-top:80px;padding-bottom:60px}.prelaunch-title{font-size:clamp(36px,11vw,64px)}.prelaunch-bottom{font-size:8px;line-height:1.5}.countdown-grid{gap:6px}.countdown-unit{padding:18px 2px}.countdown-label{font-size:7px;letter-spacing:.12em}.countdown-footer{font-size:8px;line-height:1.6}.countdown-footer span:last-child{text-align:right}}
       @media(prefers-reduced-motion:reduce){.prelaunch-explore{transition:none}}
     `}</style>
     <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br/>PUNE, INDIA · EST. 2026</span></header>
-    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br/>CLOTHING.<br/><em>A FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18}/></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section>
+    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br/>CLOTHING.<br/><em>A<br/>FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18}/></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section>
   </main>
 }
 function LaunchCountdown(){
@@ -154,10 +171,10 @@ function Home() {
   const [activeTab, setActiveTab] = useState("all");
 
   const categoryImages = {
-    Oversized: products.find(p => p.category === "Oversized")?.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-    Polos: products.find(p => p.category === "Polos")?.image || "https://images.unsplash.com/photo-1625910513413-5fc45c2f9c3f?auto=format&fit=crop&w=1200&q=85",
-    Hoodies: products.find(p => p.category === "Hoodies" || p.category === "Sweatshirts")?.image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-    Lowers: products.find(p => p.category === "Lowers")?.image || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
+    Oversized: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+    Polos: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+    Hoodies: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+    Lowers: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
   };
 
   const collections = [
@@ -290,13 +307,34 @@ function Home() {
         <div className="categories categories-four-col">
           {collections.map(c => (
             <Link key={c.title} to={c.link} className="category-tile category-tile-v2">
-              <img src={c.img} alt={c.title} loading="lazy" />
-              <div>
-                <span>{c.num} / SILHOUETTE</span>
-                <h3>{c.title}</h3>
-                <p className="cat-desc-preview">{c.desc}</p>
-                <div className="cat-explore-link">
-                  EXPLORE <ArrowRight size={15} />
+              <img
+                src={c.img}
+                alt={c.title}
+                loading="lazy"
+                onError={(e) => {
+                  const fallbacks = {
+                    "OVERSIZED T-SHIRTS": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+                    "POLOS": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+                    "HOODIES & SWEATSHIRTS": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+                    "HEAVYWEIGHT LOWERS": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
+                  };
+                  if (e.currentTarget.dataset.fallbackApplied !== "true") {
+                    e.currentTarget.dataset.fallbackApplied = "true";
+                    e.currentTarget.src = fallbacks[c.title] || "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+                  }
+                }}
+              />
+              <div className="cat-tile-overlay" />
+              <div className="cat-tile-body">
+                <div className="cat-tile-top">
+                  <div className="cat-tile-num">{c.num} / SILHOUETTE</div>
+                  <h3 className="cat-tile-title">{c.title}</h3>
+                </div>
+                <div className="cat-tile-bottom">
+                  <p className="cat-desc-preview">{c.desc}</p>
+                  <div className="cat-explore-link">
+                    EXPLORE <ArrowRight size={14} />
+                  </div>
                 </div>
               </div>
             </Link>
@@ -808,37 +846,10 @@ function ProductPage(){
 
         <div className="detail-highlights">
           <span className="gsm-box">{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
-          {isOversized && (
-            <>
-              <span className="wash-box">SILICON WASH</span>
-              <span className="wash-box">BIO WASH</span>
-              <span className="wash-box gold-box">GOLD FINISH</span>
-            </>
-          )}
           <span>100% COMBED COTTON</span>
           <span>OVERSIZED FIT</span>
           <span>DROP SHOULDER</span>
         </div>
-
-        {isOversized && (
-          <div className="oversized-wash-row">
-            <div className="wash-box-card">
-              <span className="wash-box-tag">TREATMENT 01</span>
-              <strong className="wash-box-title">SILICON WASH</strong>
-              <small className="wash-box-desc">Ultra-soft silky handfeel</small>
-            </div>
-            <div className="wash-box-card">
-              <span className="wash-box-tag">TREATMENT 02</span>
-              <strong className="wash-box-title">BIO WASH</strong>
-              <small className="wash-box-desc">Enzyme-treated anti-pilling</small>
-            </div>
-            <div className="wash-box-card gold-finish">
-              <span className="wash-box-tag">FINISH 03</span>
-              <strong className="wash-box-title">GOLD FINISH</strong>
-              <small className="wash-box-desc">Lustrous premium sheen</small>
-            </div>
-          </div>
-        )}
 
         {product.fabric && (
           <div className="spec">
@@ -948,9 +959,6 @@ function ProductPage(){
               <div className="acc-specs-grid">
                 <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
                 <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
-                {isOversized && (
-                  <div><span>FINISH & WASH</span><b>SILICON WASH · BIO WASH · GOLD FINISH</b></div>
-                )}
                 <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
                 <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
                 <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
@@ -1147,6 +1155,10 @@ function Auth({register=false}){
  const[newPassword,setNewPassword]=useState("");
  const[showNewPassword,setShowNewPassword]=useState(false);
  const[forgotMessage,setForgotMessage]=useState("");
+ const[googleLoading,setGoogleLoading]=useState(false);
+ const[showGoogleDevModal,setShowGoogleDevModal]=useState(false);
+ const[devGoogleEmail,setDevGoogleEmail]=useState("user@gmail.com");
+ const[devGoogleName,setDevGoogleName]=useState("Google User");
 
  useEffect(()=>{
   setStep(register?"details":"login");
@@ -1165,6 +1177,79 @@ function Auth({register=false}){
  },[seconds]);
 
  const update=(key,value)=>setForm(f=>({...f,[key]:value}));
+
+ const handleGoogleAuthSuccess=async(googlePayload)=>{
+  setGoogleLoading(true);
+  setError("");
+  try{
+   const data=await api("/auth/google",{
+    method:"POST",
+    body:JSON.stringify(googlePayload)
+   });
+   if(!data?.token)throw new Error("Authentication failed: no session token returned.");
+   localStorage.setItem("enytm-token",data.token);
+   localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
+   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
+   sessionStorage.removeItem("enytm-after-login");
+   nav(redirect,{replace:true});
+  }catch(err){
+   setError(err.message||"Google sign-in failed. Please try again.");
+  }finally{
+   setGoogleLoading(false);
+  }
+ };
+
+ const handleGoogleClick=()=>{
+  const googleClientId=import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  if(googleClientId&&window.google?.accounts?.oauth2){
+   try{
+    const client=window.google.accounts.oauth2.initTokenClient({
+     client_id:googleClientId,
+     scope:"email profile openid",
+     callback:async(tokenResponse)=>{
+      if(tokenResponse?.access_token){
+       setGoogleLoading(true);
+       try{
+        const userInfoRes=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{
+         headers:{Authorization:`Bearer ${tokenResponse.access_token}`}
+        });
+        const profile=await userInfoRes.json();
+        await handleGoogleAuthSuccess({
+         email:profile.email,
+         name:profile.name,
+         picture:profile.picture,
+         googleId:profile.sub
+        });
+       }catch{
+        setError("Could not retrieve Google profile.");
+        setGoogleLoading(false);
+       }
+      }
+     }
+    });
+    client.requestAccessToken();
+    return;
+   }catch(e){
+    console.warn("GIS token client error:",e);
+   }
+  }
+
+  if(googleClientId&&window.google?.accounts?.id){
+   try{
+    window.google.accounts.id.initialize({
+     client_id:googleClientId,
+     callback:(res)=>handleGoogleAuthSuccess({credential:res.credential}),
+     auto_select:false
+    });
+    window.google.accounts.id.prompt();
+    return;
+   }catch(e){
+    console.warn("GIS prompt error:",e);
+   }
+  }
+
+  setShowGoogleDevModal(true);
+ };
 
  const sendOtp=async e=>{
   e.preventDefault();
@@ -1282,6 +1367,28 @@ function Auth({register=false}){
 
     {error && <div className="error auth-error" role="alert">{error}</div>}
 
+    {!forgotMode && step !== "otp" && (
+     <div className="google-auth-section">
+      <button
+       type="button"
+       className="google-auth-btn"
+       onClick={handleGoogleClick}
+       disabled={googleLoading}
+      >
+       <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.27 21.43 7.35 24 12 24z"/>
+        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
+        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.27 2.57 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+       </svg>
+       <span>{googleLoading ? "CONNECTING TO GOOGLE..." : "CONTINUE WITH GOOGLE"}</span>
+      </button>
+      <div className="auth-divider">
+       <span>OR CONTINUE WITH EMAIL</span>
+      </div>
+     </div>
+    )}
+
     {register && step !== "otp" && (
      <form className="auth-form" onSubmit={sendOtp}>
       <input className="auth-input" required autoComplete="name" placeholder="Full name" value={form.name} onChange={e=>update("name",e.target.value)}/>
@@ -1392,6 +1499,53 @@ function Auth({register=false}){
      <p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>
     )}
    </div>
+
+   {showGoogleDevModal && (
+    <div className="modal-backdrop" onClick={()=>setShowGoogleDevModal(false)}>
+     <div className="modal-card google-dev-modal" onClick={e=>e.stopPropagation()}>
+      <div className="modal-header">
+       <h3>CONTINUE WITH GOOGLE</h3>
+       <button type="button" className="icon-btn" onClick={()=>setShowGoogleDevModal(false)} aria-label="Close"><X size={18}/></button>
+      </div>
+      <p className="muted" style={{fontSize:"12px",lineHeight:"1.5",margin:"10px 0 16px"}}>
+       To enable live Google Sign-In, add your <code>VITE_GOOGLE_CLIENT_ID</code> to <code>.env</code>. You can test instant Google authentication below:
+      </p>
+      <div className="auth-form" style={{gap:"12px"}}>
+       <input
+        className="auth-input"
+        type="email"
+        placeholder="Google Email address"
+        value={devGoogleEmail}
+        onChange={e=>setDevGoogleEmail(e.target.value)}
+       />
+       <input
+        className="auth-input"
+        placeholder="Full name"
+        value={devGoogleName}
+        onChange={e=>setDevGoogleName(e.target.value)}
+       />
+       <button
+        type="button"
+        disabled={googleLoading || !devGoogleEmail}
+        className="btn primary full auth-submit-btn"
+        onClick={()=>{
+         setShowGoogleDevModal(false);
+         handleGoogleAuthSuccess({ email: devGoogleEmail, name: devGoogleName });
+        }}
+       >
+        {googleLoading ? "SIGNING IN..." : "CONTINUE WITH GOOGLE ACCOUNT"} <ArrowRight size={16}/>
+       </button>
+       <button
+        type="button"
+        className="btn outline full auth-secondary-btn"
+        onClick={()=>setShowGoogleDevModal(false)}
+       >
+        CANCEL
+       </button>
+      </div>
+     </div>
+    </div>
+   )}
   </main>
  );
 }
@@ -2068,8 +2222,6 @@ function OrderDetails(){
  const[loading,setLoading]=useState(true);
  const[error,setError]=useState("");
  const[actionBusy,setActionBusy]=useState(false);
- const[sizeItem,setSizeItem]=useState(null);
- const[sizeValue,setSizeValue]=useState("");
  const[message,setMessage]=useState("");
  const load=async()=>{setLoading(true);setError("");try{const o=await api(`/orders/${id}`);setOrder(o)}catch(e){setError(e.message||"Could not load this order.")}finally{setLoading(false)}};
  useEffect(()=>{if(!localStorage.getItem("enytm-token")){nav("/login");return}load();const refresh=window.setInterval(()=>{api(`/orders/${id}`).then(setOrder).catch(()=>{})},30000);return()=>window.clearInterval(refresh)},[id]);
@@ -2082,7 +2234,6 @@ function OrderDetails(){
  const formatDate=d=>d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
  const cancelOrder=async()=>{if(!window.confirm("Cancel this order? You will be asked to choose where an eligible refund should go."))return;const paid=Number(order?.advancePaid||0)+Number(order?.balancePaid||0);let refundTo="original";if(paid>0){const choice=window.prompt("Refund preference: type WALLET to refund to your ENYTM wallet, or ORIGINAL to refund to the original payment method.","ORIGINAL");if(choice===null)return;const normalized=choice.trim().toLowerCase();if(!["wallet","original"].includes(normalized)){setMessage("Please type WALLET or ORIGINAL. No cancellation was made.");return;}refundTo=normalized;}setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/cancel`,{method:"POST",body:JSON.stringify({refundTo})});setOrder(o);setMessage(o.refundStatus==="initiated"?"Order cancelled. Your refund has been initiated.":o.refundStatus==="wallet_credited"?"Order cancelled and eligible refund credited to your ENYTM wallet.":"Order cancelled successfully.")}catch(e){setMessage(e.message||"Could not cancel the order.")}finally{setActionBusy(false)}};
  const payBalance=async()=>{setActionBusy(true);setMessage("");try{const data=await api(`/orders/${id}/balance/order`,{method:"POST"});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM pre-order balance",order_id:data.razorpayOrderId,theme:{color:"#111111"},handler:async response=>{try{const result=await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});setOrder(result.order);setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch.");}catch(e){setMessage(e.message||"Payment verification is pending. Refresh the order shortly.");}},modal:{ondismiss:()=>setActionBusy(false)}});rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Balance payment failed. Please try again.");setActionBusy(false)});rzp.open();}catch(e){setMessage(e.message||"Could not start balance payment.");setActionBusy(false)}};
- const changeSize=async()=>{if(!sizeItem||!sizeValue)return;setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/change-size`,{method:"POST",body:JSON.stringify({productId:sizeItem.productId,size:sizeValue})});setOrder(o);setSizeItem(null);setSizeValue("");setMessage("Size updated successfully.")}catch(e){setMessage(e.message||"Could not change the size.")}finally{setActionBusy(false)}};
  if(loading)return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
  if(error||!order)return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/orders">BACK TO MY ORDERS</Link></main>;
  const steps=[
@@ -2101,17 +2252,16 @@ function OrderDetails(){
   </section>
   <div className="order-detail-grid">
    <section className="order-detail-main">
-    <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p>{!shipped&&!cancelled&&<button type="button" className="order-action-link order-change-size-button" onClick={()=>{setSizeItem(item);setSizeValue(item.size||"")}}><Pencil size={13}/> CHANGE T-SHIRT SIZE</button>}</div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
+    <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p></div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
     {order.tracking?.trackingNumber&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK SHIPMENT</h2><span>{order.tracking.courier}</span></div><div className="tracking-row"><Package size={22}/><div><b>{order.tracking.trackingNumber}</b><small>Tracking number</small></div>{order.tracking.trackingUrl&&<a className="btn outline" href={order.tracking.trackingUrl} target="_blank" rel="noreferrer">TRACK NOW <ArrowRight size={15}/></a>}</div></div>}
     <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18}/></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
    </section>
    <aside className="order-detail-side">
     <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal||0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping||0)?`₹${Number(order.shipping).toLocaleString("en-IN")}`:"FREE"}</b></div>{Number(order.buy2Discount||0)>0&&<div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount||0)>0&&!order.buy2Discount&&<div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount||0)>0&&<div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee||0)>0&&<div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr/><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total||0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Cash on Delivery (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid||0).toLocaleString("en-IN")}</b></div><div><span>Cash due on delivery (70%)</span><b>₹{Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid||order.total||0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod||"online").toUpperCase()} · {String(order.paymentStatus||"").replace(/_/g," ").toUpperCase()}</p>{!cancelled&&order.paymentStatus!=="paid"&&order.paymentMethod!=="cod"&&Number(order.advancePaid||0)>0&&<button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy?"PROCESSING...":`PAY BALANCE ₹${Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}`}</button>}</div>
     <div className="order-panel delivery-summary"><div className="panel-head"><h2>DELIVERY</h2><CalendarDays size={18}/></div><b>{deliveryDate?formatDate(deliveryDate):"To be confirmed"}</b><p className="muted">Standard delivery</p></div>
-    <div className="order-actions-panel">{!cancelled&&<><button className="btn primary full" disabled={actionBusy||shipped} onClick={cancelOrder}>{shipped?"CANCELLATION CLOSED":actionBusy?"PROCESSING...":"CANCEL ORDER"}</button><p className="action-note">Cancellation and size change are available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
+    <div className="order-actions-panel">{!cancelled&&<><button className="btn primary full" disabled={actionBusy||shipped} onClick={cancelOrder}>{shipped?"CANCELLATION CLOSED":actionBusy?"PROCESSING...":"CANCEL ORDER"}</button><p className="action-note">Cancellation is available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
    </aside>
   </div>
-  {sizeItem&&<div className="order-modal-backdrop"><div className="order-modal"><div className="panel-head"><h2>CHANGE SIZE</h2><button className="icon-btn" onClick={()=>setSizeItem(null)}><X/></button></div><p>{sizeItem.name}</p><select value={sizeValue} onChange={e=>setSizeValue(e.target.value)}><option value="">SELECT SIZE</option>{(sizeItem.sizes||["S","M","L","XL","XXL"]).map(s=><option key={s} value={s}>{s}</option>)}</select><button className="btn primary full" disabled={!sizeValue||actionBusy} onClick={changeSize}>{actionBusy?"UPDATING...":"CONFIRM SIZE"}</button></div></div>}
  </main>
 }
 
@@ -2168,19 +2318,16 @@ function Cart(){
       ) : (
         <div className="cart-layout">
           <div className="cart-items-column">
-            {/* Free shipping progress bar */}
+            {/* Free shipping banner */}
             <div className="free-shipping-bar-card">
               <div className="free-shipping-text-row">
                 <div className="shipping-icon-label">
                   <Truck size={17} />
                   <span>
-                    <span className="shipping-unlocked-text">✓ You unlocked <b>FREE SHIPPING</b> across India!</span>
+                    <span className="shipping-unlocked-text"><b>FREE SHIPPING ACROSS INDIA</b> ON ALL ORDERS</span>
                   </span>
                 </div>
-                <span className="shipping-pct">100%</span>
-              </div>
-              <div className="shipping-progress-track">
-                <div className="shipping-progress-fill" style={{ width: "100%" }} />
+                <span className="shipping-pct">FREE</span>
               </div>
             </div>
 
@@ -2281,17 +2428,31 @@ function Account() {
   const { wishlist } = useCart();
   const nav = useNavigate();
 
-  const [user, setUser] = useState(null);
+  const cachedUser = (() => {
+    try {
+      const saved = localStorage.getItem("enytm-user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const [user, setUser] = useState(cachedUser);
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [defaultAddressId, setDefaultAddressId] = useState(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedUser);
   const [loadError, setLoadError] = useState("");
   const [profileEditing, setProfileEditing] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
-  const [profileForm, setProfileForm] = useState({ name: "", phone: "", whatsappOptIn: false, emailOptIn: true });
+  const [profileForm, setProfileForm] = useState({
+    name: cachedUser?.name || "",
+    phone: cachedUser?.phone || "",
+    whatsappOptIn: Boolean(cachedUser?.whatsappOptIn),
+    emailOptIn: cachedUser?.emailOptIn !== false
+  });
 
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -2310,7 +2471,7 @@ function Account() {
   });
 
   const loadAccount = async () => {
-    setLoading(true);
+    if (!user) setLoading(true);
     setLoadError("");
 
     const token = localStorage.getItem("enytm-token");
@@ -2338,20 +2499,20 @@ function Account() {
 
       // USER
       if (meResult.status === "rejected") {
-        throw new Error(
-          meResult.reason?.message ||
-          "Unable to load your account."
-        );
+        if (!user) {
+          throw new Error(
+            meResult.reason?.message ||
+            "Unable to load your account."
+          );
+        }
+      } else {
+        const accountUser = meResult.value;
+        if (accountUser) {
+          setUser(accountUser);
+          localStorage.setItem("enytm-user", JSON.stringify(accountUser));
+          setProfileForm({ name: accountUser.name || "", phone: accountUser.phone || "", whatsappOptIn: Boolean(accountUser.whatsappOptIn), emailOptIn: accountUser.emailOptIn !== false });
+        }
       }
-
-      const accountUser = meResult.value;
-
-      if (!accountUser) {
-        throw new Error("Your account session is no longer valid.");
-      }
-
-      setUser(accountUser);
-      setProfileForm({ name: accountUser.name || "", phone: accountUser.phone || "", whatsappOptIn: Boolean(accountUser.whatsappOptIn), emailOptIn: accountUser.emailOptIn !== false });
 
       // ORDERS
       if (ordersResult.status === "fulfilled") {
@@ -2409,8 +2570,9 @@ function Account() {
       console.error("ACCOUNT LOAD ERROR:", error);
 
       setLoadError(
-        error?.message ||
-        "Could not load your account. Please try again."
+        error?.message?.includes("429")
+          ? "Rate limit exceeded. Please wait a few moments and try again."
+          : (error?.message || "Could not load your account. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -2573,7 +2735,7 @@ function Account() {
     nav("/", { replace: true });
   };
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <main className="empty loading-page">
         <p className="eyebrow">ENYTM MEMBERS</p>
@@ -2585,7 +2747,7 @@ function Account() {
     );
   }
 
-  if (loadError) {
+  if (loadError && !user) {
     return (
       <main className="empty">
         <p className="eyebrow">ENYTM MEMBERS</p>
@@ -4395,7 +4557,7 @@ function AdminProducts({ products, reload }) {
 
     </div>
   );
-}function AdminSettings(){const[s,setS]=useState({shippingFreeAbove:0,shippingCharge:0});useEffect(()=>{api("/admin/settings").then(setS)},[]);return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Free shipping above <input value={s.shippingFreeAbove||""} onChange={e=>setS({...s,shippingFreeAbove:e.target.value})}/></label><label>Standard shipping charge <input value={s.shippingCharge||""} onChange={e=>setS({...s,shippingCharge:e.target.value})}/></label><button className="btn primary" onClick={async()=>{await api("/admin/settings",{method:"PUT",body:JSON.stringify(s)});alert("Settings saved")}}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div>}
+}function AdminSettings(){const[s,setS]=useState({shippingFreeAbove:0,shippingCharge:0});useEffect(()=>{api("/admin/settings").then(setS)},[]);return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Shipping Policy <input value="Free shipping on all orders (₹0 minimum)" disabled style={{opacity:0.8,cursor:"not-allowed"}}/></label><label>Standard shipping charge (₹) <input value={s.shippingCharge||"0"} onChange={e=>setS({...s,shippingCharge:Number(e.target.value)||0,shippingFreeAbove:0})}/></label><button className="btn primary" onClick={async()=>{await api("/admin/settings",{method:"PUT",body:JSON.stringify({...s,shippingFreeAbove:0,shippingCharge:0})});alert("Settings saved")}}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div>}
 function BrandIntro(){
   const [visible, setVisible] = useState(true);
   useEffect(() => {
@@ -4407,15 +4569,15 @@ function BrandIntro(){
     <div className="enytm-intro" role="status" aria-label="ENYTM introduction">
       <style>{`
         .enytm-intro{position:fixed;inset:0;z-index:2147483647;background:#080808;color:#f5f0e8;display:flex;align-items:center;justify-content:center;flex-direction:column;animation:enytmIntroOut .85s ease 3.05s forwards;overflow:hidden}
-        .enytm-intro::before{content:"";position:absolute;width:min(70vw,520px);height:min(70vw,520px);border:1px solid rgba(245,240,232,.12);border-radius:50%;animation:enytmRing 2.8s ease-out both}
-        .enytm-intro-logo{position:relative;font-family:Arial,Helvetica,sans-serif;font-size:clamp(44px,10vw,88px);font-weight:800;letter-spacing:.16em;margin-left:.16em;opacity:0;animation:enytmLogoIn .9s cubic-bezier(.2,.75,.25,1) .25s forwards}
+        .enytm-intro::before{content:"";position:absolute;width:min(54vw,380px);height:min(54vw,380px);border:1px solid rgba(245,240,232,.12);border-radius:50%;animation:enytmRing 2.8s ease-out both}
+        .enytm-intro-logo{position:relative;font-family:Arial,Helvetica,sans-serif;font-size:clamp(30px,6.5vw,56px);font-weight:800;letter-spacing:.16em;margin-left:.16em;opacity:0;animation:enytmLogoIn .9s cubic-bezier(.2,.75,.25,1) .25s forwards}
         .enytm-intro-logo span{font-size:.22em;vertical-align:top;letter-spacing:0;margin-left:3px}
-        .enytm-intro-line{width:0;height:1px;background:#c6b79a;margin:24px 0 18px;animation:enytmLineIn .8s ease 1s forwards}
-        .enytm-intro-tag{font:10px/1.5 Arial,Helvetica,sans-serif;letter-spacing:.34em;margin-left:.34em;color:#c6b79a;opacity:0;animation:enytmTagIn .7s ease 1.2s forwards}
+        .enytm-intro-line{width:0;height:1px;background:#c6b79a;margin:18px 0 14px;animation:enytmLineIn .8s ease 1s forwards}
+        .enytm-intro-tag{font:9px/1.5 Arial,Helvetica,sans-serif;letter-spacing:.32em;margin-left:.32em;color:#c6b79a;opacity:0;animation:enytmTagIn .7s ease 1.2s forwards}
         @keyframes enytmLogoIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
-        @keyframes enytmLineIn{to{width:90px}}
+        @keyframes enytmLineIn{to{width:64px}}
         @keyframes enytmTagIn{to{opacity:1}}
-        @keyframes enytmRing{from{transform:scale(.8);opacity:0}40%{opacity:1}to{transform:scale(1.12);opacity:.35}}
+        @keyframes enytmRing{from{transform:scale(.8);opacity:0}40%{opacity:1}to{transform:scale(1.1);opacity:.35}}
         @keyframes enytmIntroOut{to{opacity:0;visibility:hidden;pointer-events:none}}
         @media(prefers-reduced-motion:reduce){.enytm-intro,.enytm-intro::before,.enytm-intro-logo,.enytm-intro-line,.enytm-intro-tag{animation-duration:.01ms!important;animation-delay:0ms!important}.enytm-intro{animation-delay:1.5s!important}}
       `}</style>
@@ -4468,21 +4630,26 @@ function ScrollToTopOnRouteChange(){const route=useLocation();useEffect(()=>{win
 function App() {
   const [search, setSearch] = useState(false);
   const route = useLocation();
-  const immersive = route.pathname === "/" || route.pathname === "/launch";
+  const isPrelaunch = route.pathname === "/" || route.pathname === "/prelaunch";
+  const isCountdown = route.pathname === "/launch";
+  const hideNav = isCountdown || isPrelaunch;
+  const hideFooter = isCountdown;
 
   return (
     <>
       <style>{enytmInventoryAndDeliveryStyles}</style>
       <BrandIntro />
       <ScrollToTopOnRouteChange />
-      {!immersive && !route.pathname.startsWith("/admin") && (
+      {!hideNav && !route.pathname.startsWith("/admin") && (
         <Navbar onSearch={() => setSearch(true)} />
       )}
       <ErrorBoundary key={route.pathname}>
         <Routes>
           <Route path="/" element={<PrelaunchHome />} />
-          <Route path="/launch" element={<LaunchCountdown />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/collection" element={<Home />} />
+          <Route path="/prelaunch" element={<PrelaunchHome />} />
+          <Route path="/launch" element={<LaunchCountdown />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/cart" element={<Cart />} />
@@ -4494,6 +4661,7 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth register />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/orders" element={<Account />} />
           <Route path="/wallet" element={<WalletPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/shipping-policy" element={<ShippingReturnsPage />} />
@@ -4502,10 +4670,10 @@ function App() {
           <Route path="/track" element={<TrackOrderPage />} />
           <Route path="/size-guide" element={<SizeGuidePage />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<PrelaunchHome />} />
         </Routes>
       </ErrorBoundary>
-      {!immersive && !route.pathname.startsWith("/admin") && <Footer />}
+      {!hideFooter && !route.pathname.startsWith("/admin") && <Footer />}
       {search && <SearchOverlay close={() => setSearch(false)} />}
     </>
   );
