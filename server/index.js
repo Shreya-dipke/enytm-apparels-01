@@ -104,7 +104,11 @@ await db.write();
 const app = express();
 app.set("trust proxy", 1);
 app.use("/uploads", express.static(uploadsDir));
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  contentSecurityPolicy: false
+}));
 app.use(compression());
 app.use(cors({ origin: true, credentials: true }));
 

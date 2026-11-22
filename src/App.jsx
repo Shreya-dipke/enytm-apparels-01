@@ -1200,7 +1200,7 @@ function Auth({register=false}){
  };
 
  const handleGoogleClick=()=>{
-  const googleClientId=import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "992592766204-s8s7l9gjc5n4m1qbtj5h2hcm7n410342.apps.googleusercontent.com";
   if(googleClientId&&window.google?.accounts?.oauth2){
    try{
     const client=window.google.accounts.oauth2.initTokenClient({
