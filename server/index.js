@@ -83,12 +83,12 @@ if (!Array.isArray(db.data.coupons)) db.data.coupons = [];
 if (!Array.isArray(db.data.walletTopups)) db.data.walletTopups = [];
 
 const seedProducts = [
-  { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 2, name: "Heavyweight Oversized Tee", category: "Oversized", price: 1099, oldPrice: 1299, stock: 50, badge: "BESTSELLER", fabric: "260 GSM Premium Cotton", description: "A heavier everyday essential with a premium drape.", image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 3, name: "Organic Signature Polo", category: "Polos", price: 899, oldPrice: 1099, stock: 40, badge: "SIGNATURE", fabric: "280 GSM Organic Cotton", description: "Minimal branding. Elevated texture. Designed beyond one occasion.", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 4, name: "Core French Terry Sweatshirt", category: "Sweatshirts", price: 1499, oldPrice: 1699, stock: 30, badge: "CORE", fabric: "360 GSM French Terry", description: "Clean proportions and substantial weight for a premium layer.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 5, name: "Everyday Pullover Hoodie", category: "Hoodies", price: 1699, oldPrice: 1899, stock: 30, badge: "NEW", fabric: "380 GSM Cotton Blend", description: "A premium relaxed hoodie with a deep hood and heavyweight hand feel.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] },
-  { id: 6, name: "Minimal Logo Tee", category: "Oversized", price: 949, oldPrice: 1099, stock: 50, badge: "", fabric: "240 GSM Cotton", description: "A refined oversized tee with subtle ENYTM identity.", image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] }
+  { id: 1, name: "Essential Oversized Tee", category: "Oversized", price: 999, oldPrice: 1199, stock: 50, badge: "NEW", fabric: "240 GSM Premium Cotton", description: "A structured oversized silhouette made for everyday movement.", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: 2, name: "Heavyweight Oversized Tee", category: "Oversized", price: 1099, oldPrice: 1299, stock: 50, badge: "BESTSELLER", fabric: "260 GSM Premium Cotton", description: "A heavier everyday essential with a premium drape.", image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: 3, name: "Organic Signature Polo", category: "Polos", price: 899, oldPrice: 1099, stock: 40, badge: "SIGNATURE", fabric: "280 GSM Organic Cotton", description: "Minimal branding. Elevated texture. Designed beyond one occasion.", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: 4, name: "Core French Terry Sweatshirt", category: "Sweatshirts", price: 1499, oldPrice: 1699, stock: 30, badge: "CORE", fabric: "360 GSM French Terry", description: "Clean proportions and substantial weight for a premium layer.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: 5, name: "Everyday Pullover Hoodie", category: "Hoodies", price: 1699, oldPrice: 1899, stock: 30, badge: "NEW", fabric: "380 GSM Cotton Blend", description: "A premium relaxed hoodie with a deep hood and heavyweight hand feel.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] },
+  { id: 6, name: "Minimal Logo Tee", category: "Oversized", price: 949, oldPrice: 1099, stock: 50, badge: "", fabric: "240 GSM Cotton", description: "A refined oversized tee with subtle ENYTM identity.", image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85", sizes: ["S", "M", "L", "XL", "XXL"] }
 ];
 
 if (!db.data.products?.length) db.data.products = seedProducts;
@@ -317,7 +317,7 @@ async function sendWhatsApp(phone, body) {
   return data;
 }
 
-async function sendWhatsAppTemplate(phone, templateName, languageCode, parameters=[]) {
+async function sendWhatsAppTemplate(phone, templateName, languageCode, parameters = []) {
   if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID || !phone || !templateName) return { skipped: true };
   const version = process.env.WHATSAPP_API_VERSION || "v23.0";
   const url = `https://graph.facebook.com/${version}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
@@ -325,7 +325,7 @@ async function sendWhatsAppTemplate(phone, templateName, languageCode, parameter
   const response = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ messaging_product: "whatsapp", to: phone.replace(/\D/g, ""), type: "template", template: { name: templateName, language: { code: languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US" }, ...(components.length ? {components} : {}) } })
+    body: JSON.stringify({ messaging_product: "whatsapp", to: phone.replace(/\D/g, ""), type: "template", template: { name: templateName, language: { code: languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US" }, ...(components.length ? { components } : {}) } })
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data?.error?.message || "WhatsApp template API error");
@@ -361,19 +361,19 @@ async function notifyOrder(order, type) {
   await db.write();
 }
 async function notifyOrderStatus(order) {
- const user=db.data.users.find(u=>String(u.id)===String(order.userId));
- if(!user)return;
- const labels={payment_pending:"Payment pending",confirmed:"Order confirmed",processing:"Processing",packed:"Packed",shipped:"Shipped",out_for_delivery:"Out for delivery",delivered:"Delivered",cancelled:"Cancelled"};
- const label=labels[order.status]||String(order.status||"").replace(/_/g," ");
- const tracking=order.tracking||{};
- const html=`<div style="font-family:Arial,sans-serif;color:#111"><h2>ENYTM order update</h2><p>Your order <b>${order.receipt||order.id}</b> is now: <b>${label}</b>.</p>${tracking.courier?`<p>Courier: ${tracking.courier}</p>`:""}${tracking.trackingNumber?`<p>Tracking/AWB: ${tracking.trackingNumber}</p>`:""}${tracking.trackingUrl?`<p><a href="${tracking.trackingUrl}">Track your shipment</a></p>`:""}<p>Thank you for shopping with ENYTM APPARELS.</p></div>`;
- if(user.emailOptIn!==false&&user.email){
-  try{await sendEmail(user.email,`ENYTM order update — ${order.receipt||order.id}: ${label}`,html);}catch(e){console.error("[ENYTM STATUS EMAIL]",e.message);}
- }
- // Transactional WhatsApp messages require approved templates outside the customer-service window.
- if(user.whatsappOptIn&&user.phone&&process.env.WHATSAPP_ORDER_STATUS_TEMPLATE){
-  try{await sendWhatsAppTemplate(user.phone,process.env.WHATSAPP_ORDER_STATUS_TEMPLATE,process.env.WHATSAPP_TEMPLATE_LANGUAGE||"en_US",[user.name||"Customer",order.receipt||order.id,label,tracking.trackingNumber||"Not available"]);}catch(e){console.error("[ENYTM STATUS WHATSAPP]",e.message);}
- }
+  const user = db.data.users.find(u => String(u.id) === String(order.userId));
+  if (!user) return;
+  const labels = { payment_pending: "Payment pending", confirmed: "Order confirmed", processing: "Processing", packed: "Packed", shipped: "Shipped", out_for_delivery: "Out for delivery", delivered: "Delivered", cancelled: "Cancelled" };
+  const label = labels[order.status] || String(order.status || "").replace(/_/g, " ");
+  const tracking = order.tracking || {};
+  const html = `<div style="font-family:Arial,sans-serif;color:#111"><h2>ENYTM order update</h2><p>Your order <b>${order.receipt || order.id}</b> is now: <b>${label}</b>.</p>${tracking.courier ? `<p>Courier: ${tracking.courier}</p>` : ""}${tracking.trackingNumber ? `<p>Tracking/AWB: ${tracking.trackingNumber}</p>` : ""}${tracking.trackingUrl ? `<p><a href="${tracking.trackingUrl}">Track your shipment</a></p>` : ""}<p>Thank you for shopping with ENYTM APPARELS.</p></div>`;
+  if (user.emailOptIn !== false && user.email) {
+    try { await sendEmail(user.email, `ENYTM order update — ${order.receipt || order.id}: ${label}`, html); } catch (e) { console.error("[ENYTM STATUS EMAIL]", e.message); }
+  }
+  // Transactional WhatsApp messages require approved templates outside the customer-service window.
+  if (user.whatsappOptIn && user.phone && process.env.WHATSAPP_ORDER_STATUS_TEMPLATE) {
+    try { await sendWhatsAppTemplate(user.phone, process.env.WHATSAPP_ORDER_STATUS_TEMPLATE, process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US", [user.name || "Customer", order.receipt || order.id, label, tracking.trackingNumber || "Not available"]); } catch (e) { console.error("[ENYTM STATUS WHATSAPP]", e.message); }
+  }
 }
 
 
@@ -428,6 +428,10 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
             }
             order.paymentStatus = "paid";
             if (!order.stockDeducted) {
+              for (const item of order.items || []) {
+                const product = db.data.products.find(p => p.id === item.productId);
+                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+              }
               deductStock(order.items);
               order.stockDeducted = true;
             }
@@ -435,6 +439,10 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
             order.advancePaid = amount;
             order.paymentStatus = "partially_paid";
             if (!order.stockDeducted) {
+              for (const item of order.items || []) {
+                const product = db.data.products.find(p => p.id === item.productId);
+                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+              }
               deductStock(order.items);
               order.stockDeducted = true;
             }
@@ -992,63 +1000,63 @@ app.post("/api/wishlist/sync", auth, async (req, res) => {
 // Indian PIN lookup with short-lived in-memory cache to avoid hammering postal services.
 const postalLookupCache = new Map();
 async function postalJson(url) {
- const cached=postalLookupCache.get(url);
- if(cached && cached.until>Date.now()) return cached.data;
- const response=await fetch(url,{headers:{"Accept":"application/json","User-Agent":"ENYTM-App/1.0"}});
- if(!response.ok) throw new Error(response.status===429?"Postal lookup is busy. Wait a few seconds and retry.":`Postal service returned ${response.status}.`);
- const data=await response.json();
- postalLookupCache.set(url,{data,until:Date.now()+6*60*60*1000});
- return data;
+  const cached = postalLookupCache.get(url);
+  if (cached && cached.until > Date.now()) return cached.data;
+  const response = await fetch(url, { headers: { "Accept": "application/json", "User-Agent": "ENYTM-App/1.0" } });
+  if (!response.ok) throw new Error(response.status === 429 ? "Postal lookup is busy. Wait a few seconds and retry." : `Postal service returned ${response.status}.`);
+  const data = await response.json();
+  postalLookupCache.set(url, { data, until: Date.now() + 6 * 60 * 60 * 1000 });
+  return data;
 }
-app.get("/api/pincode/:pin", async (req,res)=>{
- const pin=String(req.params.pin||"");
- if(!/^\d{6}$/.test(pin)) return res.status(400).json({valid:false,message:"Enter a valid 6-digit PIN code."});
- try{
-  let records=[];
-  try{
-   const data=await postalJson(`https://api.postalpincode.in/pincode/${pin}`);
-   if(Array.isArray(data)&&data[0]?.Status==="Success") records=data[0].PostOffice||[];
-  }catch(e){ /* fallback postal provider handles transient 429/5xx responses */ }
-  if(!records.length){
-   const z=await postalJson(`https://api.zippopotam.us/IN/${pin}`);
-   records=(z.places||[]).map(p=>({Name:p["place name"],District:p["place name"],State:p.state,StateName:p.state}));
-  }
-  const p=records[0];
-  if(!p) return res.status(404).json({valid:false,message:"PIN code not found. Check the number or enter your city and state manually."});
-  return res.json({valid:true,pincode:pin,city:p.District||p.Block||p.Name||"",district:p.District||p.Block||"",state:p.State||p.StateName||"",postOffice:p.Name||p["place name"]||""});
- }catch(e){return res.status(503).json({valid:false,message:"PIN lookup is temporarily unavailable. Please retry or enter city/state manually."});}
-});
-app.get("/api/pincode/city/:city", async (req,res)=>{
- const city=String(req.params.city||"").trim().replace(/\s+/g," ");
- if(city.length<2||city.length>80) return res.status(400).json({pincodes:[],message:"Enter a valid city name."});
- try{
-  let offices=[];
+app.get("/api/pincode/:pin", async (req, res) => {
+  const pin = String(req.params.pin || "");
+  if (!/^\d{6}$/.test(pin)) return res.status(400).json({ valid: false, message: "Enter a valid 6-digit PIN code." });
   try {
-   const data=await postalJson(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
-   offices=Array.isArray(data)&&data[0]?.Status==="Success"?(data[0].PostOffice||[]):[];
-  } catch(e) { /* Try the secondary geocoder when India Post is rate limited. */ }
-  if(!offices.length){
-   try {
-    const geo=await postalJson(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&city=${encodeURIComponent(city)}&country=India`);
-    const seen=new Set();
-    for(const item of (Array.isArray(geo)?geo:[])){
-     const a=item.address||{}, raw=a.postcode||"";
-     for(const pin of String(raw).split(/[;,\s]+/).map(x=>x.trim()).filter(x=>/^\d{6}$/.test(x))){
-      if(!seen.has(pin)){seen.add(pin);offices.push({Pincode:pin,Name:a.suburb||a.neighbourhood||a.city_district||city,District:a.state_district||a.county||a.city||city,State:a.state||""});}
-     }
+    let records = [];
+    try {
+      const data = await postalJson(`https://api.postalpincode.in/pincode/${pin}`);
+      if (Array.isArray(data) && data[0]?.Status === "Success") records = data[0].PostOffice || [];
+    } catch (e) { /* fallback postal provider handles transient 429/5xx responses */ }
+    if (!records.length) {
+      const z = await postalJson(`https://api.zippopotam.us/IN/${pin}`);
+      records = (z.places || []).map(p => ({ Name: p["place name"], District: p["place name"], State: p.state, StateName: p.state }));
     }
-   } catch(e) { /* final response below explains manual fallback */ }
+    const p = records[0];
+    if (!p) return res.status(404).json({ valid: false, message: "PIN code not found. Check the number or enter your city and state manually." });
+    return res.json({ valid: true, pincode: pin, city: p.District || p.Block || p.Name || "", district: p.District || p.Block || "", state: p.State || p.StateName || "", postOffice: p.Name || p["place name"] || "" });
+  } catch (e) { return res.status(503).json({ valid: false, message: "PIN lookup is temporarily unavailable. Please retry or enter city/state manually." }); }
+});
+app.get("/api/pincode/city/:city", async (req, res) => {
+  const city = String(req.params.city || "").trim().replace(/\s+/g, " ");
+  if (city.length < 2 || city.length > 80) return res.status(400).json({ pincodes: [], message: "Enter a valid city name." });
+  try {
+    let offices = [];
+    try {
+      const data = await postalJson(`https://api.postalpincode.in/postoffice/${encodeURIComponent(city)}`);
+      offices = Array.isArray(data) && data[0]?.Status === "Success" ? (data[0].PostOffice || []) : [];
+    } catch (e) { /* Try the secondary geocoder when India Post is rate limited. */ }
+    if (!offices.length) {
+      try {
+        const geo = await postalJson(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&city=${encodeURIComponent(city)}&country=India`);
+        const seen = new Set();
+        for (const item of (Array.isArray(geo) ? geo : [])) {
+          const a = item.address || {}, raw = a.postcode || "";
+          for (const pin of String(raw).split(/[;,\s]+/).map(x => x.trim()).filter(x => /^\d{6}$/.test(x))) {
+            if (!seen.has(pin)) { seen.add(pin); offices.push({ Pincode: pin, Name: a.suburb || a.neighbourhood || a.city_district || city, District: a.state_district || a.county || a.city || city, State: a.state || "" }); }
+          }
+        }
+      } catch (e) { /* final response below explains manual fallback */ }
+    }
+    const map = new Map();
+    for (const p of offices) {
+      if (!p.Pincode) continue;
+      const key = String(p.Pincode);
+      if (!map.has(key)) map.set(key, { pincode: key, postOffice: p.Name || "", district: p.District || p.Block || "", state: p.State || "" });
+    }
+    return res.json({ pincodes: [...map.values()].slice(0, 100) });
+  } catch (e) {
+    return res.status(503).json({ pincodes: [], message: "City PIN lookup is temporarily unavailable. Please retry or enter the PIN manually." });
   }
-  const map=new Map();
-  for(const p of offices){
-   if(!p.Pincode)continue;
-   const key=String(p.Pincode);
-   if(!map.has(key))map.set(key,{pincode:key,postOffice:p.Name||"",district:p.District||p.Block||"",state:p.State||""});
-  }
-  return res.json({pincodes:[...map.values()].slice(0,100)});
- }catch(e){
-  return res.status(503).json({pincodes:[],message:"City PIN lookup is temporarily unavailable. Please retry or enter the PIN manually."});
- }
 });
 
 app.post("/api/checkout/order", auth, async (req, res) => {
@@ -1066,6 +1074,8 @@ app.post("/api/checkout/order", auth, async (req, res) => {
     if (!product) continue;
     if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ message: `Invalid quantity for ${product.name}.` });
     const stock = Number(product.stock || 0);
+    if (stock <= 0) return res.status(409).json({ message: `${product.name} is out of stock.` });
+    if (qty > stock) return res.status(409).json({ message: `${product.name} has only ${stock} item${stock === 1 ? "" : "s"} left.` });
     const itemSize = i.size;
     const hasSizeStock = product.sizeStock && typeof product.sizeStock[itemSize] !== "undefined";
     const availableStock = hasSizeStock ? Number(product.sizeStock[itemSize] || 0) : stock;
@@ -1201,6 +1211,10 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
       order.couponUsageCounted = true;
     }
     if (!order.stockDeducted) {
+      for (const item of order.items || []) {
+        const product = db.data.products.find(p => p.id === item.productId);
+        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+      }
       deductStock(order.items);
       order.stockDeducted = true;
       const cart = db.data.carts.find(c => c.userId === req.user.id);
@@ -1222,6 +1236,10 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
       order.couponUsageCounted = true;
     }
     if (!order.stockDeducted) {
+      for (const item of order.items || []) {
+        const product = db.data.products.find(p => p.id === item.productId);
+        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
+      }
       deductStock(order.items);
       order.stockDeducted = true;
       const cart = db.data.carts.find(c => c.userId === req.user.id);
@@ -1256,12 +1274,12 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
   res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: Math.round(balanceAmount * 100), currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, balanceAmount });
 });
 
-app.get("/api/orders/my", auth, (req, res) => res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a,b) => b.createdAt-a.createdAt)));
+app.get("/api/orders/my", auth, (req, res) => res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a, b) => b.createdAt - a.createdAt)));
 // GET SINGLE CUSTOMER ORDER
 app.get("/api/orders/:id", auth, (req, res) => {
   const order = db.data.orders.find(
     o => String(o.id) === String(req.params.id) &&
-         String(o.userId) === String(req.user.id)
+      String(o.userId) === String(req.user.id)
   );
 
   if (!order) {
@@ -1281,45 +1299,45 @@ app.get("/api/orders/:id", auth, (req, res) => {
 
 
 // Customer wallet. Credits are added only after Razorpay signature verification.
-app.get("/api/wallet", auth, (req,res)=>{
- const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
- if(!user)return res.status(404).json({message:"User not found."});
- res.json({balance:Number(user.walletBalance||0),transactions:Array.isArray(user.walletTransactions)?user.walletTransactions.slice().reverse():[]});
+app.get("/api/wallet", auth, (req, res) => {
+  const user = db.data.users.find(u => String(u.id) === String(req.user.id));
+  if (!user) return res.status(404).json({ message: "User not found." });
+  res.json({ balance: Number(user.walletBalance || 0), transactions: Array.isArray(user.walletTransactions) ? user.walletTransactions.slice().reverse() : [] });
 });
-app.post("/api/wallet/topup/order", auth, async (req,res)=>{
- const amount=Number(req.body?.amount);
- if(!Number.isInteger(amount)||amount<100||amount>50000)return res.status(400).json({message:"Wallet top-up must be between ₹100 and ₹50,000."});
- if(!process.env.RAZORPAY_KEY_ID||!process.env.RAZORPAY_KEY_SECRET)return res.status(503).json({message:"Razorpay is not configured."});
- try{
-  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
-  const topupId=crypto.randomUUID();
-  const rp=await razorpay.orders.create({amount:amount*100,currency:"INR",receipt:`WALLET-${Date.now()}`,notes:{userId:req.user.id,topupId,brand:"ENYTM APPARELS"}});
-  db.data.walletTopups.push({id:topupId,userId:req.user.id,amount,razorpayOrderId:rp.id,status:"created",createdAt:Date.now()});
-  await db.write();
-  res.json({topupId,razorpayOrderId:rp.id,amount:amount*100,currency:"INR",keyId:process.env.RAZORPAY_KEY_ID});
- }catch(e){res.status(502).json({message:e.message||"Could not create wallet top-up."});}
+app.post("/api/wallet/topup/order", auth, async (req, res) => {
+  const amount = Number(req.body?.amount);
+  if (!Number.isInteger(amount) || amount < 100 || amount > 50000) return res.status(400).json({ message: "Wallet top-up must be between ₹100 and ₹50,000." });
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return res.status(503).json({ message: "Razorpay is not configured." });
+  try {
+    const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+    const topupId = crypto.randomUUID();
+    const rp = await razorpay.orders.create({ amount: amount * 100, currency: "INR", receipt: `WALLET-${Date.now()}`, notes: { userId: req.user.id, topupId, brand: "ENYTM APPARELS" } });
+    db.data.walletTopups.push({ id: topupId, userId: req.user.id, amount, razorpayOrderId: rp.id, status: "created", createdAt: Date.now() });
+    await db.write();
+    res.json({ topupId, razorpayOrderId: rp.id, amount: amount * 100, currency: "INR", keyId: process.env.RAZORPAY_KEY_ID });
+  } catch (e) { res.status(502).json({ message: e.message || "Could not create wallet top-up." }); }
 });
-app.post("/api/wallet/topup/verify", auth, async (req,res)=>{
- const {topupId,razorpay_payment_id,razorpay_order_id,razorpay_signature}=req.body||{};
- const topup=(db.data.walletTopups||[]).find(t=>t.id===topupId&&String(t.userId)===String(req.user.id));
- if(!topup)return res.status(404).json({message:"Wallet top-up not found."});
- if(topup.status==="paid")return res.json({ok:true,balance:Number(db.data.users.find(u=>u.id===req.user.id)?.walletBalance||0)});
- if(razorpay_order_id!==topup.razorpayOrderId||!razorpay_payment_id||!razorpay_signature)return res.status(400).json({message:"Payment verification details are incomplete."});
- const expected=crypto.createHmac("sha256",process.env.RAZORPAY_KEY_SECRET||"").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
- if(expected.length!==String(razorpay_signature).length||!crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(String(razorpay_signature))))return res.status(400).json({message:"Payment signature verification failed."});
- try{
-  const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID,key_secret:process.env.RAZORPAY_KEY_SECRET});
-  const payment=await razorpay.payments.fetch(razorpay_payment_id);
-  if(payment.status!=="captured"||Number(payment.amount)!==Number(topup.amount)*100)return res.status(409).json({message:"Payment is not captured yet. Please refresh shortly."});
-  const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
-  if(!user)return res.status(404).json({message:"User not found."});
-  user.walletBalance=Number(user.walletBalance||0)+Number(topup.amount);
-  user.walletTransactions||=[];
-  user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:Number(topup.amount),description:"Wallet top-up",createdAt:Date.now(),paymentId:razorpay_payment_id});
-  topup.status="paid";topup.paymentId=razorpay_payment_id;topup.paidAt=Date.now();
-  await db.write();
-  res.json({ok:true,balance:user.walletBalance});
- }catch(e){res.status(502).json({message:"Could not verify payment with Razorpay. Please contact support if money was deducted."});}
+app.post("/api/wallet/topup/verify", auth, async (req, res) => {
+  const { topupId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body || {};
+  const topup = (db.data.walletTopups || []).find(t => t.id === topupId && String(t.userId) === String(req.user.id));
+  if (!topup) return res.status(404).json({ message: "Wallet top-up not found." });
+  if (topup.status === "paid") return res.json({ ok: true, balance: Number(db.data.users.find(u => u.id === req.user.id)?.walletBalance || 0) });
+  if (razorpay_order_id !== topup.razorpayOrderId || !razorpay_payment_id || !razorpay_signature) return res.status(400).json({ message: "Payment verification details are incomplete." });
+  const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "").update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
+  if (expected.length !== String(razorpay_signature).length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(String(razorpay_signature)))) return res.status(400).json({ message: "Payment signature verification failed." });
+  try {
+    const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    if (payment.status !== "captured" || Number(payment.amount) !== Number(topup.amount) * 100) return res.status(409).json({ message: "Payment is not captured yet. Please refresh shortly." });
+    const user = db.data.users.find(u => String(u.id) === String(req.user.id));
+    if (!user) return res.status(404).json({ message: "User not found." });
+    user.walletBalance = Number(user.walletBalance || 0) + Number(topup.amount);
+    user.walletTransactions ||= [];
+    user.walletTransactions.push({ id: crypto.randomUUID(), type: "credit", amount: Number(topup.amount), description: "Wallet top-up", createdAt: Date.now(), paymentId: razorpay_payment_id });
+    topup.status = "paid"; topup.paymentId = razorpay_payment_id; topup.paidAt = Date.now();
+    await db.write();
+    res.json({ ok: true, balance: user.walletBalance });
+  } catch (e) { res.status(502).json({ message: "Could not verify payment with Razorpay. Please contact support if money was deducted." }); }
 });
 
 // CUSTOMER ORDER CANCELLATION
@@ -1337,6 +1355,10 @@ app.post("/api/orders/:id/cancel", auth, async (req, res) => {
 
   // Restore stock only once.
   if (order.stockDeducted && !order.stockRestored) {
+    for (const item of (order.items || [])) {
+      const product = db.data.products.find(p => p.id === Number(item.productId));
+      if (product) product.stock = Number(product.stock || 0) + Number(item.qty || 0);
+    }
     restoreStock(order.items);
     order.stockRestored = true;
   }
@@ -1345,18 +1367,18 @@ app.post("/api/orders/:id/cancel", auth, async (req, res) => {
   const refundTo = String(req.body?.refundTo || "original").toLowerCase();
   const capturedPayments = (order.paymentIds || []).filter(p => p.id && Number(p.amount) > 0);
   if (refundTo === "wallet" && capturedPayments.length) {
-    const user=db.data.users.find(u=>String(u.id)===String(req.user.id));
-    const refundable=capturedPayments.reduce((sum,p)=>sum+Number(p.amount||0),0);
-    if(user && refundable>0){
-      user.walletBalance=Number(user.walletBalance||0)+refundable;
-      user.walletTransactions||=[];
-      user.walletTransactions.push({id:crypto.randomUUID(),type:"credit",amount:refundable,description:`Refund for ${order.receipt||order.id}`,createdAt:Date.now(),orderId:order.id});
-      order.refundStatus="wallet_credited";
-      order.refundDestination="wallet";
-      order.walletRefundAmount=refundable;
-    } else order.refundStatus="pending_manual_refund";
+    const user = db.data.users.find(u => String(u.id) === String(req.user.id));
+    const refundable = capturedPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    if (user && refundable > 0) {
+      user.walletBalance = Number(user.walletBalance || 0) + refundable;
+      user.walletTransactions ||= [];
+      user.walletTransactions.push({ id: crypto.randomUUID(), type: "credit", amount: refundable, description: `Refund for ${order.receipt || order.id}`, createdAt: Date.now(), orderId: order.id });
+      order.refundStatus = "wallet_credited";
+      order.refundDestination = "wallet";
+      order.walletRefundAmount = refundable;
+    } else order.refundStatus = "pending_manual_refund";
   } else if (capturedPayments.length && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    order.refundDestination="original";
+    order.refundDestination = "original";
     try {
       const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
       const refundIds = [];
@@ -1397,17 +1419,17 @@ app.post("/api/admin/login", async (req, res) => {
 });
 
 app.get("/api/admin/dashboard", adminAuth, (req, res) => {
-  const revenue = db.data.orders.filter(o => o.paymentStatus === "paid").reduce((s,o)=>s+o.total,0);
+  const revenue = db.data.orders.filter(o => o.paymentStatus === "paid").reduce((s, o) => s + o.total, 0);
   const customers = db.data.users.filter(u => u.role !== "admin").length;
   res.json({
-    revenue, orders: db.data.orders.length, paidOrders: db.data.orders.filter(o=>o.paymentStatus==="paid").length,
+    revenue, orders: db.data.orders.length, paidOrders: db.data.orders.filter(o => o.paymentStatus === "paid").length,
     customers, products: db.data.products.length,
-    pendingPayments: db.data.orders.filter(o=>o.paymentStatus!=="paid").length
+    pendingPayments: db.data.orders.filter(o => o.paymentStatus !== "paid").length
   });
 });
-app.get("/api/admin/orders", adminAuth, (req,res) => res.json(db.data.orders.sort((a,b)=>b.createdAt-a.createdAt)));
-app.get("/api/admin/customers", adminAuth, (req,res) => res.json(db.data.users.filter(u=>u.role!=="admin").map(publicUser).sort((a,b)=>b.createdAt-a.createdAt)));
-app.get("/api/admin/products", adminAuth, (req,res) => res.json(db.data.products));
+app.get("/api/admin/orders", adminAuth, (req, res) => res.json(db.data.orders.sort((a, b) => b.createdAt - a.createdAt)));
+app.get("/api/admin/customers", adminAuth, (req, res) => res.json(db.data.users.filter(u => u.role !== "admin").map(publicUser).sort((a, b) => b.createdAt - a.createdAt)));
+app.get("/api/admin/products", adminAuth, (req, res) => res.json(db.data.products));
 
 app.post("/api/admin/upload-image", adminAuth, (req, res) => {
   uploadImageFile.single("image")(req, res, (err) => {
@@ -1437,34 +1459,22 @@ app.post("/api/admin/upload-video", adminAuth, (req, res) => {
     res.json({ success: true, url: `/uploads/${req.file.filename}`, filename: req.file.filename });
   });
 });
-app.post("/api/admin/products", adminAuth, async (req,res) => {
-  const name = String(req.body?.name || "").trim();
-  if (!name) return res.status(400).json({ message: "Product name is required." });
-  const duplicate = (db.data.products || []).some(x => String(x.name || "").trim().toLowerCase() === name.toLowerCase());
-  if (duplicate) {
-    return res.status(409).json({ message: `A product with the name "${name}" already exists. Product names must be unique.` });
-  }
-  const p = { ...req.body, id: Date.now(), name, price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S","M","L","XL","XXL"] };
+app.post("/api/admin/products", adminAuth, async (req, res) => {
+  const p = { ...req.body, id: Date.now(), price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S", "M", "L", "XL", "XXL"] };
   db.data.products.push(p); await db.write(); res.json(p);
 });
-app.put("/api/admin/products/:id", adminAuth, async (req,res) => {
-  const p = db.data.products.find(x=>x.id===Number(req.params.id)); if(!p) return res.status(404).json({message:"Product not found"});
-  const name = typeof req.body?.name !== "undefined" ? String(req.body.name || "").trim() : p.name;
-  if (!name) return res.status(400).json({ message: "Product name is required." });
-  const duplicate = (db.data.products || []).some(x => x.id !== p.id && String(x.name || "").trim().toLowerCase() === name.toLowerCase());
-  if (duplicate) {
-    return res.status(409).json({ message: `A product with the name "${name}" already exists. Product names must be unique.` });
-  }
-  Object.assign(p, req.body, { name }); await db.write(); res.json(p);
+app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
+  const p = db.data.products.find(x => x.id === Number(req.params.id)); if (!p) return res.status(404).json({ message: "Product not found" });
+  Object.assign(p, req.body); await db.write(); res.json(p);
 });
-app.delete("/api/admin/products/:id", adminAuth, async (req,res) => {
-  db.data.products = db.data.products.filter(x=>x.id!==Number(req.params.id)); await db.write(); res.json({ok:true});
+app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
+  db.data.products = db.data.products.filter(x => x.id !== Number(req.params.id)); await db.write(); res.json({ ok: true });
 });
 function couponDiscount(coupon, subtotal, items) {
   const eligible = !coupon.productIds?.length && !coupon.categories?.length
     ? subtotal
     : items.filter(i => (!coupon.productIds?.length || coupon.productIds.includes(Number(i.productId))) &&
-        (!coupon.categories?.length || coupon.categories.includes(String(i.category || ""))))
+      (!coupon.categories?.length || coupon.categories.includes(String(i.category || ""))))
       .reduce((sum, i) => sum + Number(i.price || 0) * Number(i.qty || 0), 0);
   if (eligible <= 0) return 0;
   let discount = coupon.discountType === "fixed"
@@ -1533,27 +1543,27 @@ app.delete("/api/admin/coupons/:id", adminAuth, async (req, res) => {
   db.data.coupons = (db.data.coupons || []).filter(c => c.id !== req.params.id);
   await db.write(); res.json({ ok: true });
 });
-app.get("/api/admin/settings", adminAuth, (req,res)=>res.json(db.data.settings));
-app.put("/api/admin/settings", adminAuth, async (req,res)=>{ db.data.settings={...db.data.settings,...req.body}; await db.write(); res.json(db.data.settings); });
-app.get("/api/admin/integrations", adminAuth, (req,res)=>res.json({
+app.get("/api/admin/settings", adminAuth, (req, res) => res.json(db.data.settings));
+app.put("/api/admin/settings", adminAuth, async (req, res) => { db.data.settings = { ...db.data.settings, ...req.body }; await db.write(); res.json(db.data.settings); });
+app.get("/api/admin/integrations", adminAuth, (req, res) => res.json({
   email: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
   whatsapp: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
   whatsappTemplates: Boolean(process.env.WHATSAPP_ORDER_PLACED_TEMPLATE && process.env.WHATSAPP_ORDER_DELIVERED_TEMPLATE)
 }));
 
-app.put("/api/admin/orders/:id/status", adminAuth, async (req,res)=>{
+app.put("/api/admin/orders/:id/status", adminAuth, async (req, res) => {
   const order = db.data.orders.find(o => String(o.id) === String(req.params.id));
-  if (!order) return res.status(404).json({message:"Order not found."});
-  const allowed = ["payment_pending","confirmed","processing","packed","shipped","out_for_delivery","delivered"];
+  if (!order) return res.status(404).json({ message: "Order not found." });
+  const allowed = ["payment_pending", "confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"];
   const status = String(req.body?.status || order.status || "");
-  if (!allowed.includes(status)) return res.status(400).json({message:"Invalid order status."});
-  if (["shipped","out_for_delivery","delivered"].includes(status)) {
+  if (!allowed.includes(status)) return res.status(400).json({ message: "Invalid order status." });
+  if (["shipped", "out_for_delivery", "delivered"].includes(status)) {
     const balanceDue = Number(order.balanceAmount ?? (Number(order.total || 0) - Number(order.advancePaid || 0)));
     const isCod = order.paymentMethod === "cod";
     const fullyPaid = order.paymentStatus === "paid" || (isCod && Number(order.advancePaid || 0) > 0) || (Number(order.advancePaid || 0) > 0 && Number(order.balancePaid || 0) >= balanceDue);
-    if (!fullyPaid) return res.status(400).json({message:"Collect the full order balance before dispatching this pre-order."});
+    if (!fullyPaid) return res.status(400).json({ message: "Collect the full order balance before dispatching this pre-order." });
     const launchDate = new Date("2026-11-08T00:00:00+05:30").getTime();
-    if (Date.now() < launchDate) return res.status(400).json({message:"ENYTM pre-orders can only be dispatched from 8 November 2026."});
+    if (Date.now() < launchDate) return res.status(400).json({ message: "ENYTM pre-orders can only be dispatched from 8 November 2026." });
   }
   const previousStatus = order.status;
   order.status = status;
@@ -1578,13 +1588,13 @@ app.put("/api/admin/orders/:id/status", adminAuth, async (req,res)=>{
   res.json(order);
 });
 
-app.post("/api/admin/test-email", adminAuth, async (req,res)=>{
-  try { await sendEmail(req.body.to, "ENYTM Test Email", "<h2>ENYTM notification system is working.</h2>"); res.json({ok:true}); }
-  catch(e){ res.status(500).json({message:e.message}); }
+app.post("/api/admin/test-email", adminAuth, async (req, res) => {
+  try { await sendEmail(req.body.to, "ENYTM Test Email", "<h2>ENYTM notification system is working.</h2>"); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.post("/api/admin/test-whatsapp", adminAuth, async (req,res)=>{
-  try { await sendWhatsApp(req.body.phone, "ENYTM APPARELS: WhatsApp notification integration is connected."); res.json({ok:true}); }
-  catch(e){ res.status(500).json({message:e.message}); }
+app.post("/api/admin/test-whatsapp", adminAuth, async (req, res) => {
+  try { await sendWhatsApp(req.body.phone, "ENYTM APPARELS: WhatsApp notification integration is connected."); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 async function runReminderJob() {
@@ -1592,20 +1602,20 @@ async function runReminderJob() {
   const cutoff = Date.now() - 48 * 60 * 60 * 1000;
   for (const cart of db.data.carts) {
     if (!cart.items?.length || cart.updatedAt > cutoff || cart.remindedAt > cart.updatedAt) continue;
-    const user = db.data.users.find(u=>u.id===cart.userId);
+    const user = db.data.users.find(u => u.id === cart.userId);
     if (!user) continue;
     const text = `Hey ${user.name}, your ENYTM APPARELS selection is still waiting for you. Complete your order at ${process.env.APP_URL || "https://enytm.co.in"}.`;
-    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM selection is waiting", `<p>${text}</p>`).catch(()=>{});
-    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(()=>{});
+    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM selection is waiting", `<p>${text}</p>`).catch(() => { });
+    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(() => { });
     cart.remindedAt = Date.now();
   }
   for (const list of db.data.wishlists) {
     if (!list.items?.length || list.updatedAt > cutoff || list.remindedAt > list.updatedAt) continue;
-    const user = db.data.users.find(u=>u.id===list.userId);
+    const user = db.data.users.find(u => u.id === list.userId);
     if (!user) continue;
     const text = `You saved something from ENYTM APPARELS. Your wishlist is still waiting at ${process.env.APP_URL || "https://enytm.co.in"}.`;
-    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM wishlist is waiting", `<p>${text}</p>`).catch(()=>{});
-    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(()=>{});
+    if (user.emailOptIn) await sendEmail(user.email, "Your ENYTM wishlist is waiting", `<p>${text}</p>`).catch(() => { });
+    if (user.whatsappOptIn) await sendWhatsApp(user.phone, text).catch(() => { });
     list.remindedAt = Date.now();
   }
   await db.write();
