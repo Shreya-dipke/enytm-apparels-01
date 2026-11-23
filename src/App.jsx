@@ -1138,11 +1138,6 @@ function ProductPage() {
                 </button>
               </div>
               <div className="sizes">
-                {sizes.map((s) => (
-                  <button key={s} className={size === s ? "selected" : ""} onClick={() => setSize(s)}>
-                    {s}
-                  </button>
-                ))}
                 {sizes.map((s) => {
                   const sQty = product?.sizeStock && typeof product.sizeStock[s] !== "undefined"
                     ? Number(product.sizeStock[s] || 0)
