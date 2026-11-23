@@ -255,47 +255,11 @@ function Home() {
         </div>
       </div>
 
-      <section className="manifesto manifesto-black-label manifesto-v2">
-        <div className="manifesto-number"><BrandLogo style={{ height: 14 }} /> — 001</div>
-        <p className="eyebrow">01 / A DIFFERENT KIND OF ESSENTIAL</p>
-        <h2>
-          NOT MADE<br />
-          TO <span>STAND OUT.</span><br />
-          MADE TO <em>STAY.</em>
-        </h2>
-        <div className="manifesto-bottom">
-          <p>
-            Considered fits. Better-feeling heavyweight fabrics. Pieces that earn their place in your everyday rotation without screaming for attention.
-          </p>
-          <div className="manifesto-signature">
-            <BrandLogo /> <span>MORE THAN A MOMENT</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="craft-strip craft-strip-v2" aria-label="Our design principles">
-        <div>
-          <span>01 / MATERIAL</span>
-          <h3>FEEL THE WEIGHT.</h3>
-          <p>240–380 GSM luxury combed cotton & French Terry.</p>
-        </div>
-        <div>
-          <span>02 / SILHOUETTE</span>
-          <h3>MOVE YOUR WAY.</h3>
-          <p>Relaxed streetwear proportions, balanced drop shoulders.</p>
-        </div>
-        <div>
-          <span>03 / LONGEVITY</span>
-          <h3>WEAR IT OFTEN.</h3>
-          <p>Made for repeat days, not one-off moments.</p>
-        </div>
-      </section>
-
       {/* Featured Collections: Oversized, Polos, Hoodies, Lowers */}
       <section className="category-editorial category-editorial-v2" id="collections">
         <div className="category-editorial-head">
           <div>
-            <p className="eyebrow">02 / CORE SILHOUETTES</p>
+            <p className="eyebrow">01 / CORE SILHOUETTES</p>
             <h2>
               CURATED<br />
               <span>COLLECTIONS.</span>
@@ -348,7 +312,7 @@ function Home() {
       <section className="section home-arrivals home-arrivals-v2" id="rotation">
         <div className="drop-heading">
           <div>
-            <p className="eyebrow">03 / THE CURRENT ROTATION</p>
+            <p className="eyebrow">02 / THE CURRENT ROTATION</p>
             <h2>
               THE DROP<span className="heading-period"> 001.</span>
             </h2>
@@ -404,7 +368,7 @@ function Home() {
           <span className="image-vertical-label">FABRIC / FORM / FUNCTION</span>
         </div>
         <div className="feature-editorial-copy">
-          <p className="eyebrow">04 / THE ENYTM APPROACH</p>
+          <p className="eyebrow">03 / THE ENYTM APPROACH</p>
           <span className="feature-big-number">01</span>
           <h2>
             LESS,<br />

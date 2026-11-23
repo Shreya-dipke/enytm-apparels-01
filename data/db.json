@@ -793,8 +793,34 @@
     },
     {
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [],
-      "updatedAt": 1795339613433,
+      "items": [
+        {
+          "id": 1,
+          "name": "Essential Oversized Tee",
+          "category": "Oversized",
+          "price": 649,
+          "oldPrice": 1649,
+          "stock": 4,
+          "badge": "NEW",
+          "fabric": "240 GSM Premium Cotton",
+          "description": "A structured oversized silhouette made for everyday movement.",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          "sizes": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ],
+          "image2": "",
+          "image3": "",
+          "video": "",
+          "size": "S",
+          "qty": 1,
+          "key": "1-S"
+        }
+      ],
+      "updatedAt": 1795424290907,
       "remindedAt": null
     },
     {
@@ -872,10 +898,8 @@
     },
     {
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        1
-      ],
-      "updatedAt": 1795339613434,
+      "items": [],
+      "updatedAt": 1795424290909,
       "remindedAt": null
     },
     {
