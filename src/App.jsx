@@ -805,15 +805,25 @@ function ProductPage() {
 
   const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
 
+  const rawImages = Array.isArray(product.images) && product.images.length
+    ? product.images.filter(Boolean)
+    : [product.image, product.image2, product.image3, product.modelFront, product.modelBack].filter(Boolean);
+
   const gallery = [
-    product.image && { type: "image", src: normalizeImageUrl(product.image), label: "01 / FRONT" },
-    (product.image2 || product.image) && { type: "image", src: normalizeImageUrl(product.image2 || product.image), label: "02 / BACK" },
-    (product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: normalizeImageUrl(product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85"), label: "03 / CLOSE-UP" },
-    (product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: normalizeImageUrl(product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"), label: "04 / LIFESTYLE" },
-    product.video && { type: "video", src: normalizeImageUrl(product.video), poster: normalizeImageUrl(product.image) || fallbackImg, label: "05 / MOTION" }
+    ...(rawImages.length ? rawImages : [fallbackImg]).map((imgUrl, idx) => ({
+      type: "image",
+      src: normalizeImageUrl(imgUrl),
+      label: `0${idx + 1} / VIEW`
+    })),
+    product.video && {
+      type: "video",
+      src: normalizeImageUrl(product.video),
+      poster: normalizeImageUrl(rawImages[0] || product.image) || fallbackImg,
+      label: "MOTION"
+    }
   ].filter(Boolean);
 
-  const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product.image) || fallbackImg, label: "01 / FRONT" }];
+  const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product.image) || fallbackImg, label: "01 / VIEW" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
 
   const touchStartX = useRef(0);
@@ -4540,14 +4550,9 @@ function AdminProducts({ products, reload }) {
     price: 999,
     oldPrice: 1199,
     stock: 20,
-    fabric: "240 GSM Premium Cotton",
     badge: "NEW",
     description: "",
-    image: "",
-    image2: "",
-    image3: "",
-    modelFront: "",
-    modelBack: "",
+    images: [""],
     video: "",
     sizes: ["S", "M", "L", "XL", "XXL"],
   };
@@ -4559,9 +4564,14 @@ function AdminProducts({ products, reload }) {
 
   const startEdit = (product) => {
     setEditing(product.id);
+    const existingImages = Array.isArray(product.images) && product.images.length
+      ? [...product.images]
+      : [product.image, product.image2, product.image3, product.modelFront, product.modelBack].filter(Boolean);
+
     setP({
       ...empty,
       ...product,
+      images: existingImages.length ? existingImages : [""],
     });
     setMessage("");
   };
@@ -4582,14 +4592,18 @@ function AdminProducts({ products, reload }) {
     setMessage("");
 
     try {
+      const rawImgList = (p.images || []).map(normalizeImageUrl).filter(Boolean);
+      const primaryImg = rawImgList[0] || normalizeImageUrl(p.image) || "";
+
       const payload = {
         ...p,
-        image: normalizeImageUrl(p.image),
-        image2: normalizeImageUrl(p.image2),
-        image3: normalizeImageUrl(p.image3),
-        modelFront: normalizeImageUrl(p.modelFront),
-        modelBack: normalizeImageUrl(p.modelBack),
-        video: normalizeImageUrl(p.video),
+        images: rawImgList,
+        image: primaryImg,
+        image2: rawImgList[1] || "",
+        image3: rawImgList[2] || "",
+        modelFront: rawImgList[3] || "",
+        modelBack: rawImgList[4] || "",
+        video: normalizeImageUrl(p.video || ""),
         price: Number(p.price),
         oldPrice: Number(p.oldPrice || 0),
         stock: Number(p.stock || 0),
@@ -4783,20 +4797,107 @@ function AdminProducts({ products, reload }) {
             "BADGE"
           )}
 
-          {field(
-            "fabric",
-            "FABRIC"
-          )}
+          <div className="admin-product-wide admin-media-section" style={{ marginTop: "14px", border: "1px solid #282828", background: "#0a0a0a", padding: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "800", letterSpacing: ".12em", color: "#f5f5f2" }}>PRODUCT IMAGES</span>
+                <p style={{ margin: "3px 0 0", fontSize: "10px", color: "#888" }}>
+                  Add multiple photos for this product. Paste Google Drive links, image URLs, or choose files.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn outline"
+                style={{ padding: "8px 14px", fontSize: "10px", letterSpacing: ".08em", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                onClick={() => setP(curr => ({ ...curr, images: [...(curr.images || []), ""] }))}
+              >
+                <Plus size={13} /> ADD MORE IMAGES
+              </button>
+            </div>
 
-          <div className="admin-media-upload-grid admin-product-wide">
-            {[
-              ["image", "FRONT VIEW", "Upload the primary product photo"],
-              ["image2", "BACK VIEW", "Product back view"],
-              ["image3", "FABRIC DETAIL", "Close-up of fabric and texture"],
-              ["modelFront", "MODEL FRONT", "Front view worn by a model"],
-              ["modelBack", "MODEL BACK", "Back view worn by a model"]
-            ].map(([key, label, hint]) => <AdminMediaUpload key={key} fieldKey={key} label={label} hint={hint} value={p[key]} onUploaded={url => setP(current => ({ ...current, [key]: url }))} />)}
-            <AdminMediaUpload fieldKey="video" label="PRODUCT VIDEO (OPTIONAL)" hint="MP4, WEBM or MOV · up to 100 MB" value={p.video} video onUploaded={url => setP(current => ({ ...current, video: url }))} />
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {(p.images && p.images.length ? p.images : [""]).map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    border: "1px solid #262626",
+                    background: "#111",
+                    padding: "12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "10px", fontWeight: "800", letterSpacing: ".12em", color: idx === 0 ? "#c8b69a" : "#ccc" }}>
+                      {idx === 0 ? "IMAGE 01 · PRIMARY / COVER PHOTO" : `IMAGE 0${idx + 1}`}
+                    </span>
+                    {(p.images || []).length > 1 && (
+                      <button
+                        type="button"
+                        style={{
+                          border: "1px solid #4a2222",
+                          background: "transparent",
+                          color: "#ff7070",
+                          fontSize: "10px",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "3px 8px"
+                        }}
+                        onClick={() => {
+                          setP(curr => {
+                            const updated = [...(curr.images || [])];
+                            updated.splice(idx, 1);
+                            return { ...curr, images: updated.length ? updated : [""] };
+                          });
+                        }}
+                      >
+                        <Trash2 size={12} /> Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <AdminMediaUpload
+                    fieldKey={`image-${idx}`}
+                    label={idx === 0 ? "PRIMARY PHOTO" : `IMAGE ${idx + 1}`}
+                    hint="Paste Google Drive link, Image URL, or choose a file"
+                    value={imgUrl}
+                    onUploaded={(newUrl) => {
+                      setP(curr => {
+                        const updated = [...(curr.images || [""])];
+                        updated[idx] = newUrl;
+                        return { ...curr, images: updated };
+                      });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="btn outline full"
+              style={{ marginTop: "14px", padding: "12px", fontSize: "11px", letterSpacing: ".1em", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px dashed #444", background: "rgba(255,255,255,0.02)" }}
+              onClick={() => setP(curr => ({ ...curr, images: [...(curr.images || []), ""] }))}
+            >
+              <Plus size={15} /> ADD MORE IMAGES
+            </button>
+
+            <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #222" }}>
+              <span style={{ fontSize: "11px", fontWeight: "800", letterSpacing: ".1em", color: "#f5f5f2", display: "block", marginBottom: "8px" }}>
+                PRODUCT VIDEO (OPTIONAL)
+              </span>
+              <AdminMediaUpload
+                fieldKey="video"
+                label="MOTION / VIDEO"
+                hint="Paste video link (MP4, Cloudinary, etc.) or choose file"
+                value={p.video}
+                video
+                onUploaded={(url) => setP(curr => ({ ...curr, video: url }))}
+              />
+            </div>
           </div>
 
           <label className="admin-product-field admin-product-wide">
