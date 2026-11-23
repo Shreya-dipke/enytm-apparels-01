@@ -55,7 +55,7 @@ img,video,svg{max-width:100%}a{color:inherit;text-decoration:none}button,input,s
 .spec span,.option>span,.option-head span,.quantity-option>span{font-size:8px;letter-spacing:.16em;color:#777}
 .spec b{font-size:9px;letter-spacing:.06em;color:#ddd}
 .option{margin:0 0 25px}.option-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.option-head a{font-size:8px;letter-spacing:.12em;color:#aaa;text-decoration:underline}
-.sizes button{width:52px;height:45px;border:1px solid #303030;background:#101010;color:#aaa;font-size:9px;transition:.2s}.sizes button:hover{border-color:#777;color:#fff}.sizes button.selected{background:#fff;color:#000;border-color:#fff}
+.sizes button{width:52px;height:45px;border:1px solid #303030;background:#101010;color:#aaa;font-size:9px;transition:.2s;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.sizes button:hover{border-color:#777;color:#fff}.sizes button.selected{background:#fff;color:#000;border-color:#fff}.sizes button.size-sold-out{opacity:.42;border-style:dashed;background:#140e0e;border-color:#4a2424;color:#a88}.sizes button .size-badge-out{font-size:6.5px;font-weight:800;color:#ef4444;letter-spacing:.04em;line-height:1}
 .purchase-line{display:grid;grid-template-columns:145px 1fr;gap:10px;align-items:stretch}
 .quantity-option{border:1px solid #303030;margin:0;display:flex;align-items:center;justify-content:space-between;padding-left:14px}
 .quantity-option .quantity{height:100%;border:0}

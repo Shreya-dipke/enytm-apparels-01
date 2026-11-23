@@ -18,7 +18,14 @@ export const fallbackProducts = [
       "L",
       "XL",
       "XXL"
-    ]
+    ],
+    "sizeStock": {
+      "S": 7,
+      "M": 7,
+      "L": 7,
+      "XL": 7,
+      "XXL": 7
+    }
   },
   {
     "id": 4,
@@ -37,7 +44,14 @@ export const fallbackProducts = [
       "L",
       "XL",
       "XXL"
-    ]
+    ],
+    "sizeStock": {
+      "S": 6,
+      "M": 6,
+      "L": 6,
+      "XL": 6,
+      "XXL": 6
+    }
   },
   {
     "id": 6,
@@ -56,7 +70,14 @@ export const fallbackProducts = [
       "L",
       "XL",
       "XXL"
-    ]
+    ],
+    "sizeStock": {
+      "S": 10,
+      "M": 10,
+      "L": 10,
+      "XL": 10,
+      "XXL": 10
+    }
   },
   {
     "id": 3,
@@ -75,7 +96,14 @@ export const fallbackProducts = [
       "L",
       "XL",
       "XXL"
-    ]
+    ],
+    "sizeStock": {
+      "S": 8,
+      "M": 8,
+      "L": 8,
+      "XL": 8,
+      "XXL": 8
+    }
   },
   {
     "name": "Classic Pure Cotton Casual Shirt",
@@ -99,7 +127,14 @@ export const fallbackProducts = [
       "XL",
       "XXL"
     ],
-    "id": 1795446559676
+    "id": 1795446559676,
+    "sizeStock": {
+      "S": 4,
+      "M": 4,
+      "L": 4,
+      "XL": 4,
+      "XXL": 4
+    }
   },
   {
     "id": 5,
@@ -118,56 +153,14 @@ export const fallbackProducts = [
       "L",
       "XL",
       "XXL"
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Heavyweight Oversized Tee",
-    "category": "Oversized",
-    "price": 1099,
-    "oldPrice": 1299,
-    "stock": 0,
-    "badge": "BESTSELLER",
-    "fabric": "260 GSM Premium Cotton",
-    "description": "A heavier everyday essential with a premium drape.",
-    "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
     ],
-    "image2": "",
-    "image3": "",
-    "video": ""
-  },
-  {
-    "name": "Polo tshirt",
-    "category": "Polos",
-    "price": 999,
-    "oldPrice": 1199,
-    "stock": 20,
-    "badge": "NEW",
-    "description": "",
-    "images": [
-      "https://lh3.googleusercontent.com/d/1Fyg0Z6d6Xbvv13RNrLv2UleB3WT5TbeM",
-      "https://lh3.googleusercontent.com/d/1icYWX1IGKjtAEPkaBrPMzCr4PbS9HTgh"
-    ],
-    "video": "",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "image": "https://lh3.googleusercontent.com/d/1Fyg0Z6d6Xbvv13RNrLv2UleB3WT5TbeM",
-    "image2": "https://lh3.googleusercontent.com/d/1icYWX1IGKjtAEPkaBrPMzCr4PbS9HTgh",
-    "image3": "",
-    "modelFront": "",
-    "modelBack": "",
-    "id": 1795448465577
+    "sizeStock": {
+      "S": 6,
+      "M": 6,
+      "L": 6,
+      "XL": 6,
+      "XXL": 6
+    }
   },
   {
     "name": "Acid Wash t-shirt",
@@ -189,7 +182,14 @@ export const fallbackProducts = [
       "XL",
       "XXL"
     ],
-    "id": 1791106367401
+    "id": 1791106367401,
+    "sizeStock": {
+      "S": 4,
+      "M": 4,
+      "L": 4,
+      "XL": 4,
+      "XXL": 4
+    }
   },
   {
     "id": 1,
@@ -211,18 +211,26 @@ export const fallbackProducts = [
     ],
     "image2": "",
     "image3": "",
-    "video": ""
+    "video": "",
+    "sizeStock": {
+      "S": 4,
+      "M": 0,
+      "L": 0,
+      "XL": 0,
+      "XXL": 0
+    }
   },
   {
-    "name": "polo004",
-    "category": "Oversized",
+    "name": "Polo002",
+    "category": "Polos",
     "price": 999,
     "oldPrice": 1199,
     "stock": 20,
     "badge": "NEW",
     "description": "",
     "images": [
-      "https://lh3.googleusercontent.com/d/1ZpKyOAQsQQyCjtsYKu5zf0hpthFSJWEP"
+      "https://lh3.googleusercontent.com/d/1Gw4sDmw_VsLm9RsM4QBX-eUil4FKEKjf",
+      "https://lh3.googleusercontent.com/d/1WFu74Os2rM6rVJ3aqU33uG3Ct9zd1waY"
     ],
     "video": "",
     "sizes": [
@@ -232,11 +240,18 @@ export const fallbackProducts = [
       "XL",
       "XXL"
     ],
-    "image": "https://lh3.googleusercontent.com/d/1ZpKyOAQsQQyCjtsYKu5zf0hpthFSJWEP",
-    "image2": "",
+    "image": "https://lh3.googleusercontent.com/d/1Gw4sDmw_VsLm9RsM4QBX-eUil4FKEKjf",
+    "image2": "https://lh3.googleusercontent.com/d/1WFu74Os2rM6rVJ3aqU33uG3Ct9zd1waY",
     "image3": "",
     "modelFront": "",
     "modelBack": "",
-    "id": 1795452937536
+    "id": 1795454135032,
+    "sizeStock": {
+      "S": 4,
+      "M": 4,
+      "L": 4,
+      "XL": 4,
+      "XXL": 4
+    }
   }
 ];

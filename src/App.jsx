@@ -766,6 +766,10 @@ function ProductPage() {
   const isComingSoon = Boolean(product?.comingSoon || product?.category === "Hoodies" || product?.category === "Sweatshirts" || product?.category === "Lowers");
   const stock = Math.max(0, Number(product?.stock || 0));
   const outOfStock = !isComingSoon && stock <= 0;
+  const sizeStockVal = product?.sizeStock && typeof product.sizeStock[size] !== "undefined"
+    ? Number(product.sizeStock[size] || 0)
+    : stock;
+  const isSizeOutOfStock = !isComingSoon && (product?.sizeStock ? sizeStockVal <= 0 : outOfStock);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -843,15 +847,16 @@ function ProductPage() {
   };
 
   const add = () => {
-    if (outOfStock) return;
-    if (qty > stock) { setQty(stock); return; }
+    if (outOfStock || isSizeOutOfStock) return;
+    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
     for (let i = 0; i < qty; i++) addToCart(product, size);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   const buyNow = () => {
-    if (outOfStock) return;
+    if (outOfStock || isSizeOutOfStock) return;
+    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
     for (let i = 0; i < qty; i++) addToCart(product, size);
     if (!localStorage.getItem("enytm-token")) {
       sessionStorage.setItem("enytm-after-login", "/checkout");
@@ -1050,12 +1055,16 @@ function ProductPage() {
             <span className="price-note">INCLUSIVE OF ALL TAXES</span>
           </div>
 
-          <p className={`product-stock-message ${outOfStock ? "out" : stock < 6 ? "low" : "in"}`}>
-            {outOfStock
-              ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
-              : stock < 6
-                ? `HURRY — ONLY ${stock} LEFT IN STOCK.`
-                : "IN STOCK · READY TO DISPATCH"}
+          <p className={`product-stock-message ${outOfStock || isSizeOutOfStock ? "out" : sizeStockVal < 6 ? "low" : "in"}`}>
+            {isComingSoon
+              ? "DROPPING ON 8 NOVEMBER 2026."
+              : isSizeOutOfStock
+                ? `SIZE ${size} IS CURRENTLY OUT OF STOCK.`
+                : outOfStock
+                  ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
+                  : sizeStockVal < 6
+                    ? `HURRY — ONLY ${sizeStockVal} LEFT IN SIZE ${size}.`
+                    : `IN STOCK · READY TO DISPATCH (${sizeStockVal} AVAILABLE IN SIZE ${size})`}
           </p>
 
           {/* OFFERS FOR YOU CARD */}
@@ -1126,11 +1135,30 @@ function ProductPage() {
               </button>
             </div>
             <div className="sizes">
-              {sizes.map((s) => (
-                <button key={s} className={size === s ? "selected" : ""} onClick={() => setSize(s)}>
-                  {s}
-                </button>
-              ))}
+              {sizes.map((s) => {
+                const sQty = product?.sizeStock && typeof product.sizeStock[s] !== "undefined"
+                  ? Number(product.sizeStock[s] || 0)
+                  : null;
+                const isSoldOut = sQty !== null && sQty <= 0;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`${size === s ? "selected" : ""} ${isSoldOut ? "size-sold-out" : ""}`}
+                    onClick={() => {
+                      setSize(s);
+                      if (product?.sizeStock && typeof product.sizeStock[s] !== "undefined") {
+                        const targetStock = Number(product.sizeStock[s] || 0);
+                        if (targetStock > 0 && qty > targetStock) setQty(targetStock);
+                      }
+                    }}
+                    title={isSoldOut ? `Size ${s} - Out of stock` : sQty !== null ? `Size ${s} (${sQty} in stock)` : `Size ${s}`}
+                  >
+                    <span>{s}</span>
+                    {isSoldOut && <small className="size-badge-out">OUT</small>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1142,16 +1170,16 @@ function ProductPage() {
                   type="button"
                   onClick={() => setQty(Math.max(1, qty - 1))}
                   aria-label="Decrease quantity"
-                  disabled={outOfStock || qty <= 1}
+                  disabled={outOfStock || isSizeOutOfStock || qty <= 1}
                 >
                   <Minus size={15} />
                 </button>
                 <strong>{qty}</strong>
                 <button
                   type="button"
-                  onClick={() => setQty(Math.min(stock, qty + 1))}
+                  onClick={() => setQty(Math.min(sizeStockVal, qty + 1))}
                   aria-label="Increase quantity"
-                  disabled={outOfStock || qty >= stock}
+                  disabled={outOfStock || isSizeOutOfStock || qty >= sizeStockVal}
                 >
                   <Plus size={15} />
                 </button>
@@ -1178,9 +1206,9 @@ function ProductPage() {
                 </button>
               ) : (
                 <>
-                  <button className="btn outline add-detail" onClick={add} disabled={outOfStock}>
-                    {outOfStock ? (
-                      <>OUT OF STOCK</>
+                  <button className="btn outline add-detail" onClick={add} disabled={outOfStock || isSizeOutOfStock}>
+                    {outOfStock || isSizeOutOfStock ? (
+                      <>SIZE {size} OUT OF STOCK</>
                     ) : added ? (
                       <>
                         <CheckCircle size={18} /> ADDED TO BAG
@@ -1191,8 +1219,8 @@ function ProductPage() {
                       </>
                     )}
                   </button>
-                  <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock}>
-                    {outOfStock ? "UNAVAILABLE" : <>BUY NOW <ArrowRight size={18} /></>}
+                  <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock || isSizeOutOfStock}>
+                    {outOfStock || isSizeOutOfStock ? "SIZE SOLD OUT" : <>BUY NOW <ArrowRight size={18} /></>}
                   </button>
                 </>
               )}
@@ -4571,6 +4599,8 @@ function AdminCoupons({ products }) {
     <div className="admin-product-list-head"><div><p className="eyebrow">CAMPAIGN LIBRARY</p><h2>{list.length} COUPONS</h2></div></div><div className="admin-table-wrap"><table><thead><tr>{["CODE", "CAMPAIGN", "OFFER", "USAGE", "VALID UNTIL", "STATUS", "ACTIONS"].map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{list.map(c => <tr key={c.id}><td><strong>{c.code}</strong></td><td>{c.title || "—"}</td><td>{c.discountType === "fixed" ? `₹${c.discountValue} off` : `${c.discountValue}% off`}{c.maxDiscount > 0 && c.discountType === "percentage" ? ` (max ₹${c.maxDiscount})` : ""}</td><td>{c.usageCount || 0}{c.usageLimit ? ` / ${c.usageLimit}` : " / ∞"}</td><td>{c.expiresAt ? new Date(c.expiresAt).toLocaleString("en-IN") : "No expiry"}</td><td>{c.active ? "ACTIVE" : "INACTIVE"}</td><td><div className="admin-actions"><button className="admin-icon-btn" title="Edit" onClick={() => edit(c)}><Pencil size={17} /></button><button className="admin-icon-btn admin-delete-icon" title="Delete" onClick={() => remove(c)}><Trash2 size={17} /></button></div></td></tr>)}</tbody></table>{!list.length && <p className="admin-order-muted">No coupons yet. Create your first campaign above.</p>}</div></div>
 }
 function AdminProducts({ products, reload }) {
+  const defaultSizes = ["S", "M", "L", "XL", "XXL"];
+  const defaultSizeStock = { S: 5, M: 5, L: 5, XL: 5, XXL: 0 };
   const empty = {
     name: "",
     category: "Oversized",
@@ -4581,7 +4611,8 @@ function AdminProducts({ products, reload }) {
     description: "",
     images: [""],
     video: "",
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: defaultSizes,
+    sizeStock: defaultSizeStock,
   };
 
   const [p, setP] = useState(empty);
@@ -4595,9 +4626,28 @@ function AdminProducts({ products, reload }) {
       ? [...product.images]
       : [product.image, product.image2, product.image3, product.modelFront, product.modelBack].filter(Boolean);
 
+    const activeSizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : defaultSizes;
+    let initialSizeStock = {};
+    if (product.sizeStock && typeof product.sizeStock === "object") {
+      initialSizeStock = { ...product.sizeStock };
+      activeSizes.forEach(s => {
+        if (typeof initialSizeStock[s] === "undefined") initialSizeStock[s] = 0;
+      });
+    } else {
+      const baseQty = Math.floor(Number(product.stock || 0) / (activeSizes.length || 1));
+      activeSizes.forEach((s) => {
+        initialSizeStock[s] = baseQty;
+      });
+    }
+
+    const calculatedStock = activeSizes.reduce((sum, s) => sum + (Number(initialSizeStock[s]) || 0), 0);
+
     setP({
       ...empty,
       ...product,
+      sizes: activeSizes,
+      sizeStock: initialSizeStock,
+      stock: calculatedStock || Number(product.stock || 0),
       images: existingImages.length ? existingImages : [""],
     });
     setMessage("");
@@ -4622,6 +4672,13 @@ function AdminProducts({ products, reload }) {
       const rawImgList = (p.images || []).map(normalizeImageUrl).filter(Boolean);
       const primaryImg = rawImgList[0] || normalizeImageUrl(p.image) || "";
 
+      const activeSizes = (p.sizes && p.sizes.length) ? p.sizes : defaultSizes;
+      const cleanSizeStock = {};
+      activeSizes.forEach(s => {
+        cleanSizeStock[s] = Math.max(0, Number(p.sizeStock?.[s] || 0));
+      });
+      const computedStock = Object.values(cleanSizeStock).reduce((sum, q) => sum + (Number(q) || 0), 0);
+
       const payload = {
         ...p,
         images: rawImgList,
@@ -4633,15 +4690,9 @@ function AdminProducts({ products, reload }) {
         video: normalizeImageUrl(p.video || ""),
         price: Number(p.price),
         oldPrice: Number(p.oldPrice || 0),
-        stock: Number(p.stock || 0),
-        sizes:
-          p.sizes || [
-            "S",
-            "M",
-            "L",
-            "XL",
-            "XXL",
-          ],
+        stock: computedStock,
+        sizeStock: cleanSizeStock,
+        sizes: activeSizes,
       };
 
       if (editing) {
@@ -4814,15 +4865,91 @@ function AdminProducts({ products, reload }) {
           )}
 
           {field(
-            "stock",
-            "STOCK",
-            "number"
-          )}
-
-          {field(
             "badge",
             "BADGE"
           )}
+
+          <div className="admin-product-wide" style={{ marginTop: "14px", border: "1px solid #282828", background: "#0a0a0a", padding: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "800", letterSpacing: ".12em", color: "#f5f5f2" }}>SIZE-WISE INVENTORY QUANTITY</span>
+                <p style={{ margin: "3px 0 0", fontSize: "10px", color: "#888" }}>
+                  Enable sizes and set stock quantity for each size. Total stock is automatically calculated.
+                </p>
+              </div>
+              <div style={{ background: "#161616", border: "1px solid #333", padding: "6px 14px", fontSize: "11px", fontWeight: "700", color: "#c8b69a", letterSpacing: ".08em" }}>
+                TOTAL CALCULATED STOCK: {defaultSizes.reduce((sum, s) => (p.sizes || []).includes(s) ? sum + (Number(p.sizeStock?.[s]) || 0) : sum, 0)} UNITS
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "10px" }}>
+              {defaultSizes.map(sizeName => {
+                const isEnabled = (p.sizes || []).includes(sizeName);
+                const currentQty = p.sizeStock?.[sizeName] ?? 0;
+                return (
+                  <div
+                    key={sizeName}
+                    style={{
+                      background: isEnabled ? "#141414" : "#0c0c0c",
+                      border: `1px solid ${isEnabled ? "#383838" : "#202020"}`,
+                      padding: "10px 12px",
+                      borderRadius: "2px",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "800", color: isEnabled ? "#f5f5f2" : "#666" }}>
+                        <input
+                          type="checkbox"
+                          checked={isEnabled}
+                          onChange={e => {
+                            const newSizes = e.target.checked
+                              ? [...new Set([...(p.sizes || []), sizeName])]
+                              : (p.sizes || []).filter(s => s !== sizeName);
+                            const newSizeStock = { ...(p.sizeStock || {}) };
+                            if (!e.target.checked) newSizeStock[sizeName] = 0;
+                            const newTotal = defaultSizes.reduce((acc, s) => newSizes.includes(s) ? acc + (Number(newSizeStock[s]) || 0) : acc, 0);
+                            setP({ ...p, sizes: newSizes, sizeStock: newSizeStock, stock: newTotal });
+                          }}
+                        />
+                        SIZE {sizeName}
+                      </label>
+                      <span style={{ fontSize: "9px", color: isEnabled ? (currentQty > 0 ? "#4ade80" : "#f87171") : "#555", fontWeight: "700" }}>
+                        {isEnabled ? (currentQty > 0 ? `${currentQty} in stock` : "SOLD OUT") : "OFF"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: "9px", color: "#888", letterSpacing: ".05em", display: "block", marginBottom: "3px" }}>QUANTITY</span>
+                      <input
+                        type="number"
+                        min="0"
+                        disabled={!isEnabled}
+                        value={currentQty}
+                        onChange={e => {
+                          const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                          const newSizeStock = { ...(p.sizeStock || {}), [sizeName]: val };
+                          const newTotal = defaultSizes.reduce((acc, s) => (p.sizes || []).includes(s) ? acc + (Number(newSizeStock[s]) || 0) : acc, 0);
+                          setP({ ...p, sizeStock: newSizeStock, stock: newTotal });
+                        }}
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          padding: "6px 8px",
+                          background: isEnabled ? "#1c1c1c" : "#111",
+                          border: `1px solid ${isEnabled ? "#444" : "#222"}`,
+                          color: isEnabled ? "#f5f5f2" : "#555",
+                          fontSize: "13px",
+                          fontWeight: "700",
+                          fontFamily: "inherit"
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="admin-product-wide admin-media-section" style={{ marginTop: "14px", border: "1px solid #282828", background: "#0a0a0a", padding: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
@@ -5126,7 +5253,30 @@ function AdminProducts({ products, reload }) {
                     {/* STOCK */}
 
                     <td>
-                      {product.stock}
+                      <div>
+                        <strong style={{ fontSize: "12px", color: product.stock > 0 ? "#f5f5f2" : "#f87171" }}>
+                          {product.stock} {product.stock === 1 ? "unit" : "units"}
+                        </strong>
+                        {product.sizeStock && typeof product.sizeStock === "object" && (
+                          <div style={{ fontSize: "9.5px", color: "#888", display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "3px" }}>
+                            {Object.entries(product.sizeStock).map(([s, q]) => (
+                              <span
+                                key={s}
+                                style={{
+                                  background: Number(q) > 0 ? "#181818" : "#2a1212",
+                                  border: `1px solid ${Number(q) > 0 ? "#333" : "#552020"}`,
+                                  color: Number(q) > 0 ? "#ccc" : "#f87171",
+                                  padding: "1px 5px",
+                                  borderRadius: "2px",
+                                  fontWeight: "700"
+                                }}
+                              >
+                                {s}:{q}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </td>
 
                     {/* ACTION */}

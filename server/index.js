@@ -377,6 +377,32 @@ async function notifyOrderStatus(order) {
 }
 
 
+function deductStock(items) {
+  for (const item of items || []) {
+    const product = db.data.products.find(p => p.id === Number(item.productId || item.id));
+    if (product) {
+      const qty = Number(item.qty || 0);
+      product.stock = Math.max(0, Number(product.stock || 0) - qty);
+      if (product.sizeStock && item.size && typeof product.sizeStock[item.size] !== "undefined") {
+        product.sizeStock[item.size] = Math.max(0, Number(product.sizeStock[item.size] || 0) - qty);
+      }
+    }
+  }
+}
+
+function restoreStock(items) {
+  for (const item of items || []) {
+    const product = db.data.products.find(p => p.id === Number(item.productId || item.id));
+    if (product) {
+      const qty = Number(item.qty || 0);
+      product.stock = Number(product.stock || 0) + qty;
+      if (product.sizeStock && item.size && typeof product.sizeStock[item.size] !== "undefined") {
+        product.sizeStock[item.size] = Number(product.sizeStock[item.size] || 0) + qty;
+      }
+    }
+  }
+}
+
 // Razorpay webhook must receive the raw body.
 app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), async (req, res) => {
   try {
@@ -402,20 +428,14 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
             }
             order.paymentStatus = "paid";
             if (!order.stockDeducted) {
-              for (const item of order.items || []) {
-                const product = db.data.products.find(p => p.id === item.productId);
-                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-              }
+              deductStock(order.items);
               order.stockDeducted = true;
             }
           } else {
             order.advancePaid = amount;
             order.paymentStatus = "partially_paid";
             if (!order.stockDeducted) {
-              for (const item of order.items || []) {
-                const product = db.data.products.find(p => p.id === item.productId);
-                if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-              }
+              deductStock(order.items);
               order.stockDeducted = true;
             }
           }
@@ -1046,8 +1066,11 @@ app.post("/api/checkout/order", auth, async (req, res) => {
     if (!product) continue;
     if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ message: `Invalid quantity for ${product.name}.` });
     const stock = Number(product.stock || 0);
-    if (stock <= 0) return res.status(409).json({ message: `${product.name} is out of stock.` });
-    if (qty > stock) return res.status(409).json({ message: `${product.name} has only ${stock} item${stock === 1 ? "" : "s"} left.` });
+    const itemSize = i.size;
+    const hasSizeStock = product.sizeStock && typeof product.sizeStock[itemSize] !== "undefined";
+    const availableStock = hasSizeStock ? Number(product.sizeStock[itemSize] || 0) : stock;
+    if (availableStock <= 0) return res.status(409).json({ message: `${product.name}${itemSize ? ` (Size ${itemSize})` : ""} is out of stock.` });
+    if (qty > availableStock) return res.status(409).json({ message: `${product.name}${itemSize ? ` (Size ${itemSize})` : ""} has only ${availableStock} item${availableStock === 1 ? "" : "s"} left.` });
     safeItems.push({ productId: product.id, name: product.name, price: product.price, qty, size: i.size, image: product.image });
   }
 
@@ -1178,10 +1201,7 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
       order.couponUsageCounted = true;
     }
     if (!order.stockDeducted) {
-      for (const item of order.items || []) {
-        const product = db.data.products.find(p => p.id === item.productId);
-        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-      }
+      deductStock(order.items);
       order.stockDeducted = true;
       const cart = db.data.carts.find(c => c.userId === req.user.id);
       if (cart) { cart.items = []; cart.updatedAt = Date.now(); }
@@ -1202,10 +1222,7 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
       order.couponUsageCounted = true;
     }
     if (!order.stockDeducted) {
-      for (const item of order.items || []) {
-        const product = db.data.products.find(p => p.id === item.productId);
-        if (product) product.stock = Math.max(0, Number(product.stock || 0) - Number(item.qty));
-      }
+      deductStock(order.items);
       order.stockDeducted = true;
       const cart = db.data.carts.find(c => c.userId === req.user.id);
       if (cart) { cart.items = []; cart.updatedAt = Date.now(); }
@@ -1320,10 +1337,7 @@ app.post("/api/orders/:id/cancel", auth, async (req, res) => {
 
   // Restore stock only once.
   if (order.stockDeducted && !order.stockRestored) {
-    for (const item of (order.items || [])) {
-      const product = db.data.products.find(p => p.id === Number(item.productId));
-      if (product) product.stock = Number(product.stock || 0) + Number(item.qty || 0);
-    }
+    restoreStock(order.items);
     order.stockRestored = true;
   }
 
