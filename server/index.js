@@ -14,9 +14,7 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
-import { MongoLowdbAdapter } from "./mongo-adapter.js";
+import { db } from "./mongo-db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -62,27 +60,6 @@ const uploadVideoFile = multer({
     }
     cb(null, true);
   },
-});
-
-const localDbPath = path.join(ROOT, "data", "db.json");
-const adapter = process.env.MONGODB_URI
-  ? new MongoLowdbAdapter(process.env.MONGODB_URI, localDbPath)
-  : new JSONFile(localDbPath);
-const db = new Low(adapter, {
-  users: [],
-  products: [],
-  orders: [],
-  carts: [],
-  wishlists: [],
-  coupons: [],
-  settings: {
-    storeName: "ENYTM APPARELS",
-    tagline: "more than a moment",
-    whatsapp: "",
-    supportEmail: "",
-    shippingFreeAbove: 0,
-    shippingCharge: 0
-  }
 });
 
 await db.read();
@@ -1590,13 +1567,12 @@ async function runReminderJob() {
 }
 cron.schedule("0 * * * *", runReminderJob);
 
-if (isProd) {
-  app.use(express.static(path.join(ROOT, "dist")));
-  app.get("*", (req,res)=>res.sendFile(path.join(ROOT,"dist","index.html")));
-} else {
-  const { createServer } = await import("vite");
-  const vite = await createServer({ server: { middlewareMode: true }, appType: "spa" });
-  app.use(vite.middlewares);
+if (!process.env.VERCEL) {
+  if (isProd) {
+    app.use(express.static(path.join(ROOT, "dist")));
+    app.get("*", (req, res) => res.sendFile(path.join(ROOT, "dist", "index.html")));
+  }
+  app.listen(PORT, () => console.log(`ENYTM server running on http://localhost:${PORT}`));
 }
 
-app.listen(PORT, ()=>console.log(`ENYTM server running on http://localhost:${PORT}`));
+export default app;
