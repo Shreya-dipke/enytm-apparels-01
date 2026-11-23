@@ -4659,9 +4659,25 @@ function AdminProducts({ products, reload }) {
     setMessage("");
   };
 
+  const trimmedCurrentName = (p.name || "").trim().toLowerCase();
+  const isDuplicateName = Boolean(
+    trimmedCurrentName &&
+    (products || []).some(
+      (prod) =>
+        (!editing || String(prod.id) !== String(editing)) &&
+        String(prod.name || "").trim().toLowerCase() === trimmedCurrentName
+    )
+  );
+
   const save = async () => {
-    if (!p.name.trim()) {
+    const trimmedName = p.name.trim();
+    if (!trimmedName) {
       setMessage("Product name is required.");
+      return;
+    }
+
+    if (isDuplicateName) {
+      setMessage(`A product named "${trimmedName}" already exists. Product names must be unique.`);
       return;
     }
 
@@ -4816,10 +4832,27 @@ function AdminProducts({ products, reload }) {
 
         <div className="admin-product-form">
 
-          {field(
-            "name",
-            "PRODUCT NAME"
-          )}
+          <label className="admin-product-field">
+            <span>PRODUCT NAME (MUST BE UNIQUE)</span>
+            <input
+              type="text"
+              placeholder="e.g. Essential Oversized Tee"
+              value={p.name || ""}
+              onChange={(e) => {
+                setP({ ...p, name: e.target.value });
+                if (message) setMessage("");
+              }}
+              style={{
+                borderColor: isDuplicateName ? "#ef4444" : undefined,
+                background: isDuplicateName ? "#201212" : undefined
+              }}
+            />
+            {isDuplicateName && (
+              <small style={{ color: "#f87171", fontSize: "10.5px", fontWeight: "600", marginTop: "4px" }}>
+                ⚠️ A product with this name already exists. Product names must be unique.
+              </small>
+            )}
+          </label>
 
           <label className="admin-product-field">
             <span>CATEGORY</span>
