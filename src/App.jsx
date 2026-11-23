@@ -223,6 +223,7 @@ function ProductCard({ product }) {
       src={normalizeImageUrl(product.image) || ""}
       alt={product.name}
       loading="lazy"
+      referrerPolicy="no-referrer"
       onError={(e) => {
         const img = e.currentTarget;
 
@@ -944,7 +945,17 @@ function ProductPage() {
                   <img
                     src={activeMedia?.src || fallbackImg}
                     alt={`${product.name} - View ${active + 1}`}
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
+                      const src = e.currentTarget.src;
+                      if (src.includes("googleusercontent.com/d/")) {
+                        const id = src.split("/d/")[1]?.split("=")[0];
+                        if (id && !e.currentTarget.dataset.retried) {
+                          e.currentTarget.dataset.retried = "1";
+                          e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+                          return;
+                        }
+                      }
                       e.currentTarget.onerror = null;
                       e.currentTarget.src = fallbackImg;
                     }}
@@ -4445,7 +4456,23 @@ function AdminMediaUpload({ fieldKey, label, hint, value, onUploaded, video = fa
           video ? (
             <video src={displaySrc} controls />
           ) : (
-            <img src={displaySrc} alt={label} onError={(e) => { e.currentTarget.style.opacity = "0.3"; }} />
+            <img
+              src={displaySrc}
+              alt={label}
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                const src = e.currentTarget.src;
+                if (src.includes("googleusercontent.com/d/")) {
+                  const id = src.split("/d/")[1]?.split("=")[0];
+                  if (id && !e.currentTarget.dataset.retried) {
+                    e.currentTarget.dataset.retried = "1";
+                    e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+                    return;
+                  }
+                }
+                e.currentTarget.style.opacity = "0.3";
+              }}
+            />
           )
         ) : (
           <div className="admin-media-empty">
@@ -5038,6 +5065,17 @@ function AdminProducts({ products, reload }) {
                             alt={
                               product.name
                             }
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              const src = e.currentTarget.src;
+                              if (src.includes("googleusercontent.com/d/")) {
+                                const id = src.split("/d/")[1]?.split("=")[0];
+                                if (id && !e.currentTarget.dataset.retried) {
+                                  e.currentTarget.dataset.retried = "1";
+                                  e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w600`;
+                                }
+                              }
+                            }}
                           />
                         ) : (
                           <div className="admin-product-placeholder">

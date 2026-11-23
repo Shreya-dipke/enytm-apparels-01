@@ -16,6 +16,7 @@ import multer from "multer";
 import { fileURLToPath } from "url";
 import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
+import { MongoLowdbAdapter } from "./mongo-adapter.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -63,7 +64,10 @@ const uploadVideoFile = multer({
   },
 });
 
-const adapter = new JSONFile(path.join(ROOT, "data", "db.json"));
+const localDbPath = path.join(ROOT, "data", "db.json");
+const adapter = process.env.MONGODB_URI
+  ? new MongoLowdbAdapter(process.env.MONGODB_URI, localDbPath)
+  : new JSONFile(localDbPath);
 const db = new Low(adapter, {
   users: [],
   products: [],

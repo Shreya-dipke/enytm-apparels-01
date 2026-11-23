@@ -235,6 +235,33 @@
         "XXL"
       ],
       "id": 1795446559676
+    },
+    {
+      "name": "Polo tshirt",
+      "category": "Polos",
+      "price": 999,
+      "oldPrice": 1199,
+      "stock": 20,
+      "badge": "NEW",
+      "description": "",
+      "images": [
+        "https://lh3.googleusercontent.com/d/1Fyg0Z6d6Xbvv13RNrLv2UleB3WT5TbeM",
+        "https://lh3.googleusercontent.com/d/1icYWX1IGKjtAEPkaBrPMzCr4PbS9HTgh"
+      ],
+      "video": "",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "image": "https://lh3.googleusercontent.com/d/1Fyg0Z6d6Xbvv13RNrLv2UleB3WT5TbeM",
+      "image2": "https://lh3.googleusercontent.com/d/1icYWX1IGKjtAEPkaBrPMzCr4PbS9HTgh",
+      "image3": "",
+      "modelFront": "",
+      "modelBack": "",
+      "id": 1795448465577
     }
   ],
   "orders": [
@@ -927,7 +954,7 @@
           "key": "1-M"
         }
       ],
-      "updatedAt": 1795448098235,
+      "updatedAt": 1795448726064,
       "remindedAt": null
     },
     {
@@ -980,7 +1007,7 @@
     {
       "userId": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
       "items": [],
-      "updatedAt": 1795448098241,
+      "updatedAt": 1795448726065,
       "remindedAt": null
     },
     {
@@ -990,14 +1017,6 @@
     }
   ],
   "coupons": [],
-  "settings": {
-    "storeName": "ENYTM APPARELS",
-    "tagline": "more than a moment",
-    "whatsapp": "",
-    "supportEmail": "",
-    "shippingFreeAbove": 0,
-    "shippingCharge": 0
-  },
   "pendingOtps": [
     {
       "id": "73f2feeb-5218-4e6e-a859-a356600ffedb",
@@ -1048,5 +1067,13 @@
       "status": "created",
       "createdAt": 1795336885041
     }
-  ]
+  ],
+  "settings": {
+    "storeName": "ENYTM APPARELS",
+    "tagline": "more than a moment",
+    "whatsapp": "",
+    "supportEmail": "",
+    "shippingFreeAbove": 0,
+    "shippingCharge": 0
+  }
 }
