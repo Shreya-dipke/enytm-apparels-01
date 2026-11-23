@@ -7,6 +7,10 @@ node_modules/
 .env.*.local
 env
 
+# Local data files
+data/
+data/*
+
 # Production build output
 dist/
 build/

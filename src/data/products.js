@@ -1,59 +1,17 @@
 export const fallbackProducts = [
   {
-    "id": 1,
-    "name": "Essential Oversized Tee",
-    "category": "Oversized",
-    "price": 649,
-    "oldPrice": 1649,
-    "stock": 4,
+    "id": 7,
+    "name": "Heavyweight French Terry Lowers",
+    "category": "Lowers",
+    "price": 1499,
+    "oldPrice": 1899,
+    "stock": 35,
     "badge": "NEW",
-    "fabric": "240 GSM Premium Cotton",
-    "description": "A structured oversized silhouette made for everyday movement.",
-    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "image2": "",
-    "image3": "",
-    "video": ""
-  },
-  {
-    "id": 2,
-    "name": "Heavyweight Oversized Tee",
-    "category": "Oversized",
-    "price": 1099,
-    "oldPrice": 1299,
-    "stock": 0,
-    "badge": "BESTSELLER",
-    "fabric": "260 GSM Premium Cotton",
-    "description": "A heavier everyday essential with a premium drape.",
-    "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "image2": "",
-    "image3": "",
-    "video": ""
-  },
-  {
-    "id": 3,
-    "name": "Organic Signature Polo",
-    "category": "Polos",
-    "price": 899,
-    "oldPrice": 1099,
-    "stock": 40,
-    "badge": "SIGNATURE",
-    "fabric": "280 GSM Organic Cotton",
-    "description": "Minimal branding. Elevated texture. Designed beyond one occasion.",
-    "image": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+    "fabric": "380 GSM Heavyweight Terry Cotton",
+    "description": "Architectural straight-leg sweatpants engineered with deep pockets, elasticated drawstring waistband, and a relaxed heavyweight drape.",
+    "image": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85",
+    "image2": "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=85",
+    "image3": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=1200&q=85",
     "sizes": [
       "S",
       "M",
@@ -72,25 +30,6 @@ export const fallbackProducts = [
     "badge": "CORE",
     "fabric": "360 GSM French Terry",
     "description": "Clean proportions and substantial weight for a premium layer.",
-    "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ]
-  },
-  {
-    "id": 5,
-    "name": "Everyday Pullover Hoodie",
-    "category": "Hoodies",
-    "price": 1699,
-    "oldPrice": 1899,
-    "stock": 30,
-    "badge": "NEW",
-    "fabric": "380 GSM Cotton Blend",
-    "description": "A premium relaxed hoodie with a deep hood and heavyweight hand feel.",
     "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
     "sizes": [
       "S",
@@ -120,40 +59,16 @@ export const fallbackProducts = [
     ]
   },
   {
-    "name": "Acid Wash t-shirt",
-    "category": "Oversized",
-    "price": 1299,
-    "oldPrice": 1199,
-    "stock": 20,
-    "fabric": "240 GSM Premium Cotton",
-    "badge": "NEW",
-    "description": "",
-    "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
-    "image2": "",
-    "image3": "",
-    "video": "",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "id": 1791106367401
-  },
-  {
-    "id": 7,
-    "name": "Heavyweight French Terry Lowers",
-    "category": "Lowers",
-    "price": 1499,
-    "oldPrice": 1899,
-    "stock": 35,
-    "badge": "NEW",
-    "fabric": "380 GSM Heavyweight Terry Cotton",
-    "description": "Architectural straight-leg sweatpants engineered with deep pockets, elasticated drawstring waistband, and a relaxed heavyweight drape.",
-    "image": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85",
-    "image2": "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=85",
-    "image3": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=1200&q=85",
+    "id": 3,
+    "name": "Organic Signature Polo",
+    "category": "Polos",
+    "price": 899,
+    "oldPrice": 1099,
+    "stock": 40,
+    "badge": "SIGNATURE",
+    "fabric": "280 GSM Organic Cotton",
+    "description": "Minimal branding. Elevated texture. Designed beyond one occasion.",
+    "image": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
     "sizes": [
       "S",
       "M",
@@ -187,6 +102,47 @@ export const fallbackProducts = [
     "id": 1795446559676
   },
   {
+    "id": 5,
+    "name": "Everyday Pullover Hoodie",
+    "category": "Hoodies",
+    "price": 1699,
+    "oldPrice": 1899,
+    "stock": 30,
+    "badge": "NEW",
+    "fabric": "380 GSM Cotton Blend",
+    "description": "A premium relaxed hoodie with a deep hood and heavyweight hand feel.",
+    "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Heavyweight Oversized Tee",
+    "category": "Oversized",
+    "price": 1099,
+    "oldPrice": 1299,
+    "stock": 0,
+    "badge": "BESTSELLER",
+    "fabric": "260 GSM Premium Cotton",
+    "description": "A heavier everyday essential with a premium drape.",
+    "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "image2": "",
+    "image3": "",
+    "video": ""
+  },
+  {
     "name": "Polo tshirt",
     "category": "Polos",
     "price": 999,
@@ -212,5 +168,75 @@ export const fallbackProducts = [
     "modelFront": "",
     "modelBack": "",
     "id": 1795448465577
+  },
+  {
+    "name": "Acid Wash t-shirt",
+    "category": "Oversized",
+    "price": 1299,
+    "oldPrice": 1199,
+    "stock": 20,
+    "fabric": "240 GSM Premium Cotton",
+    "badge": "NEW",
+    "description": "",
+    "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
+    "image2": "",
+    "image3": "",
+    "video": "",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "id": 1791106367401
+  },
+  {
+    "id": 1,
+    "name": "Essential Oversized Tee",
+    "category": "Oversized",
+    "price": 649,
+    "oldPrice": 1649,
+    "stock": 4,
+    "badge": "NEW",
+    "fabric": "240 GSM Premium Cotton",
+    "description": "A structured oversized silhouette made for everyday movement.",
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "image2": "",
+    "image3": "",
+    "video": ""
+  },
+  {
+    "name": "polo004",
+    "category": "Oversized",
+    "price": 999,
+    "oldPrice": 1199,
+    "stock": 20,
+    "badge": "NEW",
+    "description": "",
+    "images": [
+      "https://lh3.googleusercontent.com/d/1ZpKyOAQsQQyCjtsYKu5zf0hpthFSJWEP"
+    ],
+    "video": "",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "image": "https://lh3.googleusercontent.com/d/1ZpKyOAQsQQyCjtsYKu5zf0hpthFSJWEP",
+    "image2": "",
+    "image3": "",
+    "modelFront": "",
+    "modelBack": "",
+    "id": 1795452937536
   }
 ];

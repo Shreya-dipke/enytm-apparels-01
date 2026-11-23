@@ -13,7 +13,7 @@ import cron from "node-cron";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { db } from "./mongo-db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,9 +24,18 @@ dotenv.config({ path: path.join(ROOT, ".env") });
 const PORT = Number(process.env.PORT || 5173);
 const isProd = process.env.NODE_ENV === "production";
 
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+import os from "os";
+
+const uploadsDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), "uploads")
+  : path.join(__dirname, "uploads");
+
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (e) {
+  // Read-only filesystem in serverless environments
 }
 
 const uploadStorage = multer.diskStorage({
@@ -62,7 +71,11 @@ const uploadVideoFile = multer({
   },
 });
 
-await db.read();
+try {
+  await db.read();
+} catch (e) {
+  console.warn("[MongoDB] Initial read deferred:", e.message);
+}
 if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishlists: [], coupons: [], settings: {} };
 if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
 if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
@@ -78,9 +91,15 @@ const seedProducts = [
   { id: 6, name: "Minimal Logo Tee", category: "Oversized", price: 949, oldPrice: 1099, stock: 50, badge: "", fabric: "240 GSM Cotton", description: "A refined oversized tee with subtle ENYTM identity.", image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1200&q=85", sizes: ["S","M","L","XL","XXL"] }
 ];
 
-if (!db.data.products.length) db.data.products = seedProducts;
-if (!db.data.settings.shippingFreeAbove && db.data.settings.shippingFreeAbove !== 0) db.data.settings = { ...db.data.settings, shippingFreeAbove: 0, shippingCharge: 0 };
-await db.write();
+if (!db.data.products?.length) db.data.products = seedProducts;
+if (db.data.settings && !db.data.settings.shippingFreeAbove && db.data.settings.shippingFreeAbove !== 0) {
+  db.data.settings = { ...db.data.settings, shippingFreeAbove: 0, shippingCharge: 0 };
+}
+try {
+  await db.write();
+} catch (e) {
+  console.warn("[MongoDB] Initial write deferred:", e.message);
+}
 
 const app = express();
 app.set("trust proxy", 1);
@@ -1565,9 +1584,13 @@ async function runReminderJob() {
   }
   await db.write();
 }
-cron.schedule("0 * * * *", runReminderJob);
-
 if (!process.env.VERCEL) {
+  cron.schedule("0 * * * *", runReminderJob);
+}
+
+const isMain = Boolean(process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url);
+
+if (isMain && !process.env.VERCEL) {
   if (isProd) {
     app.use(express.static(path.join(ROOT, "dist")));
     app.get("*", (req, res) => res.sendFile(path.join(ROOT, "dist", "index.html")));
