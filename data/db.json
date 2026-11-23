@@ -795,16 +795,18 @@
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
       "items": [
         {
-          "id": 1,
-          "name": "Essential Oversized Tee",
-          "category": "Oversized",
-          "price": 649,
-          "oldPrice": 1649,
-          "stock": 4,
+          "id": 7,
+          "name": "Heavyweight French Terry Lowers",
+          "category": "Lowers",
+          "price": 1499,
+          "oldPrice": 1899,
+          "stock": 35,
           "badge": "NEW",
-          "fabric": "240 GSM Premium Cotton",
-          "description": "A structured oversized silhouette made for everyday movement.",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          "fabric": "380 GSM Heavyweight Terry Cotton",
+          "description": "Architectural straight-leg sweatpants engineered with deep pockets, elasticated drawstring waistband, and a relaxed heavyweight drape.",
+          "image": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85",
+          "image2": "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=85",
+          "image3": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=1200&q=85",
           "sizes": [
             "S",
             "M",
@@ -812,15 +814,12 @@
             "XL",
             "XXL"
           ],
-          "image2": "",
-          "image3": "",
-          "video": "",
           "size": "S",
           "qty": 1,
-          "key": "1-S"
+          "key": "7-S"
         }
       ],
-      "updatedAt": 1795424290907,
+      "updatedAt": 1795430542903,
       "remindedAt": null
     },
     {
@@ -899,7 +898,7 @@
     {
       "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
       "items": [],
-      "updatedAt": 1795424290909,
+      "updatedAt": 1795430542905,
       "remindedAt": null
     },
     {

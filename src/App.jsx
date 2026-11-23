@@ -1,5 +1,5 @@
-import React, {useEffect,useMemo,useRef,useState} from "react";
-import {Link,Route,Routes,useLocation,useNavigate,useParams} from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Search,
@@ -39,16 +39,17 @@ import {
   Info,
   ExternalLink,
   ShieldAlert,
-  Check
+  Check,
+  SlidersHorizontal
 } from "lucide-react";
-import {useCart} from "./context/CartContext";
-import {api} from "./api";
-import {fallbackProducts} from "./data/products";
+import { useCart } from "./context/CartContext";
+import { api } from "./api";
+import { fallbackProducts } from "./data/products";
 import "./index.css";
 
-function useProducts(){
-  const [p,setP]=useState(fallbackProducts);
-  useEffect(()=>{
+function useProducts() {
+  const [p, setP] = useState(fallbackProducts);
+  useEffect(() => {
     api("/products")
       .then(data => {
         if (Array.isArray(data) && data.length) {
@@ -57,8 +58,8 @@ function useProducts(){
           setP(data.products);
         }
       })
-      .catch(()=>{});
-  },[]);
+      .catch(() => { });
+  }, []);
   return Array.isArray(p) && p.length ? p : fallbackProducts;
 }
 
@@ -85,41 +86,138 @@ const TICKER_ITEMS = [
 ];
 const TICKER_GROUP_ITEMS = Array.from({ length: 6 }, () => TICKER_ITEMS).flat();
 
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const location=useLocation();const[token,setToken]=useState(()=>localStorage.getItem("enytm-token"));useEffect(()=>{setToken(localStorage.getItem("enytm-token"));},[location.pathname]);const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className="nav-links"><Link to="/shop">SHOP</Link><Link to="/shop?category=Oversized">OVERSIZED</Link><Link to="/shop?category=Polos">POLOS</Link><Link to="/shop?category=Hoodies">HOODIES</Link><Link to="/shop?category=Lowers">LOWERS</Link><Link to={token?"/account":"/login"}>ORDERS</Link><Link to="/about">ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch} aria-label="Search"><Search/></button><Link className="icon-btn badge-icon nav-wishlist-btn" to="/wishlist" aria-label="Wishlist"><Heart/>{token&&safeWishlist.length>0&&<b>{safeWishlist.length}</b>}</Link><Link className="icon-btn badge-icon" to="/cart" aria-label="Cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" aria-label="Account" title={token?"My Account & Orders":"Login"} to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track"><div className="ticker-group">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g1-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div><div className="ticker-group" aria-hidden="true">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g2-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></div></>}
-function ProductCard({product}){
+function Navbar({ onSearch }) {
+  const { cartCount, wishlist } = useCart();
+  const location = useLocation();
+  const [token, setToken] = useState(() => localStorage.getItem("enytm-token"));
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("enytm-token"));
+    setOpen(false);
+  }, [location.pathname]);
+
+  const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+
+  return <>
+    <header className="nav">
+      <div className="nav-top-row">
+        <button
+          type="button"
+          className="icon-btn mobile-menu"
+          onClick={() => setOpen((prev) => !prev)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        <Link className="logo" to="/" aria-label="ENYTM" onClick={() => setOpen(false)}>
+          <BrandLogo />
+        </Link>
+
+        <nav className={`nav-links ${open ? "mobile-open" : ""}`}>
+          <Link to="/shop" onClick={() => setOpen(false)}>SHOP</Link>
+          <Link to="/shop?category=Oversized" onClick={() => setOpen(false)}>OVERSIZED</Link>
+          <Link to="/shop?category=Polos" onClick={() => setOpen(false)}>POLOS</Link>
+          <Link to="/shop?category=Hoodies" onClick={() => setOpen(false)}>HOODIES</Link>
+          <Link to="/shop?category=Lowers" onClick={() => setOpen(false)}>LOWERS</Link>
+          <Link to={token ? "/account" : "/login"} onClick={() => setOpen(false)}>ORDERS</Link>
+          <Link to="/about" onClick={() => setOpen(false)}>ABOUT</Link>
+        </nav>
+
+        <div className="nav-actions">
+          <button type="button" className="icon-btn nav-action-desktop" onClick={onSearch} aria-label="Search"><Search /></button>
+          <Link className="icon-btn badge-icon nav-wishlist-btn nav-action-desktop" to="/wishlist" aria-label="Wishlist"><Heart />{token && safeWishlist.length > 0 && <b>{safeWishlist.length}</b>}</Link>
+          <Link className="icon-btn badge-icon nav-action-desktop" to="/cart" aria-label="Cart"><ShoppingBag />{token && cartCount > 0 && <b>{cartCount}</b>}</Link>
+          <Link className="icon-btn" aria-label="Account" title={token ? "My Account & Orders" : "Login"} to={token ? "/account" : "/login"}><User /></Link>
+        </div>
+      </div>
+
+      <div className="mobile-subnav">
+        <button
+          type="button"
+          className="mobile-subnav-search"
+          onClick={onSearch}
+          aria-label="Search products"
+        >
+          <Search size={15} />
+          <span>Search products, drops, styles...</span>
+        </button>
+        <div className="mobile-subnav-actions">
+          <Link
+            to="/wishlist"
+            className="mobile-subnav-btn badge-icon"
+            aria-label="Wishlist"
+            title="Wishlist"
+          >
+            <Heart size={18} />
+            {token && safeWishlist.length > 0 && <b>{safeWishlist.length}</b>}
+          </Link>
+          <Link
+            to="/cart"
+            className="mobile-subnav-btn badge-icon"
+            aria-label="Shopping Cart"
+            title="Cart"
+          >
+            <ShoppingBag size={18} />
+            {token && cartCount > 0 && <b>{cartCount}</b>}
+          </Link>
+        </div>
+      </div>
+    </header>
+    <div className="announcement" role="region" aria-label="Store Announcements">
+      <div className="announcement-ticker-track">
+        <div className="ticker-group">
+          {TICKER_GROUP_ITEMS.map((item, idx) => (
+            <span key={`g1-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>
+          ))}
+        </div>
+        <div className="ticker-group" aria-hidden="true">
+          {TICKER_GROUP_ITEMS.map((item, idx) => (
+            <span key={`g2-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </>;
+}
+function ProductCard({ product }) {
   if (!product) return null;
-  const{addToCart,wishlist,toggleWishlist}=useCart();
-  const safeWishlist=Array.isArray(wishlist)?wishlist:[];
-  const liked=safeWishlist.includes(product.id);
-  const[added,setAdded]=useState(false);
-  const stock=Math.max(0,Number(product.stock||0));
-  const outOfStock=stock<=0;
-  const add=()=>{if(outOfStock)return;addToCart(product,"M");setAdded(true);setTimeout(()=>setAdded(false),1800)};
-  const hasDiscount=Number(product.oldPrice)>Number(product.price);
-  return <article className="product-card"><div className="product-image">{outOfStock?<span className="product-stock-badge out">OUT OF STOCK</span>:stock<6?<span className="product-stock-badge low">{stock===1?"ONLY 1 LEFT":`ONLY ${stock} LEFT`}</span>:null}{product.badge&&!outOfStock&&<span className="product-badge">{product.badge}</span>}<button className={`heart ${liked?"liked":""}`} onClick={()=>toggleWishlist(product.id)}><Heart fill={liked?"currentColor":"none"}/></button><Link to={`/product/${product.id}`}>
-<img
-  src={product.image || ""}
-  alt={product.name}
-  loading="lazy"
-  onError={(e) => {
-    const img = e.currentTarget;
+  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+  const liked = safeWishlist.includes(product.id);
+  const [added, setAdded] = useState(false);
+  const isComingSoon = Boolean(product.comingSoon || product.category === "Hoodies" || product.category === "Sweatshirts" || product.category === "Lowers");
+  const stock = Math.max(0, Number(product.stock || 0));
+  const outOfStock = !isComingSoon && stock <= 0;
+  const add = () => { if (outOfStock || isComingSoon) return; addToCart(product, "M"); setAdded(true); setTimeout(() => setAdded(false), 1800) };
+  const hasDiscount = !isComingSoon && Number(product.oldPrice) > Number(product.price);
+  return <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}><div className="product-image">{isComingSoon ? <span className="product-stock-badge coming-soon">COMING SOON</span> : outOfStock ? <span className="product-stock-badge out">OUT OF STOCK</span> : stock < 6 ? <span className="product-stock-badge low">{stock === 1 ? "ONLY 1 LEFT" : `ONLY ${stock} LEFT`}</span> : null}{product.badge && !outOfStock && !isComingSoon && <span className="product-badge">{product.badge}</span>}<button className={`heart ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}><Heart fill={liked ? "currentColor" : "none"} /></button><Link to={`/product/${product.id}`}>
+    <img
+      src={product.image || ""}
+      alt={product.name}
+      loading="lazy"
+      onError={(e) => {
+        const img = e.currentTarget;
 
-    // Prevent repeated fallback attempts.
-    if (img.dataset.fallbackApplied === "true") return;
-    img.dataset.fallbackApplied = "true";
+        // Prevent repeated fallback attempts.
+        if (img.dataset.fallbackApplied === "true") return;
+        img.dataset.fallbackApplied = "true";
 
-    const fallbackImages = {
-      1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-      3: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
-    };
+        const fallbackImages = {
+          1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          3: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+        };
 
-    img.src =
-      fallbackImages[product.id] ||
-      "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
-  }}
-/>
-</Link><button className="quick-add" onClick={add} disabled={outOfStock}>{outOfStock?"OUT OF STOCK":added?<>ADDED TO BAG <CheckCircle size={15}/></>:<>QUICK ADD <Plus size={15}/></>}</button>{added&&<div className="added-toast"><CheckCircle size={16}/><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8,flexWrap:"wrap",whiteSpace:"nowrap"}}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount&&<del style={{color:"#a7a19a",fontSize:"0.9em",fontWeight:400}}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount&&<span style={{fontSize:"10px",letterSpacing:".04em",color:"#c8b69a",fontWeight:700}}>{Math.round((Number(product.oldPrice)-Number(product.price))/Number(product.oldPrice)*100)}% OFF</span>}</div></div></article>}
-function PrelaunchHome(){
+        img.src =
+          fallbackImages[product.id] ||
+          "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+      }}
+    />
+  </Link>{!isComingSoon && <button className="quick-add" onClick={add} disabled={outOfStock}>{outOfStock ? "OUT OF STOCK" : added ? <>ADDED TO BAG <CheckCircle size={15} /></> : <>QUICK ADD <Plus size={15} /></>}</button>}{added && <div className="added-toast"><CheckCircle size={16} /><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, flexWrap: "wrap", whiteSpace: "nowrap" }}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount && <del style={{ color: "#a7a19a", fontSize: "0.9em", fontWeight: 400 }}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount && <span style={{ fontSize: "10px", letterSpacing: ".04em", color: "#c8b69a", fontWeight: 700 }}>{Math.round((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice) * 100)}% OFF</span>}</div></div></article>
+}
+function PrelaunchHome() {
   return <main className="enytm-prelaunch-home">
     <style>{`
       .enytm-prelaunch-home{min-height:100svh;background:#080808;color:#f5f2ed;font-family:Arial,Helvetica,sans-serif;position:relative}
@@ -149,23 +247,23 @@ function PrelaunchHome(){
       @media(max-width:600px){.prelaunch-top-note{font-size:8px;max-width:125px;line-height:1.5}.prelaunch-hero{background-position:58% center;padding-left:20px;padding-right:20px;padding-top:80px;padding-bottom:60px}.prelaunch-title{font-size:clamp(36px,11vw,64px)}.prelaunch-bottom{font-size:8px;line-height:1.5}.countdown-grid{gap:6px}.countdown-unit{padding:18px 2px}.countdown-label{font-size:7px;letter-spacing:.12em}.countdown-footer{font-size:8px;line-height:1.6}.countdown-footer span:last-child{text-align:right}}
       @media(prefers-reduced-motion:reduce){.prelaunch-explore{transition:none}}
     `}</style>
-    <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br/>PUNE, INDIA · EST. 2026</span></header>
-    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br/>CLOTHING.<br/><em>A<br/>FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18}/></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br/><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15}/></Link></div></div></section>
+    <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br />PUNE, INDIA · EST. 2026</span></header>
+    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br />CLOTHING.<br /><em>A<br />FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18} /></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br /><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15} /></Link></div></div></section>
   </main>
 }
-function LaunchCountdown(){
+function LaunchCountdown() {
   const launchAt = new Date("2026-11-08T00:00:00+05:30").getTime();
-  const calculate=()=>{const diff=Math.max(0,launchAt-Date.now());return {days:Math.floor(diff/86400000),hours:Math.floor((diff%86400000)/3600000),minutes:Math.floor((diff%3600000)/60000),seconds:Math.floor((diff%60000)/1000),live:diff===0}};
-  const [time,setTime]=useState(calculate);
-  useEffect(()=>{const timer=window.setInterval(()=>setTime(calculate()),1000);return()=>window.clearInterval(timer)},[]);
-  const units=[["days","DAYS"],["hours","HOURS"],["minutes","MINUTES"],["seconds","SECONDS"]];
-  const categories=[
-    {number:"01",name:"OVERSIZED TEES",detail:"Relaxed by design",image:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85",query:"Oversized%20Tees"},
-    {number:"02",name:"PREMIUM POLOS",detail:"Everyday, refined",image:"https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85",query:"Premium%20Polos"},
-    {number:"03",name:"OVERSIZED HOODIES",detail:"Comfort with presence",image:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85",query:"Oversized%20Hoodies"},
-    {number:"04",name:"BAGGY LOWER",detail:"Move your way",image:"https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85",query:"Baggy%20Lower"}
+  const calculate = () => { const diff = Math.max(0, launchAt - Date.now()); return { days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), minutes: Math.floor((diff % 3600000) / 60000), seconds: Math.floor((diff % 60000) / 1000), live: diff === 0 } };
+  const [time, setTime] = useState(calculate);
+  useEffect(() => { const timer = window.setInterval(() => setTime(calculate()), 1000); return () => window.clearInterval(timer) }, []);
+  const units = [["days", "DAYS"], ["hours", "HOURS"], ["minutes", "MINUTES"], ["seconds", "SECONDS"]];
+  const categories = [
+    { number: "01", name: "OVERSIZED TEES", detail: "Relaxed by design", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85", query: "Oversized%20Tees" },
+    { number: "02", name: "PREMIUM POLOS", detail: "Everyday, refined", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85", query: "Premium%20Polos" },
+    { number: "03", name: "OVERSIZED HOODIES", detail: "Comfort with presence", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85", query: "Oversized%20Hoodies" },
+    { number: "04", name: "BAGGY LOWER", detail: "Move your way", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85", query: "Baggy%20Lower" }
   ];
-  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><Link className="countdown-back" to="/">← BACK TO STORE</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
+  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><Link className="countdown-back" to="/">← BACK TO STORE</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br />IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live ? <><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16} /></Link></> : <><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key, label]) => <div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2, "0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live && <section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br /><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17} /></Link></div><div className="countdown-category-grid">{categories.map(category => <Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy" /><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
 }
 
 function Home() {
@@ -180,10 +278,10 @@ function Home() {
   };
 
   const collections = [
-    { title: "OVERSIZED T-SHIRTS", desc: "240–260 GSM heavy combed cotton with relaxed drop-shoulders.", link: "/shop?category=Oversized", img: categoryImages.Oversized, num: "01" },
-    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02" },
-    { title: "HOODIES & SWEATSHIRTS", desc: "360–380 GSM heavyweight French Terry built for structured warmth.", link: "/shop?category=Hoodies", img: categoryImages.Hoodies, num: "03" },
-    { title: "HEAVYWEIGHT LOWERS", desc: "Architectural straight-leg French Terry pants with tailored drape.", link: "/shop?category=Lowers", img: categoryImages.Lowers, num: "04" }
+    { title: "OVERSIZED T-SHIRTS", desc: "240–260 GSM heavy combed cotton with relaxed drop-shoulders.", link: "/shop?category=Oversized", img: categoryImages.Oversized, num: "01", comingSoon: false },
+    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02", comingSoon: false },
+    { title: "HOODIES & SWEATSHIRTS", desc: "360–380 GSM heavyweight French Terry built for structured warmth.", link: "/shop?category=Hoodies", img: categoryImages.Hoodies, num: "03", comingSoon: true },
+    { title: "HEAVYWEIGHT LOWERS", desc: "Architectural straight-leg French Terry pants with tailored drape.", link: "/shop?category=Lowers", img: categoryImages.Lowers, num: "04", comingSoon: true }
   ];
 
   const filteredProducts = useMemo(() => {
@@ -243,17 +341,6 @@ function Home() {
         </div>
       </section>
 
-      <div className="blackline-marquee" aria-label="ENYTM brand statement">
-        <div className="blackline-marquee-track">
-          <span>MORE THAN A MOMENT</span><b>✳</b>
-          <span>FABRIC FIRST</span><b>✳</b>
-          <span>EVERYDAY, ELEVATED</span><b>✳</b>
-          <span>EXTRA 10% OFF PREPAID</span><b>✳</b>
-          <span>MORE THAN A MOMENT</span><b>✳</b>
-          <span>FREE SHIPPING ON ALL ORDERS</span><b>✳</b>
-          <span>EVERYDAY, ELEVATED</span><b>✳</b>
-        </div>
-      </div>
 
       {/* Featured Collections: Oversized, Polos, Hoodies, Lowers */}
       <section className="category-editorial category-editorial-v2" id="collections">
@@ -272,7 +359,11 @@ function Home() {
         </div>
         <div className="categories categories-four-col">
           {collections.map(c => (
-            <Link key={c.title} to={c.link} className="category-tile category-tile-v2">
+            <Link
+              key={c.title}
+              to={c.link}
+              className={`category-tile category-tile-v2 ${c.comingSoon ? "is-coming-soon" : ""}`}
+            >
               <img
                 src={c.img}
                 alt={c.title}
@@ -293,14 +384,23 @@ function Home() {
               <div className="cat-tile-overlay" />
               <div className="cat-tile-body">
                 <div className="cat-tile-top">
-                  <div className="cat-tile-num">{c.num} / SILHOUETTE</div>
+                  <div className="cat-tile-meta">
+                    <span className="cat-tile-num">{c.num} / SILHOUETTE</span>
+                    {c.comingSoon && <span className="cat-coming-soon-tag">COMING SOON</span>}
+                  </div>
                   <h3 className="cat-tile-title">{c.title}</h3>
                 </div>
                 <div className="cat-tile-bottom">
                   <p className="cat-desc-preview">{c.desc}</p>
-                  <div className="cat-explore-link">
-                    EXPLORE <ArrowRight size={14} />
-                  </div>
+                  {c.comingSoon ? (
+                    <div className="cat-explore-link cat-coming-soon-link">
+                      COMING SOON <span className="coming-soon-dot" />
+                    </div>
+                  ) : (
+                    <div className="cat-explore-link">
+                      EXPLORE <ArrowRight size={14} />
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
@@ -313,36 +413,26 @@ function Home() {
         <div className="drop-heading">
           <div>
             <p className="eyebrow">02 / THE CURRENT ROTATION</p>
+            <p className="eyebrow">01 / THE CURRENT ROTATION</p>
             <h2>
               THE DROP<span className="heading-period"> 001.</span>
             </h2>
             <p className="drop-subtitle">A small edit. A strong point of view.</p>
           </div>
-          <div className="drop-tabs-nav">
-            <button
-              className={`drop-tab-btn ${activeTab === "all" ? "active" : ""}`}
-              onClick={() => setActiveTab("all")}
-            >
-              ALL PIECES
-            </button>
-            <button
-              className={`drop-tab-btn ${activeTab === "new" ? "active" : ""}`}
-              onClick={() => setActiveTab("new")}
-            >
-              NEW ARRIVALS
-            </button>
-            <button
-              className={`drop-tab-btn ${activeTab === "bestsellers" ? "active" : ""}`}
-              onClick={() => setActiveTab("bestsellers")}
-            >
-              BEST SELLERS
-            </button>
-            <button
-              className={`drop-tab-btn ${activeTab === "heavyweight" ? "active" : ""}`}
-              onClick={() => setActiveTab("heavyweight")}
-            >
-              HEAVYWEIGHT
-            </button>
+          <div className="drop-filter-wrap">
+            <CustomDropdown
+              icon={<SlidersHorizontal size={13} className="drop-filter-icon" />}
+              label="FILTER:"
+              value={activeTab}
+              onChange={setActiveTab}
+              options={[
+                { value: "all", label: "ALL PIECES" },
+                { value: "new", label: "NEW ARRIVALS" },
+                { value: "bestsellers", label: "BEST SELLERS" },
+                { value: "heavyweight", label: "HEAVYWEIGHT" }
+              ]}
+              className="drop-filter-dropdown"
+            />
           </div>
         </div>
 
@@ -369,6 +459,7 @@ function Home() {
         </div>
         <div className="feature-editorial-copy">
           <p className="eyebrow">03 / THE ENYTM APPROACH</p>
+          <p className="eyebrow">02 / THE ENYTM APPROACH</p>
           <span className="feature-big-number">01</span>
           <h2>
             LESS,<br />
@@ -406,6 +497,7 @@ function Home() {
       <section className="home-faq" id="faq">
         <div className="home-faq-heading">
           <p className="eyebrow">05 / GOOD TO KNOW</p>
+          <p className="eyebrow">03 / GOOD TO KNOW</p>
           <h2>
             The useful<br />
             <em>details.</em>
@@ -464,7 +556,7 @@ function Home() {
     </main>
   );
 }
-function CustomDropdown({ label, value, options, onChange, className = "" }) {
+function CustomDropdown({ label, value, options, onChange, icon = null, className = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -498,6 +590,7 @@ function CustomDropdown({ label, value, options, onChange, className = "" }) {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
+        {icon && <span className="enytm-dropdown-icon">{icon}</span>}
         {label && <span className="enytm-dropdown-label">{label}</span>}
         <span className="enytm-dropdown-current">{selectedOption ? selectedOption.label : value}</span>
         <ChevronDown size={14} className={`enytm-dropdown-arrow ${open ? "rotated" : ""}`} />
@@ -530,117 +623,102 @@ function CustomDropdown({ label, value, options, onChange, className = "" }) {
   );
 }
 
-function Shop(){
- const products=useProducts();
- const location=useLocation();
- const navigate=useNavigate();
- const params=new URLSearchParams(location.search);
- const requested=params.get("category")||"All";
- const [sort,setSort]=useState("featured");
- const [category,setCategory]=useState(requested);
- const resultsRef=useRef(null);
- useEffect(()=>{
-  setCategory(requested);
- },[requested]);
- const categoryKey=(value)=>{
-  const s=String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-  if(!s||s==="all")return "all";
-  if(s.includes("oversized")||s.includes("oversize")||s==="tee"||s.includes("t shirt")||s.includes("tshirt"))return "oversized";
-  if(s.includes("polo"))return "polos";
-  if(s.includes("hoodie")||s.includes("hooded"))return "hoodies";
-  if(s.includes("sweatshirt"))return "sweatshirts";
-  if(s.includes("baggy")||s.includes("lower")||s.includes("trouser")||s.includes("pant"))return "baggy";
-  return s;
- };
- const categoryTitle=category==="All"?"SHOP ALL":category==="Oversized"||categoryKey(category)==="oversized"?"OVERSIZED TEES":categoryKey(category)==="polos"?"PREMIUM POLOS":categoryKey(category)==="hoodies"?"OVERSIZED HOODIES":categoryKey(category)==="sweatshirts"?"SWEATSHIRTS":categoryKey(category)==="baggy"?"LOWERS":"SHOP ALL";
- const shown=useMemo(()=>{
-  let list=categoryKey(category)==="all"?[...products]:products.filter(p=>categoryKey(p.category)===categoryKey(category));
-  if(sort==="low")list.sort((x,y)=>Number(x.price)-Number(y.price));
-  if(sort==="high")list.sort((x,y)=>Number(y.price)-Number(x.price));
-  return list;
- },[products,category,sort]);
- const choices=[
-  ["All","ALL"],
-  ["Oversized","OVERSIZED TEES"],
-  ["Polos","PREMIUM POLOS"],
-  ["Hoodies","HOODIES"],
-  ["Lowers","LOWERS"]
- ];
+function Shop() {
+  const products = useProducts();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const requested = params.get("category") || "All";
+  const [sort, setSort] = useState("featured");
+  const [category, setCategory] = useState(requested);
+  const resultsRef = useRef(null);
+  useEffect(() => {
+    setCategory(requested);
+  }, [requested]);
+  const categoryKey = (value) => {
+    const s = String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    if (!s || s === "all") return "all";
+    if (s.includes("oversized") || s.includes("oversize") || s === "tee" || s.includes("t shirt") || s.includes("tshirt")) return "oversized";
+    if (s.includes("polo")) return "polos";
+    if (s.includes("hoodie") || s.includes("hooded")) return "hoodies";
+    if (s.includes("sweatshirt")) return "sweatshirts";
+    if (s.includes("baggy") || s.includes("lower") || s.includes("trouser") || s.includes("pant")) return "baggy";
+    return s;
+  };
+  const categoryTitle = category === "All" ? "SHOP ALL" : category === "Oversized" || categoryKey(category) === "oversized" ? "OVERSIZED TEES" : categoryKey(category) === "polos" ? "PREMIUM POLOS" : categoryKey(category) === "hoodies" ? "OVERSIZED HOODIES" : categoryKey(category) === "sweatshirts" ? "SWEATSHIRTS" : categoryKey(category) === "baggy" ? "LOWERS" : "SHOP ALL";
+  const shown = useMemo(() => {
+    let list = categoryKey(category) === "all" ? [...products] : products.filter(p => categoryKey(p.category) === categoryKey(category));
+    if (sort === "low") list.sort((x, y) => Number(x.price) - Number(y.price));
+    if (sort === "high") list.sort((x, y) => Number(y.price) - Number(x.price));
+    return list;
+  }, [products, category, sort]);
+  const choices = [
+    ["All", "ALL"],
+    ["Oversized", "OVERSIZED TEES"],
+    ["Polos", "PREMIUM POLOS"],
+    ["Hoodies", "HOODIES"],
+    ["Lowers", "LOWERS"]
+  ];
 
- const handleCategoryChange=(val)=>{
-  setCategory(val);
-  navigate(val==="All"?"/shop":`/shop?category=${encodeURIComponent(val)}`,{replace:true});
- };
+  const handleCategoryChange = (val) => {
+    setCategory(val);
+    navigate(val === "All" ? "/shop" : `/shop?category=${encodeURIComponent(val)}`, { replace: true });
+  };
 
- return <main className="shop-page shop-page-v2">
-  <div className="shop-simple-header">
-   <div className="shop-simple-title-row">
-    <div>
-     <span className="shop-simple-eyebrow">COLLECTION</span>
-     <h1 className="shop-simple-title">{categoryTitle}</h1>
+  return <main className="shop-page shop-page-v2">
+    <div className="shop-simple-header">
+      <div className="shop-simple-title-row">
+        <div>
+          <span className="shop-simple-eyebrow">COLLECTION</span>
+          <h1 className="shop-simple-title">{categoryTitle}</h1>
+        </div>
+        <span className="shop-simple-count">{shown.length} {shown.length === 1 ? "STYLE" : "STYLES"}</span>
+      </div>
+
+      <div className="shop-simple-toolbar">
+        <div className="shop-simple-selects">
+          <CustomDropdown
+            icon={<SlidersHorizontal size={13} />}
+            label="FILTER:"
+            value={choices.some(([v]) => categoryKey(v) === categoryKey(category)) ? category : "All"}
+            options={choices.map(([value, label]) => ({ value, label }))}
+            onChange={handleCategoryChange}
+          />
+
+          <CustomDropdown
+            label="SORT BY:"
+            value={sort}
+            options={[
+              { value: "featured", label: "Featured" },
+              { value: "low", label: "Price: Low to High" },
+              { value: "high", label: "Price: High to Low" }
+            ]}
+            onChange={setSort}
+          />
+        </div>
+      </div>
     </div>
-    <span className="shop-simple-count">{shown.length} {shown.length===1?"STYLE":"STYLES"}</span>
-   </div>
 
-   <div className="shop-simple-toolbar">
-    <div className="shop-simple-pills" role="tablist" aria-label="Category filter">
-     {choices.map(([value,label])=>(
-      <button
-       key={value}
-       type="button"
-       role="tab"
-       aria-selected={categoryKey(category)===categoryKey(value)}
-       onClick={()=>handleCategoryChange(value)}
-       className={`shop-simple-pill ${categoryKey(category)===categoryKey(value)?"active":""}`}
-      >
-       {label}
-      </button>
-     ))}
-    </div>
-
-    <div className="shop-simple-selects">
-     <CustomDropdown
-      className="shop-category-select-wrap"
-      label="CATEGORY:"
-      value={choices.some(([v])=>categoryKey(v)===categoryKey(category))?category:"All"}
-      options={choices.map(([value,label])=>({value,label}))}
-      onChange={handleCategoryChange}
-     />
-
-     <CustomDropdown
-      label="SORT BY:"
-      value={sort}
-      options={[
-       {value:"featured",label:"Featured"},
-       {value:"low",label:"Price: Low to High"},
-       {value:"high",label:"Price: High to Low"}
-      ]}
-      onChange={setSort}
-     />
-    </div>
-   </div>
-  </div>
-
-  <section className="shop-results-v2" ref={resultsRef}>
-   {shown.length?(
-    <div className="product-grid shop-grid shop-grid-v2">
-     {shown.map(p=><ProductCard key={p.id} product={p}/>)}
-    </div>
-   ):(
-    <div className="shop-empty-v2">
-     <span>COMING INTO FOCUS</span>
-     <h2>THIS EDIT IS<br/><em>ON ITS WAY.</em></h2>
-     <p>We're preparing this category for the ENYTM collection. Explore the available pieces in the meantime.</p>
-     <button type="button" className="shop-empty-link" onClick={()=>handleCategoryChange("All")}>
-      VIEW ALL PIECES <ArrowRight size={16}/>
-     </button>
-    </div>
-   )}
-  </section>
- </main>
+    <section className="shop-results-v2" ref={resultsRef}>
+      {shown.length ? (
+        <div className="product-grid shop-grid shop-grid-v2">
+          {shown.map(p => <ProductCard key={p.id} product={p} />)}
+        </div>
+      ) : (
+        <div className="shop-empty-v2">
+          <span>COMING INTO FOCUS</span>
+          <h2>THIS EDIT IS<br /><em>ON ITS WAY.</em></h2>
+          <p>We're preparing this category for the ENYTM collection. Explore the available pieces in the meantime.</p>
+          <button type="button" className="shop-empty-link" onClick={() => handleCategoryChange("All")}>
+            VIEW ALL PIECES <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
+    </section>
+  </main>
 }
 
-function ProductPage(){
+function ProductPage() {
   const products = useProducts();
   const params = useParams();
   const location = useLocation();
@@ -659,8 +737,9 @@ function ProductPage(){
 
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const liked = product ? safeWishlist.includes(product.id) : false;
+  const isComingSoon = Boolean(product?.comingSoon || product?.category === "Hoodies" || product?.category === "Sweatshirts" || product?.category === "Lowers");
   const stock = Math.max(0, Number(product?.stock || 0));
-  const outOfStock = stock <= 0;
+  const outOfStock = !isComingSoon && stock <= 0;
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -690,10 +769,10 @@ function ProductPage(){
 
   if (!product) {
     return (
-      <main className="product-page" style={{padding:"120px 4vw",textAlign:"center"}}>
+      <main className="product-page" style={{ padding: "120px 4vw", textAlign: "center" }}>
         <p className="eyebrow">ENYTM / APPARELS</p>
         <h1>PRODUCT NOT FOUND</h1>
-        <p style={{color:"#888",margin:"20px 0 30px"}}>The piece you're looking for is unavailable.</p>
+        <p style={{ color: "#888", margin: "20px 0 30px" }}>The piece you're looking for is unavailable.</p>
         <Link className="btn primary" to="/shop">VIEW ALL PIECES</Link>
       </main>
     );
@@ -793,961 +872,982 @@ function ProductPage(){
   return (
     <div className="product-page-container">
       <main className="product-page">
-      <section className="product-gallery-wrap modern-slider-gallery">
-        <div className="product-gallery-shell modern-slider-shell">
-          <div
-            className="product-main-media modern-slider-media"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {activeMedia?.type === "video" ? (
-              <div className="product-video-frame">
-                <video
-                  ref={videoRef}
-                  key={activeMedia.src}
-                  autoPlay
-                  muted
-                  defaultMuted
-                  playsInline
-                  loop
-                  preload="auto"
-                  poster={activeMedia.poster}
-                  onLoadedData={startVideo}
-                  onCanPlay={startVideo}
-                  onError={() => setVideoBlocked(true)}
-                  onClick={startVideo}
-                >
-                  <source src={activeMedia.src} type="video/mp4" />
-                </video>
-                {videoBlocked && (
-                  <button className="video-play-button" onClick={startVideo} aria-label="Play product video">
-                    <Play size={28} fill="currentColor" />
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
-                <img
-                  src={activeMedia?.src || fallbackImg}
-                  alt={`${product.name} - View ${active + 1}`}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = fallbackImg;
-                  }}
-                />
-              </div>
-            )}
-
-            {safeGallery.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="slider-arrow slider-arrow-left"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
-                  }}
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  type="button"
-                  className="slider-arrow slider-arrow-right"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
-                  }}
-                  aria-label="Next image"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </>
-            )}
-
-            <button
-              type="button"
-              className="slider-zoom-badge"
-              onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}
-              aria-label="Zoom image"
-              title="Click to zoom"
+        <section className="product-gallery-wrap modern-slider-gallery">
+          <div className="product-gallery-shell modern-slider-shell">
+            <div
+              className="product-main-media modern-slider-media"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
-              <ZoomIn size={14} />
-            </button>
+              {activeMedia?.type === "video" ? (
+                <div className="product-video-frame">
+                  <video
+                    ref={videoRef}
+                    key={activeMedia.src}
+                    autoPlay
+                    muted
+                    defaultMuted
+                    playsInline
+                    loop
+                    preload="auto"
+                    poster={activeMedia.poster}
+                    onLoadedData={startVideo}
+                    onCanPlay={startVideo}
+                    onError={() => setVideoBlocked(true)}
+                    onClick={startVideo}
+                  >
+                    <source src={activeMedia.src} type="video/mp4" />
+                  </video>
+                  {videoBlocked && (
+                    <button className="video-play-button" onClick={startVideo} aria-label="Play product video">
+                      <Play size={28} fill="currentColor" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
+                  <img
+                    src={activeMedia?.src || fallbackImg}
+                    alt={`${product.name} - View ${active + 1}`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = fallbackImg;
+                    }}
+                  />
+                </div>
+              )}
 
-            <div className="slider-meta-badge">
-              <span className="slider-rating">
-                {product.rating || "4.8"} <Star size={10} fill="#14958f" color="#14958f" />
-              </span>
-              <span className="slider-divider">|</span>
-              <span className="slider-views">{product.reviewCount || "1.2k"}</span>
-            </div>
-
-            {safeGallery.length > 1 && (
-              <div className="slider-pagination-dots" role="tablist" aria-label="Product images">
-                {safeGallery.map((_, i) => (
+              {safeGallery.length > 1 && (
+                <>
                   <button
-                    key={i}
                     type="button"
-                    role="tab"
-                    aria-selected={i === active}
-                    className={`slider-dot ${i === active ? "active" : ""}`}
+                    className="slider-arrow slider-arrow-left"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActive(i);
+                      setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
                     }}
-                    aria-label={`Slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="product-details">
-        <div className="product-detail-top">
-          <p className="eyebrow">{categoryLabel} / ENYTM APPARELS</p>
-          <button className={`detail-wish ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}>
-            <Heart size={19} fill={liked ? "currentColor" : "none"} />
-            <span>{liked ? "SAVED" : "SAVE"}</span>
-          </button>
-        </div>
-
-        <h1>{product.name}</h1>
-
-        <div className="price-row">
-          <strong className="selling-price">₹{priceDisplay}</strong>
-          {oldPriceDisplay && <del className="mrp-price">₹{oldPriceDisplay}</del>}
-          {savings > 0 && (
-            <span className="save-badge">SAVE ₹{savings.toLocaleString("en-IN")} ({discountPct}% OFF)</span>
-          )}
-          <span className="price-note">INCLUSIVE OF ALL TAXES</span>
-        </div>
-
-        <p className={`product-stock-message ${outOfStock ? "out" : stock < 6 ? "low" : "in"}`}>
-          {outOfStock
-            ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
-            : stock < 6
-            ? `HURRY — ONLY ${stock} LEFT IN STOCK.`
-            : "IN STOCK · READY TO DISPATCH"}
-        </p>
-
-        {/* OFFERS FOR YOU CARD */}
-        <div className="product-offers-card">
-          <div className="offers-card-header">
-            <div className="offers-title-wrap">
-              <Sparkles size={16} className="sparkle-gold" />
-              <span className="offers-title">OFFERS FOR YOU</span>
-            </div>
-            <span className="offers-badge">AUTO-APPLIED</span>
-          </div>
-          <div className="offers-list">
-            <div className="offer-item">
-              <div className="offer-bullet"><Tag size={13} /></div>
-              <div className="offer-content">
-                <div className="offer-heading-row">
-                  <strong>Extra 5% off on online payment</strong>
-                  <span className="offer-calc-price">₹{prepaidPrice.toLocaleString("en-IN")}</span>
-                </div>
-                <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> with 100% full online payment via Razorpay (UPI, Cards, NetBanking).</p>
-              </div>
-            </div>
-            <div className="offer-item">
-              <div className="offer-bullet"><Sparkles size={13} /></div>
-              <div className="offer-content">
-                <div className="offer-heading-row">
-                  <strong>Buy 2, get 10% off · Buy 3, get 15% off</strong>
-                  <span className="offer-tag-pill">VOLUME SAVINGS</span>
-                </div>
-                <p>Add 2 pieces to get 10% off, or 3+ pieces to get 15% off automatically in your bag.</p>
-              </div>
-            </div>
-            <div className="offer-item">
-              <div className="offer-bullet"><Truck size={13} /></div>
-              <div className="offer-content">
-                <div className="offer-heading-row">
-                  <strong>Free shipping on all orders</strong>
-                </div>
-                <p>Insured expedited delivery across all serviceable pincodes in India with zero delivery charge.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className="detail-copy">
-          {product.description || "Designed with an architectural oversized silhouette, clean drop shoulder drape and heavyweight hand-feel for effortless daily wear."}
-        </p>
-
-        <div className="detail-highlights">
-          <span className="gsm-box">{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
-          <span>100% COMBED COTTON</span>
-          <span>OVERSIZED FIT</span>
-          <span>DROP SHOULDER</span>
-        </div>
-
-        {product.fabric && (
-          <div className="spec">
-            <span>FABRIC SPECS</span>
-            <b>{product.fabric}</b>
-          </div>
-        )}
-
-        <div className="option">
-          <div className="option-head">
-            <span>SELECT SIZE</span>
-            <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
-              SIZE GUIDE ↗
-            </button>
-          </div>
-          <div className="sizes">
-            {sizes.map((s) => (
-              <button key={s} className={size === s ? "selected" : ""} onClick={() => setSize(s)}>
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="purchase-line">
-          <div className="quantity-block">
-            <span>QUANTITY</span>
-            <div className="quantity-control">
-              <button
-                type="button"
-                onClick={() => setQty(Math.max(1, qty - 1))}
-                aria-label="Decrease quantity"
-                disabled={outOfStock || qty <= 1}
-              >
-                <Minus size={15} />
-              </button>
-              <strong>{qty}</strong>
-              <button
-                type="button"
-                onClick={() => setQty(Math.min(stock, qty + 1))}
-                aria-label="Increase quantity"
-                disabled={outOfStock || qty >= stock}
-              >
-                <Plus size={15} />
-              </button>
-            </div>
-          </div>
-
-          <div className="purchase-dual-buttons">
-            <button className="btn outline add-detail" onClick={add} disabled={outOfStock}>
-              {outOfStock ? (
-                <>OUT OF STOCK</>
-              ) : added ? (
-                <>
-                  <CheckCircle size={18} /> ADDED TO BAG
-                </>
-              ) : (
-                <>
-                  ADD TO BAG <ShoppingBag size={18} />
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    type="button"
+                    className="slider-arrow slider-arrow-right"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
+                    }}
+                    aria-label="Next image"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </>
               )}
-            </button>
-            <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock}>
-              {outOfStock ? "UNAVAILABLE" : <>BUY NOW <ArrowRight size={18} /></>}
-            </button>
-          </div>
-        </div>
 
-        {added && (
-          <div className="detail-added">
-            <CheckCircle size={15} />
-            <span>Added {qty} × {product.name} (Size {size}) to your bag</span>
-            <Link to="/cart">VIEW BAG →</Link>
-          </div>
-        )}
+              <button
+                type="button"
+                className="slider-zoom-badge"
+                onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}
+                aria-label="Zoom image"
+                title="Click to zoom"
+              >
+                <ZoomIn size={14} />
+              </button>
 
-        <div className="perks">
-          <div>
-            <Truck />
-            <span>
-              <b>FREE SHIPPING</b> ON ALL ORDERS
-            </span>
-          </div>
-          <div>
-            <ShieldCheck />
-            <span>
-              <b>SECURE PAYMENT</b> POWERED BY RAZORPAY
-            </span>
-          </div>
-          <div>
-            <RotateCcw />
-            <span>
-              <b>EASY RETURNS</b> WITHIN 48 HOURS
-            </span>
-          </div>
-        </div>
-
-        {/* EXPANDABLE ACCORDIONS */}
-        <div className="product-accordions">
-          <details open>
-            <summary>
-              <span className="acc-title">PRODUCT DETAILS</span>
-              <ChevronDown size={16} className="acc-chevron" />
-            </summary>
-            <div className="acc-content">
-              <p>{product.description || "Crafted for comfort and daily wear with an architectural cut and clean finishes."}</p>
-              <div className="acc-specs-grid">
-                <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
-                <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
-                <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
-                <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
-                <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
-                <div><span>MODEL FIT</span><b>Model is 6'1" (185 cm) wearing size L</b></div>
-              </div>
-            </div>
-          </details>
-
-          <details>
-            <summary>
-              <span className="acc-title">SHIPPING & RETURNS</span>
-              <ChevronDown size={16} className="acc-chevron" />
-            </summary>
-            <div className="acc-content">
-              <div className="acc-notice-box">
-                <strong>PRE-ORDER PRODUCTION & DISPATCH TIMELINE</strong>
-                <p>Please keep in mind that this is a Pre Order. Pre Order production may take up to 2.5 weeks to complete.</p>
-                <p>Once your order is ready we will inform you and dispatch it immediately.</p>
-                <p>After dispatch delivery may take an additional 7 to 10 days depending on the courier service.</p>
-                <p className="tiny-muted">Our Pre Order batch is being produced first while the regular drop will launch separately. Please place your Pre Order only if you are comfortable with this production timeline.</p>
+              <div className="slider-meta-badge">
+                <span className="slider-rating">
+                  {product.rating || "4.8"} <Star size={10} fill="#14958f" color="#14958f" />
+                </span>
+                <span className="slider-divider">|</span>
+                <span className="slider-views">{product.reviewCount || "1.2k"}</span>
               </div>
 
-              <div className="acc-shipping-rates">
-                <h4>DISPATCH & DELIVERY</h4>
-                <p>• <b>Free Shipping:</b> Enjoy 100% free delivery across all serviceable pincodes in India on every order.</p>
-                <p>• <b>In-Stock Pieces:</b> Dispatched within 24–48 business hours with live SMS/email tracking.</p>
-              </div>
-
-              <div className="acc-damaged-box">
-                <div className="damaged-header"><AlertCircle size={15}/> <b>DAMAGED, DEFECTIVE, OR INCORRECT ITEMS</b></div>
-                <p className="verbatim-quote">“If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.”</p>
-              </div>
-
-              <p className="returns-term">Returns & size exchanges are accepted within 48 hours of delivery for unused items with original tags intact.</p>
-            </div>
-          </details>
-
-          <details>
-            <summary>
-              <span className="acc-title">REFUND POLICY</span>
-              <ChevronDown size={16} className="acc-chevron" />
-            </summary>
-            <div className="acc-content">
-              <p>Once the returned item reaches us and passes our quality inspection, we will process the refund within 3–5 business days.</p>
-              <div className="acc-refund-methods">
-                <div>
-                  <b>Prepaid Orders:</b>
-                  <p>The refund will be sent to the original payment method (Cards, UPI, NetBanking).</p>
+              {safeGallery.length > 1 && (
+                <div className="slider-pagination-dots" role="tablist" aria-label="Product images">
+                  {safeGallery.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      role="tab"
+                      aria-selected={i === active}
+                      className={`slider-dot ${i === active ? "active" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActive(i);
+                      }}
+                      aria-label={`Slide ${i + 1}`}
+                    />
+                  ))}
                 </div>
-                <div>
-                  <b>Cash on Delivery (COD) Orders:</b>
-                  <p>Refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="product-details">
+          <div className="product-detail-top">
+            <p className="eyebrow">{categoryLabel} / ENYTM APPARELS</p>
+            <button className={`detail-wish ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}>
+              <Heart size={19} fill={liked ? "currentColor" : "none"} />
+              <span>{liked ? "SAVED" : "SAVE"}</span>
+            </button>
+          </div>
+
+          <h1>{product.name}</h1>
+
+          <div className="price-row">
+            <strong className="selling-price">₹{priceDisplay}</strong>
+            {oldPriceDisplay && <del className="mrp-price">₹{oldPriceDisplay}</del>}
+            {savings > 0 && (
+              <span className="save-badge">SAVE ₹{savings.toLocaleString("en-IN")} ({discountPct}% OFF)</span>
+            )}
+            <span className="price-note">INCLUSIVE OF ALL TAXES</span>
+          </div>
+
+          <p className={`product-stock-message ${outOfStock ? "out" : stock < 6 ? "low" : "in"}`}>
+            {outOfStock
+              ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
+              : stock < 6
+                ? `HURRY — ONLY ${stock} LEFT IN STOCK.`
+                : "IN STOCK · READY TO DISPATCH"}
+          </p>
+
+          {/* OFFERS FOR YOU CARD */}
+          <div className="product-offers-card">
+            <div className="offers-card-header">
+              <div className="offers-title-wrap">
+                <Sparkles size={16} className="sparkle-gold" />
+                <span className="offers-title">OFFERS FOR YOU</span>
+              </div>
+              <span className="offers-badge">AUTO-APPLIED</span>
+            </div>
+            <div className="offers-list">
+              <div className="offer-item">
+                <div className="offer-bullet"><Tag size={13} /></div>
+                <div className="offer-content">
+                  <div className="offer-heading-row">
+                    <strong>Extra 5% off on online payment</strong>
+                    <span className="offer-calc-price">₹{prepaidPrice.toLocaleString("en-IN")}</span>
+                  </div>
+                  <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> with 100% full online payment via Razorpay (UPI, Cards, NetBanking).</p>
                 </div>
               </div>
-              <p className="tiny-muted">Please note that your bank or payment provider may take additional time to reflect the refund after it has been processed.</p>
-              <div className="exclusions-block">
-                <b>ITEMS NOT ELIGIBLE FOR RETURN OR EXCHANGE:</b>
-                <ul>
-                  <li>Items that have been worn or used.</li>
-                  <li>Items that have been washed.</li>
-                  <li>Items that have been altered.</li>
-                  <li>Items damaged after delivery.</li>
-                  <li>Items returned without their original tags.</li>
-                </ul>
+              <div className="offer-item">
+                <div className="offer-bullet"><Sparkles size={13} /></div>
+                <div className="offer-content">
+                  <div className="offer-heading-row">
+                    <strong>Buy 2, get 10% off · Buy 3, get 15% off</strong>
+                    <span className="offer-tag-pill">VOLUME SAVINGS</span>
+                  </div>
+                  <p>Add 2 pieces to get 10% off, or 3+ pieces to get 15% off automatically in your bag.</p>
+                </div>
+              </div>
+              <div className="offer-item">
+                <div className="offer-bullet"><Truck size={13} /></div>
+                <div className="offer-content">
+                  <div className="offer-heading-row">
+                    <strong>Free shipping on all orders</strong>
+                  </div>
+                  <p>Insured expedited delivery across all serviceable pincodes in India with zero delivery charge.</p>
+                </div>
               </div>
             </div>
-          </details>
-
-          <details>
-            <summary>
-              <span className="acc-title">PRIVACY & PRE-ORDER PAYMENT TERMS</span>
-              <ChevronDown size={16} className="acc-chevron" />
-            </summary>
-            <div className="acc-content">
-              <div className="acc-preorder-terms">
-                <h4>PAYMENT & PRE-ORDER OPTIONS</h4>
-                <p><b>1. Online Payment (Prepaid):</b> Pay 100% online at checkout to unlock an <b>instant extra 5% discount</b>. Zero balance due on delivery.</p>
-                <p><b>2. Cash on Delivery (COD):</b> Pay a <b>30% advance online today</b> to confirm your order booking, and pay the remaining 70% in cash or UPI upon delivery.</p>
-                <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a 100% full refund.</p>
-                <p>After 24 hours, custom manufacturing begins specifically against your booking.</p>
-              </div>
-              <hr className="acc-divider" />
-              <div className="acc-privacy-summary">
-                <h4>WEBSITE PRIVACY POLICY</h4>
-                <p>At ENYTM APPARELS, we respect your privacy and protect your personal information. We never sell, rent, or trade your data to third parties. All transactions are processed through encrypted 256-bit bank-grade Razorpay payment gateways.</p>
-                <Link to="/privacy-policy" className="policy-link-inline">Read full Privacy Policy →</Link>
-              </div>
-            </div>
-          </details>
-        </div>
-      </section>
-    </main>
-
-    {/* RECOMMENDATIONS SECTION BELOW THE PRODUCT */}
-    {recommendations.length > 0 && (
-      <section className="section related-products">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">CURATED FOR YOU · COMPLETE THE ROTATION</p>
-            <h2>YOU MAY ALSO LIKE</h2>
           </div>
-          <Link className="text-link" to="/shop">
-            VIEW ALL PIECES <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="product-grid related-products-grid">
-          {recommendations.map((item) => (
-            <ProductCard key={item.id} product={item} />
-          ))}
-        </div>
-      </section>
-    )}
 
-    {/* SIZE GUIDE MODAL */}
-    {showSizeGuide && (
-      <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
-        <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
+          <p className="detail-copy">
+            {product.description || "Designed with an architectural oversized silhouette, clean drop shoulder drape and heavyweight hand-feel for effortless daily wear."}
+          </p>
+
+          <div className="detail-highlights">
+            <span className="gsm-box">{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
+            <span>100% COMBED COTTON</span>
+            <span>OVERSIZED FIT</span>
+            <span>DROP SHOULDER</span>
+          </div>
+
+          {product.fabric && (
+            <div className="spec">
+              <span>FABRIC SPECS</span>
+              <b>{product.fabric}</b>
+            </div>
+          )}
+
+          <div className="option">
+            <div className="option-head">
+              <span>SELECT SIZE</span>
+              <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
+                SIZE GUIDE ↗
+              </button>
+            </div>
+            <div className="sizes">
+              {sizes.map((s) => (
+                <button key={s} className={size === s ? "selected" : ""} onClick={() => setSize(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="purchase-line">
+            <div className="quantity-block">
+              <span>QUANTITY</span>
+              <div className="quantity-control">
+                <button
+                  type="button"
+                  onClick={() => setQty(Math.max(1, qty - 1))}
+                  aria-label="Decrease quantity"
+                  disabled={outOfStock || qty <= 1}
+                >
+                  <Minus size={15} />
+                </button>
+                <strong>{qty}</strong>
+                <button
+                  type="button"
+                  onClick={() => setQty(Math.min(stock, qty + 1))}
+                  aria-label="Increase quantity"
+                  disabled={outOfStock || qty >= stock}
+                >
+                  <Plus size={15} />
+                </button>
+              </div>
+            </div>
+
+            <div className="purchase-dual-buttons">
+              {isComingSoon ? (
+                <button
+                  type="button"
+                  className="btn outline add-detail full"
+                  disabled
+                  style={{
+                    opacity: 0.85,
+                    cursor: "not-allowed",
+                    borderColor: "#c8b69a",
+                    color: "#c8b69a",
+                    background: "#141210",
+                    letterSpacing: "0.16em",
+                    fontWeight: 800
+                  }}
+                >
+                  COMING SOON · DROP 002
+                </button>
+              ) : (
+                <>
+                  <button className="btn outline add-detail" onClick={add} disabled={outOfStock}>
+                    {outOfStock ? (
+                      <>OUT OF STOCK</>
+                    ) : added ? (
+                      <>
+                        <CheckCircle size={18} /> ADDED TO BAG
+                      </>
+                    ) : (
+                      <>
+                        ADD TO BAG <ShoppingBag size={18} />
+                      </>
+                    )}
+                  </button>
+                  <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock}>
+                    {outOfStock ? "UNAVAILABLE" : <>BUY NOW <ArrowRight size={18} /></>}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {added && (
+            <div className="detail-added">
+              <CheckCircle size={15} />
+              <span>Added {qty} × {product.name} (Size {size}) to your bag</span>
+              <Link to="/cart">VIEW BAG →</Link>
+            </div>
+          )}
+
+          <div className="perks">
             <div>
-              <p className="eyebrow">ENYTM APPARELS</p>
-              <h3>GARMENT SIZE GUIDE</h3>
+              <Truck />
+              <span>
+                <b>FREE SHIPPING</b> ON ALL ORDERS
+              </span>
             </div>
-            <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
-              <X size={20} />
-            </button>
-          </div>
-          <div className="modal-body">
-            <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
-            <div className="size-table-wrap">
-              <table className="size-table">
-                <thead>
-                  <tr>
-                    <th>SIZE</th>
-                    <th>CHEST (IN)</th>
-                    <th>LENGTH (IN)</th>
-                    <th>SHOULDER (IN)</th>
-                    <th>SLEEVE (IN)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
-                  <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
-                  <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
-                  <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
-                  <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
-                </tbody>
-              </table>
+            <div>
+              <ShieldCheck />
+              <span>
+                <b>SECURE PAYMENT</b> POWERED BY RAZORPAY
+              </span>
             </div>
-            <div className="size-guide-tips">
-              <div className="tip-box">
-                <strong>OVERSIZED FIT:</strong>
-                <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
-              </div>
-              <div className="tip-box">
-                <strong>NEED SIZING ASSISTANCE?</strong>
-                <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
-              </div>
+            <div>
+              <RotateCcw />
+              <span>
+                <b>EASY RETURNS</b> WITHIN 48 HOURS
+              </span>
             </div>
           </div>
-        </div>
-      </div>
-    )}
 
-    {/* LIGHTBOX MODAL */}
-    {zoomImage && (
-      <div className="modal-backdrop lightbox-backdrop" onClick={() => setZoomImage(null)}>
-        <button className="lightbox-close" onClick={() => setZoomImage(null)} aria-label="Close image zoom">
-          <X size={24} />
-        </button>
-        <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-          <img src={zoomImage} alt="Product zoom inspection" />
-          <span className="lightbox-caption">{product.name} — Fabric & Finishing Inspection</span>
+          {/* EXPANDABLE ACCORDIONS */}
+          <div className="product-accordions">
+            <details>
+              <summary>
+                <span className="acc-title">PRODUCT DETAILS</span>
+                <ChevronDown size={16} className="acc-chevron" />
+              </summary>
+              <div className="acc-content">
+                <p>{product.description || "Crafted for comfort and daily wear with an architectural cut and clean finishes."}</p>
+                <div className="acc-specs-grid">
+                  <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
+                  <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
+                  <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
+                  <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
+                  <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
+                  <div><span>MODEL FIT</span><b>Model is 6'1" (185 cm) wearing size L</b></div>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span className="acc-title">SHIPPING & RETURNS</span>
+                <ChevronDown size={16} className="acc-chevron" />
+              </summary>
+              <div className="acc-content">
+                <div className="acc-notice-box">
+                  <strong>PRE-ORDER PRODUCTION & DISPATCH TIMELINE</strong>
+                  <p>Please keep in mind that this is a Pre Order. Pre Order production may take up to 2.5 weeks to complete.</p>
+                  <p>Once your order is ready we will inform you and dispatch it immediately.</p>
+                  <p>After dispatch delivery may take an additional 7 to 10 days depending on the courier service.</p>
+                  <p className="tiny-muted">Our Pre Order batch is being produced first while the regular drop will launch separately. Please place your Pre Order only if you are comfortable with this production timeline.</p>
+                </div>
+
+                <div className="acc-shipping-rates">
+                  <h4>DISPATCH & DELIVERY</h4>
+                  <p>• <b>Free Shipping:</b> Enjoy 100% free delivery across all serviceable pincodes in India on every order.</p>
+                  <p>• <b>In-Stock Pieces:</b> Dispatched within 24–48 business hours with live SMS/email tracking.</p>
+                </div>
+
+                <div className="acc-damaged-box">
+                  <div className="damaged-header"><AlertCircle size={15} /> <b>DAMAGED, DEFECTIVE, OR INCORRECT ITEMS</b></div>
+                  <p className="verbatim-quote">“If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.”</p>
+                </div>
+
+                <p className="returns-term">Returns & size exchanges are accepted within 48 hours of delivery for unused items with original tags intact.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span className="acc-title">REFUND POLICY</span>
+                <ChevronDown size={16} className="acc-chevron" />
+              </summary>
+              <div className="acc-content">
+                <p>Once the returned item reaches us and passes our quality inspection, we will process the refund within 3–5 business days.</p>
+                <div className="acc-refund-methods">
+                  <div>
+                    <b>Prepaid Orders:</b>
+                    <p>The refund will be sent to the original payment method (Cards, UPI, NetBanking).</p>
+                  </div>
+                  <div>
+                    <b>Cash on Delivery (COD) Orders:</b>
+                    <p>Refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
+                  </div>
+                </div>
+                <p className="tiny-muted">Please note that your bank or payment provider may take additional time to reflect the refund after it has been processed.</p>
+                <div className="exclusions-block">
+                  <b>ITEMS NOT ELIGIBLE FOR RETURN OR EXCHANGE:</b>
+                  <ul>
+                    <li>Items that have been worn or used.</li>
+                    <li>Items that have been washed.</li>
+                    <li>Items that have been altered.</li>
+                    <li>Items damaged after delivery.</li>
+                    <li>Items returned without their original tags.</li>
+                  </ul>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span className="acc-title">PRIVACY & PRE-ORDER PAYMENT TERMS</span>
+                <ChevronDown size={16} className="acc-chevron" />
+              </summary>
+              <div className="acc-content">
+                <div className="acc-preorder-terms">
+                  <h4>PAYMENT & PRE-ORDER OPTIONS</h4>
+                  <p><b>1. Online Payment (Prepaid):</b> Pay 100% online at checkout to unlock an <b>instant extra 5% discount</b>. Zero balance due on delivery.</p>
+                  <p><b>2. Cash on Delivery (COD):</b> Pay a <b>30% advance online today</b> to confirm your order booking, and pay the remaining 70% in cash or UPI upon delivery.</p>
+                  <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a 100% full refund.</p>
+                  <p>After 24 hours, custom manufacturing begins specifically against your booking.</p>
+                </div>
+                <hr className="acc-divider" />
+                <div className="acc-privacy-summary">
+                  <h4>WEBSITE PRIVACY POLICY</h4>
+                  <p>At ENYTM APPARELS, we respect your privacy and protect your personal information. We never sell, rent, or trade your data to third parties. All transactions are processed through encrypted 256-bit bank-grade Razorpay payment gateways.</p>
+                  <Link to="/privacy-policy" className="policy-link-inline">Read full Privacy Policy →</Link>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+      </main>
+
+      {/* RECOMMENDATIONS SECTION BELOW THE PRODUCT */}
+      {recommendations.length > 0 && (
+        <section className="section related-products">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">CURATED FOR YOU · COMPLETE THE ROTATION</p>
+              <h2>YOU MAY ALSO LIKE</h2>
+            </div>
+            <Link className="text-link" to="/shop">
+              VIEW ALL PIECES <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="product-grid related-products-grid">
+            {recommendations.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* SIZE GUIDE MODAL */}
+      {showSizeGuide && (
+        <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
+          <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">ENYTM APPARELS</p>
+                <h3>GARMENT SIZE GUIDE</h3>
+              </div>
+              <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
+              <div className="size-table-wrap">
+                <table className="size-table">
+                  <thead>
+                    <tr>
+                      <th>SIZE</th>
+                      <th>CHEST (IN)</th>
+                      <th>LENGTH (IN)</th>
+                      <th>SHOULDER (IN)</th>
+                      <th>SLEEVE (IN)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
+                    <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
+                    <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
+                    <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
+                    <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="size-guide-tips">
+                <div className="tip-box">
+                  <strong>OVERSIZED FIT:</strong>
+                  <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
+                </div>
+                <div className="tip-box">
+                  <strong>NEED SIZING ASSISTANCE?</strong>
+                  <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    )}
+      )}
+
+      {/* LIGHTBOX MODAL */}
+      {zoomImage && (
+        <div className="modal-backdrop lightbox-backdrop" onClick={() => setZoomImage(null)}>
+          <button className="lightbox-close" onClick={() => setZoomImage(null)} aria-label="Close image zoom">
+            <X size={24} />
+          </button>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <img src={zoomImage} alt="Product zoom inspection" />
+            <span className="lightbox-caption">{product.name} — Fabric & Finishing Inspection</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Auth({register=false}){
- const nav=useNavigate();
- const[form,setForm]=useState({name:"",email:"",phone:"",password:"",whatsappOptIn:false,emailOptIn:true});
- const[otp,setOtp]=useState({email:""});
- const[challengeId,setChallengeId]=useState("");
- const[step,setStep]=useState(register?"details":"login");
- const[error,setError]=useState("");
- const[sending,setSending]=useState(false);
- const[seconds,setSeconds]=useState(0);
- const[showPassword,setShowPassword]=useState(false);
- const[forgotMode,setForgotMode]=useState(false);
- const[forgotStep,setForgotStep]=useState("email");
- const[forgotChallengeId,setForgotChallengeId]=useState("");
- const[forgotOtp,setForgotOtp]=useState("");
- const[newPassword,setNewPassword]=useState("");
- const[showNewPassword,setShowNewPassword]=useState(false);
- const[forgotMessage,setForgotMessage]=useState("");
- const[googleLoading,setGoogleLoading]=useState(false);
- const[showGoogleDevModal,setShowGoogleDevModal]=useState(false);
- const[devGoogleEmail,setDevGoogleEmail]=useState("user@gmail.com");
- const[devGoogleName,setDevGoogleName]=useState("Google User");
+function Auth({ register = false }) {
+  const nav = useNavigate();
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", whatsappOptIn: false, emailOptIn: true });
+  const [otp, setOtp] = useState({ email: "" });
+  const [challengeId, setChallengeId] = useState("");
+  const [step, setStep] = useState(register ? "details" : "login");
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotStep, setForgotStep] = useState("email");
+  const [forgotChallengeId, setForgotChallengeId] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showGoogleDevModal, setShowGoogleDevModal] = useState(false);
+  const [devGoogleEmail, setDevGoogleEmail] = useState("user@gmail.com");
+  const [devGoogleName, setDevGoogleName] = useState("Google User");
 
- useEffect(()=>{
-  setStep(register?"details":"login");
-  setError("");
-  setSending(false);
-  setSeconds(0);
-  setForgotMode(false);
-  setForgotStep("email");
-  setForgotMessage("");
- },[register]);
+  useEffect(() => {
+    setStep(register ? "details" : "login");
+    setError("");
+    setSending(false);
+    setSeconds(0);
+    setForgotMode(false);
+    setForgotStep("email");
+    setForgotMessage("");
+  }, [register]);
 
- useEffect(()=>{
-  if(!seconds)return;
-  const t=setInterval(()=>setSeconds(v=>v-1),1000);
-  return()=>clearInterval(t);
- },[seconds]);
+  useEffect(() => {
+    if (!seconds) return;
+    const t = setInterval(() => setSeconds(v => v - 1), 1000);
+    return () => clearInterval(t);
+  }, [seconds]);
 
- const update=(key,value)=>setForm(f=>({...f,[key]:value}));
+  const update = (key, value) => setForm(f => ({ ...f, [key]: value }));
 
- const handleGoogleAuthSuccess=async(googlePayload)=>{
-  setGoogleLoading(true);
-  setError("");
-  try{
-   const data=await api("/auth/google",{
-    method:"POST",
-    body:JSON.stringify(googlePayload)
-   });
-   if(!data?.token)throw new Error("Authentication failed: no session token returned.");
-   localStorage.setItem("enytm-token",data.token);
-   localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
-   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
-   sessionStorage.removeItem("enytm-after-login");
-   nav(redirect,{replace:true});
-  }catch(err){
-   setError(err.message||"Google sign-in failed. Please try again.");
-  }finally{
-   setGoogleLoading(false);
-  }
- };
+  const handleGoogleAuthSuccess = async (googlePayload) => {
+    setGoogleLoading(true);
+    setError("");
+    try {
+      const data = await api("/auth/google", {
+        method: "POST",
+        body: JSON.stringify(googlePayload)
+      });
+      if (!data?.token) throw new Error("Authentication failed: no session token returned.");
+      localStorage.setItem("enytm-token", data.token);
+      localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+      const redirect = sessionStorage.getItem("enytm-after-login") || "/";
+      sessionStorage.removeItem("enytm-after-login");
+      nav(redirect, { replace: true });
+    } catch (err) {
+      setError(err.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
- const handleGoogleClick=()=>{
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "992592766204-s8s7l9gjc5n4m1qbtj5h2hcm7n410342.apps.googleusercontent.com";
-  if(googleClientId&&window.google?.accounts?.oauth2){
-   try{
-    const client=window.google.accounts.oauth2.initTokenClient({
-     client_id:googleClientId,
-     scope:"email profile openid",
-     callback:async(tokenResponse)=>{
-      if(tokenResponse?.access_token){
-       setGoogleLoading(true);
-       try{
-        const userInfoRes=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{
-         headers:{Authorization:`Bearer ${tokenResponse.access_token}`}
+  const handleGoogleClick = () => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "992592766204-s8s7l9gjc5n4m1qbtj5h2hcm7n410342.apps.googleusercontent.com";
+    if (googleClientId && window.google?.accounts?.oauth2) {
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId,
+          scope: "email profile openid",
+          callback: async (tokenResponse) => {
+            if (tokenResponse?.access_token) {
+              setGoogleLoading(true);
+              try {
+                const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                const profile = await userInfoRes.json();
+                await handleGoogleAuthSuccess({
+                  email: profile.email,
+                  name: profile.name,
+                  picture: profile.picture,
+                  googleId: profile.sub
+                });
+              } catch {
+                setError("Could not retrieve Google profile.");
+                setGoogleLoading(false);
+              }
+            }
+          }
         });
-        const profile=await userInfoRes.json();
-        await handleGoogleAuthSuccess({
-         email:profile.email,
-         name:profile.name,
-         picture:profile.picture,
-         googleId:profile.sub
-        });
-       }catch{
-        setError("Could not retrieve Google profile.");
-        setGoogleLoading(false);
-       }
+        client.requestAccessToken();
+        return;
+      } catch (e) {
+        console.warn("GIS token client error:", e);
       }
-     }
-    });
-    client.requestAccessToken();
-    return;
-   }catch(e){
-    console.warn("GIS token client error:",e);
-   }
-  }
+    }
 
-  if(googleClientId&&window.google?.accounts?.id){
-   try{
-    window.google.accounts.id.initialize({
-     client_id:googleClientId,
-     callback:(res)=>handleGoogleAuthSuccess({credential:res.credential}),
-     auto_select:false
-    });
-    window.google.accounts.id.prompt();
-    return;
-   }catch(e){
-    console.warn("GIS prompt error:",e);
-   }
-  }
+    if (googleClientId && window.google?.accounts?.id) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: (res) => handleGoogleAuthSuccess({ credential: res.credential }),
+          auto_select: false
+        });
+        window.google.accounts.id.prompt();
+        return;
+      } catch (e) {
+        console.warn("GIS prompt error:", e);
+      }
+    }
 
-  setShowGoogleDevModal(true);
- };
+    setShowGoogleDevModal(true);
+  };
 
- const sendOtp=async e=>{
-  e.preventDefault();
-  setError("");
-  setSending(true);
-  try{
-   const data=await api("/auth/register/send-otp",{method:"POST",body:JSON.stringify(form)});
-   setChallengeId(data.challengeId);
-   setStep("otp");
-   setSeconds(60);
-  }catch(err){
-   setError(err.message||"Could not send OTP.");
-  }finally{
-   setSending(false);
-  }
- };
+  const sendOtp = async e => {
+    e.preventDefault();
+    setError("");
+    setSending(true);
+    try {
+      const data = await api("/auth/register/send-otp", { method: "POST", body: JSON.stringify(form) });
+      setChallengeId(data.challengeId);
+      setStep("otp");
+      setSeconds(60);
+    } catch (err) {
+      setError(err.message || "Could not send OTP.");
+    } finally {
+      setSending(false);
+    }
+  };
 
- const verifyAndCreate=async e=>{
-  e.preventDefault();
-  setError("");
-  setSending(true);
-  try{
-   const data=await api("/auth/register/verify-otp",{method:"POST",body:JSON.stringify({emailOtp:otp.email,challengeId,whatsappOptIn:form.whatsappOptIn,emailOptIn:form.emailOptIn})});
-   localStorage.setItem("enytm-token",data.token);
-   localStorage.setItem("enytm-user",JSON.stringify(data.user));
-   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
-   sessionStorage.removeItem("enytm-after-login");
-   nav(redirect);
-  }catch(err){
-   setError(err.message||"Verification failed.");
-  }finally{
-   setSending(false);
-  }
- };
+  const verifyAndCreate = async e => {
+    e.preventDefault();
+    setError("");
+    setSending(true);
+    try {
+      const data = await api("/auth/register/verify-otp", { method: "POST", body: JSON.stringify({ emailOtp: otp.email, challengeId, whatsappOptIn: form.whatsappOptIn, emailOptIn: form.emailOptIn }) });
+      localStorage.setItem("enytm-token", data.token);
+      localStorage.setItem("enytm-user", JSON.stringify(data.user));
+      const redirect = sessionStorage.getItem("enytm-after-login") || "/";
+      sessionStorage.removeItem("enytm-after-login");
+      nav(redirect);
+    } catch (err) {
+      setError(err.message || "Verification failed.");
+    } finally {
+      setSending(false);
+    }
+  };
 
- const sendForgotOtp=async e=>{
-  e.preventDefault();
-  setError("");
-  setForgotMessage("");
-  setSending(true);
-  try{
-   const targetEmail=String(form.email||"").trim().toLowerCase();
-   if(!targetEmail)throw new Error("Please enter your email address.");
-   const data=await api("/auth/password-reset/send-otp",{method:"POST",body:JSON.stringify({email:targetEmail})});
-   setForgotChallengeId(data.challengeId||"");
-   setForgotStep("confirm");
-   setSeconds(60);
-   setForgotMessage(data.message||"Reset code sent to your email.");
-  }catch(err){
-   setError(err.message||"Could not request password reset.");
-  }finally{
-   setSending(false);
-  }
- };
+  const sendForgotOtp = async e => {
+    e.preventDefault();
+    setError("");
+    setForgotMessage("");
+    setSending(true);
+    try {
+      const targetEmail = String(form.email || "").trim().toLowerCase();
+      if (!targetEmail) throw new Error("Please enter your email address.");
+      const data = await api("/auth/password-reset/send-otp", { method: "POST", body: JSON.stringify({ email: targetEmail }) });
+      setForgotChallengeId(data.challengeId || "");
+      setForgotStep("confirm");
+      setSeconds(60);
+      setForgotMessage(data.message || "Reset code sent to your email.");
+    } catch (err) {
+      setError(err.message || "Could not request password reset.");
+    } finally {
+      setSending(false);
+    }
+  };
 
- const confirmPasswordReset=async e=>{
-  e.preventDefault();
-  setError("");
-  setSending(true);
-  try{
-   if(newPassword.length<8)throw new Error("Password must be at least 8 characters long.");
-   const data=await api("/auth/password-reset/confirm",{method:"POST",body:JSON.stringify({challengeId:forgotChallengeId,otp:forgotOtp.trim(),password:newPassword})});
-   setForgotMessage(data?.message||"Password updated successfully!");
-   setForgotStep("done");
-  }catch(err){
-   setError(err.message||"Failed to reset password. Please check the code.");
-  }finally{
-   setSending(false);
-  }
- };
+  const confirmPasswordReset = async e => {
+    e.preventDefault();
+    setError("");
+    setSending(true);
+    try {
+      if (newPassword.length < 8) throw new Error("Password must be at least 8 characters long.");
+      const data = await api("/auth/password-reset/confirm", { method: "POST", body: JSON.stringify({ challengeId: forgotChallengeId, otp: forgotOtp.trim(), password: newPassword }) });
+      setForgotMessage(data?.message || "Password updated successfully!");
+      setForgotStep("done");
+    } catch (err) {
+      setError(err.message || "Failed to reset password. Please check the code.");
+    } finally {
+      setSending(false);
+    }
+  };
 
- const login=async e=>{
-  e.preventDefault();
-  setError("");
-  setSending(true);
-  try{
-   const data=await api("/auth/login",{method:"POST",body:JSON.stringify({email:String(form.email).trim().toLowerCase(),password:form.password})});
-   if(!data?.token)throw new Error("Login succeeded but no session token was returned.");
-   if(data.isAdmin && data.adminToken){
-     localStorage.setItem("enytm-admin",data.adminToken);
-     localStorage.setItem("enytm-token",data.token);
-     localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
-     nav("/admin",{replace:true});
-     return;
-   }
-   localStorage.setItem("enytm-token",data.token);
-   localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
-   const redirect=sessionStorage.getItem("enytm-after-login")||"/";
-   sessionStorage.removeItem("enytm-after-login");
-   nav(redirect,{replace:true});
-  }catch(err){
-   setError(err.message||"Login failed. Please try again.");
-  }finally{
-   setSending(false);
-  }
- };
+  const login = async e => {
+    e.preventDefault();
+    setError("");
+    setSending(true);
+    try {
+      const data = await api("/auth/login", { method: "POST", body: JSON.stringify({ email: String(form.email).trim().toLowerCase(), password: form.password }) });
+      if (!data?.token) throw new Error("Login succeeded but no session token was returned.");
+      if (data.isAdmin && data.adminToken) {
+        localStorage.setItem("enytm-admin", data.adminToken);
+        localStorage.setItem("enytm-token", data.token);
+        localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+        nav("/admin", { replace: true });
+        return;
+      }
+      localStorage.setItem("enytm-token", data.token);
+      localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+      const redirect = sessionStorage.getItem("enytm-after-login") || "/";
+      sessionStorage.removeItem("enytm-after-login");
+      nav(redirect, { replace: true });
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
 
- return (
-  <main className="auth-page">
-   <div className="auth-card">
-    <p className="eyebrow">ENYTM MEMBERS</p>
-    <h1>
-     {forgotMode
-      ? "RESET PASSWORD"
-      : register
-      ? (step === "otp" ? "VERIFY YOUR DETAILS" : "CREATE ACCOUNT")
-      : "WELCOME BACK"}
-    </h1>
-    <p className="muted">
-     {forgotMode
-      ? (forgotStep === "confirm"
-        ? "Enter the 6-digit reset code sent to your email and your new password."
-        : forgotStep === "done"
-        ? "Your password has been reset. You can now log in with your new credentials."
-        : "Enter your registered email address to receive a verification code.")
-      : register
-      ? (step === "otp"
-        ? "Enter the 6-digit verification code sent to your email address."
-        : "Create an account for faster checkout, order history and saved products.")
-      : "Login to continue to your ENYTM account."}
-    </p>
+  return (
+    <main className="auth-page">
+      <div className="auth-card">
+        <p className="eyebrow">ENYTM MEMBERS</p>
+        <h1>
+          {forgotMode
+            ? "RESET PASSWORD"
+            : register
+              ? (step === "otp" ? "VERIFY YOUR DETAILS" : "CREATE ACCOUNT")
+              : "WELCOME BACK"}
+        </h1>
+        <p className="muted">
+          {forgotMode
+            ? (forgotStep === "confirm"
+              ? "Enter the 6-digit reset code sent to your email and your new password."
+              : forgotStep === "done"
+                ? "Your password has been reset. You can now log in with your new credentials."
+                : "Enter your registered email address to receive a verification code.")
+            : register
+              ? (step === "otp"
+                ? "Enter the 6-digit verification code sent to your email address."
+                : "Create an account for faster checkout, order history and saved products.")
+              : "Login to continue to your ENYTM account."}
+        </p>
 
-    {error && <div className="error auth-error" role="alert">{error}</div>}
+        {error && <div className="error auth-error" role="alert">{error}</div>}
 
-    {!forgotMode && step !== "otp" && (
-     <div className="google-auth-section">
-      <button
-       type="button"
-       className="google-auth-btn"
-       onClick={handleGoogleClick}
-       disabled={googleLoading}
-      >
-       <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.27 21.43 7.35 24 12 24z"/>
-        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
-        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.27 2.57 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-       </svg>
-       <span>{googleLoading ? "CONNECTING TO GOOGLE..." : "CONTINUE WITH GOOGLE"}</span>
-      </button>
-      <div className="auth-divider">
-       <span>OR CONTINUE WITH EMAIL</span>
+        {!forgotMode && step !== "otp" && (
+          <div className="google-auth-section">
+            <button
+              type="button"
+              className="google-auth-btn"
+              onClick={handleGoogleClick}
+              disabled={googleLoading}
+            >
+              <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.27 21.43 7.35 24 12 24z" />
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.27 2.57 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+              </svg>
+              <span>{googleLoading ? "CONNECTING TO GOOGLE..." : "CONTINUE WITH GOOGLE"}</span>
+            </button>
+            <div className="auth-divider">
+              <span>OR CONTINUE WITH EMAIL</span>
+            </div>
+          </div>
+        )}
+
+        {register && step !== "otp" && (
+          <form className="auth-form" onSubmit={sendOtp}>
+            <input className="auth-input" required autoComplete="name" placeholder="Full name" value={form.name} onChange={e => update("name", e.target.value)} />
+            <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e => update("email", e.target.value)} />
+            <input className="auth-input" required inputMode="tel" autoComplete="tel" placeholder="Mobile number" value={form.phone} onChange={e => update("phone", e.target.value.replace(/\D/g, "").slice(-10))} />
+            <div className="password-field auth-password-field">
+              <input className="auth-input" required minLength="6" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Password (min 6 chars)" value={form.password} onChange={e => update("password", e.target.value)} />
+              <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
+            <label className="check auth-check">
+              <input type="checkbox" checked={form.whatsappOptIn} onChange={e => update("whatsappOptIn", e.target.checked)} />
+              <span>Receive order updates on WhatsApp.</span>
+            </label>
+            <label className="check auth-check">
+              <input type="checkbox" checked={form.emailOptIn} onChange={e => update("emailOptIn", e.target.checked)} />
+              <span>Receive useful ENYTM email updates.</span>
+            </label>
+            <button disabled={sending} className="btn primary full auth-submit-btn">
+              {sending ? "SENDING OTP..." : "CONTINUE WITH OTP"} <ArrowRight size={17} />
+            </button>
+          </form>
+        )}
+
+        {register && step === "otp" && (
+          <form className="auth-form" onSubmit={verifyAndCreate}>
+            <div className="otp-note">Enter the 6-digit code sent to your email. Your account will be created after the code is verified.</div>
+            <input className="auth-input auth-otp-input" required inputMode="numeric" maxLength="6" pattern="[0-9]{6}" placeholder="Email OTP — 6 digits" value={otp.email} onChange={e => setOtp(o => ({ ...o, email: e.target.value.replace(/\D/g, "").slice(0, 6) }))} />
+            <button disabled={sending} className="btn primary full auth-submit-btn">
+              {sending ? "VERIFYING..." : "VERIFY & CREATE ACCOUNT"} <CheckCircle size={17} />
+            </button>
+            <button type="button" disabled={sending || seconds > 0} className="btn outline full auth-secondary-btn" onClick={sendOtp}>
+              {seconds ? `RESEND OTP IN ${seconds}s` : "RESEND OTP"}
+            </button>
+            <button type="button" className="text-link" onClick={() => { setStep("details"); setError("") }}>
+              ← Change email or mobile number
+            </button>
+          </form>
+        )}
+
+        {!register && !forgotMode && (
+          <form className="auth-form" onSubmit={login}>
+            <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e => update("email", e.target.value)} />
+            <div className="password-field auth-password-field">
+              <input className="auth-input" required minLength="6" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Password" value={form.password} onChange={e => update("password", e.target.value)} />
+              <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
+            <div className="auth-forgot-row">
+              <button type="button" className="text-link" onClick={() => { setForgotMode(true); setForgotStep("email"); setError(""); setForgotMessage("") }}>
+                Forgot password?
+              </button>
+            </div>
+            <button disabled={sending} className="btn primary full auth-submit-btn">
+              {sending ? "LOGGING IN..." : "LOGIN"} <ArrowRight size={17} />
+            </button>
+          </form>
+        )}
+
+        {!register && forgotMode && forgotStep === "email" && (
+          <form className="auth-form" onSubmit={sendForgotOtp}>
+            <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Registered email address" value={form.email} onChange={e => update("email", e.target.value)} />
+            <button disabled={sending} className="btn primary full auth-submit-btn">
+              {sending ? "SENDING CODE..." : "SEND RESET CODE"} <ArrowRight size={17} />
+            </button>
+            <button type="button" className="text-link" onClick={() => { setForgotMode(false); setForgotStep("email"); setError(""); setForgotMessage("") }}>
+              ← Back to login
+            </button>
+          </form>
+        )}
+
+        {!register && forgotMode && forgotStep === "confirm" && (
+          <form className="auth-form" onSubmit={confirmPasswordReset}>
+            {forgotMessage && <div className="lookup-message success">{forgotMessage}</div>}
+            <input className="auth-input auth-otp-input" required inputMode="numeric" maxLength="6" pattern="[0-9]{6}" placeholder="Reset code — 6 digits" value={forgotOtp} onChange={e => setForgotOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} />
+            <div className="password-field auth-password-field">
+              <input className="auth-input" required minLength="8" type={showNewPassword ? "text" : "password"} autoComplete="new-password" placeholder="New password (min 8 chars)" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+              <button type="button" className="auth-password-toggle" onClick={() => setShowNewPassword(v => !v)} aria-label={showNewPassword ? "Hide password" : "Show password"} title={showNewPassword ? "Hide password" : "Show password"}>
+                {showNewPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
+            <button disabled={sending} className="btn primary full auth-submit-btn">
+              {sending ? "UPDATING..." : "UPDATE PASSWORD"} <CheckCircle size={17} />
+            </button>
+            <button type="button" disabled={sending || seconds > 0} className="btn outline full auth-secondary-btn" onClick={sendForgotOtp}>
+              {seconds ? `RESEND CODE IN ${seconds}s` : "RESEND CODE"}
+            </button>
+            <button type="button" className="text-link" onClick={() => { setForgotMode(false); setForgotStep("email"); setError(""); setForgotMessage("") }}>
+              ← Back to login
+            </button>
+          </form>
+        )}
+
+        {!register && forgotMode && forgotStep === "done" && (
+          <div className="auth-form">
+            <div className="lookup-message success">{forgotMessage || "Password updated successfully!"}</div>
+            <button type="button" className="btn primary full auth-submit-btn" onClick={() => { setForgotMode(false); setForgotStep("email"); setError(""); setForgotMessage("") }}>
+              CONTINUE TO LOGIN <ArrowRight size={17} />
+            </button>
+          </div>
+        )}
+
+        {register ? (
+          <p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>
+        ) : (
+          <>
+            <p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>
+            <p className="auth-switch" style={{ marginTop: "10px", borderTop: "1px solid #222", paddingTop: "14px" }}>
+              Store Administrator? <Link to="/admin" style={{ color: "#c8b69a", fontWeight: "700" }}>Admin Portal →</Link>
+            </p>
+          </>
+        )}
       </div>
-     </div>
-    )}
 
-    {register && step !== "otp" && (
-     <form className="auth-form" onSubmit={sendOtp}>
-      <input className="auth-input" required autoComplete="name" placeholder="Full name" value={form.name} onChange={e=>update("name",e.target.value)}/>
-      <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e=>update("email",e.target.value)}/>
-      <input className="auth-input" required inputMode="tel" autoComplete="tel" placeholder="Mobile number" value={form.phone} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(-10))}/>
-      <div className="password-field auth-password-field">
-       <input className="auth-input" required minLength="6" type={showPassword?"text":"password"} autoComplete="new-password" placeholder="Password (min 6 chars)" value={form.password} onChange={e=>update("password",e.target.value)}/>
-       <button type="button" className="auth-password-toggle" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} title={showPassword?"Hide password":"Show password"}>
-        {showPassword?<EyeOff size={19}/>:<Eye size={19}/>}
-       </button>
-      </div>
-      <label className="check auth-check">
-       <input type="checkbox" checked={form.whatsappOptIn} onChange={e=>update("whatsappOptIn",e.target.checked)}/>
-       <span>Receive order updates on WhatsApp.</span>
-      </label>
-      <label className="check auth-check">
-       <input type="checkbox" checked={form.emailOptIn} onChange={e=>update("emailOptIn",e.target.checked)}/>
-       <span>Receive useful ENYTM email updates.</span>
-      </label>
-      <button disabled={sending} className="btn primary full auth-submit-btn">
-       {sending?"SENDING OTP...":"CONTINUE WITH OTP"} <ArrowRight size={17}/>
-      </button>
-     </form>
-    )}
+      {showGoogleDevModal && (
+        <div className="modal-backdrop" onClick={() => setShowGoogleDevModal(false)}>
+          <div className="modal-card google-dev-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>CONTINUE WITH GOOGLE</h3>
+              <button type="button" className="icon-btn" onClick={() => setShowGoogleDevModal(false)} aria-label="Close"><X size={18} /></button>
+            </div>
+            <p className="muted" style={{ fontSize: "12px", lineHeight: "1.5", margin: "10px 0 16px" }}>
+              To enable live Google Sign-In, add your <code>VITE_GOOGLE_CLIENT_ID</code> to <code>.env</code>. You can test instant Google authentication below:
+            </p>
+            <div className="auth-form" style={{ gap: "12px" }}>
+              <input
+                className="auth-input"
+                type="email"
+                placeholder="Google Email address"
+                value={devGoogleEmail}
+                onChange={e => setDevGoogleEmail(e.target.value)}
+              />
+              <input
+                className="auth-input"
+                placeholder="Full name"
+                value={devGoogleName}
+                onChange={e => setDevGoogleName(e.target.value)}
+              />
+              <button
+                type="button"
+                disabled={googleLoading || !devGoogleEmail}
+                className="btn primary full auth-submit-btn"
+                onClick={() => {
+                  setShowGoogleDevModal(false);
+                  handleGoogleAuthSuccess({ email: devGoogleEmail, name: devGoogleName });
+                }}
+              >
+                {googleLoading ? "SIGNING IN..." : "CONTINUE WITH GOOGLE ACCOUNT"} <ArrowRight size={16} />
+              </button>
+              <button
+                type="button"
+                className="btn outline full auth-secondary-btn"
+                onClick={() => setShowGoogleDevModal(false)}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
 
-    {register && step === "otp" && (
-     <form className="auth-form" onSubmit={verifyAndCreate}>
-      <div className="otp-note">Enter the 6-digit code sent to your email. Your account will be created after the code is verified.</div>
-      <input className="auth-input auth-otp-input" required inputMode="numeric" maxLength="6" pattern="[0-9]{6}" placeholder="Email OTP — 6 digits" value={otp.email} onChange={e=>setOtp(o=>({...o,email:e.target.value.replace(/\D/g,"").slice(0,6)}))}/>
-      <button disabled={sending} className="btn primary full auth-submit-btn">
-       {sending?"VERIFYING...":"VERIFY & CREATE ACCOUNT"} <CheckCircle size={17}/>
-      </button>
-      <button type="button" disabled={sending||seconds>0} className="btn outline full auth-secondary-btn" onClick={sendOtp}>
-       {seconds?`RESEND OTP IN ${seconds}s`:"RESEND OTP"}
-      </button>
-      <button type="button" className="text-link" onClick={()=>{setStep("details");setError("")}}>
-       ← Change email or mobile number
-      </button>
-     </form>
-    )}
-
-    {!register && !forgotMode && (
-     <form className="auth-form" onSubmit={login}>
-      <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e=>update("email",e.target.value)}/>
-      <div className="password-field auth-password-field">
-       <input className="auth-input" required minLength="6" type={showPassword?"text":"password"} autoComplete="current-password" placeholder="Password" value={form.password} onChange={e=>update("password",e.target.value)}/>
-       <button type="button" className="auth-password-toggle" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} title={showPassword?"Hide password":"Show password"}>
-        {showPassword?<EyeOff size={19}/>:<Eye size={19}/>}
-       </button>
-      </div>
-      <div className="auth-forgot-row">
-       <button type="button" className="text-link" onClick={()=>{setForgotMode(true);setForgotStep("email");setError("");setForgotMessage("")}}>
-        Forgot password?
-       </button>
-      </div>
-      <button disabled={sending} className="btn primary full auth-submit-btn">
-       {sending?"LOGGING IN...":"LOGIN"} <ArrowRight size={17}/>
-      </button>
-     </form>
-    )}
-
-    {!register && forgotMode && forgotStep === "email" && (
-     <form className="auth-form" onSubmit={sendForgotOtp}>
-      <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Registered email address" value={form.email} onChange={e=>update("email",e.target.value)}/>
-      <button disabled={sending} className="btn primary full auth-submit-btn">
-       {sending?"SENDING CODE...":"SEND RESET CODE"} <ArrowRight size={17}/>
-      </button>
-      <button type="button" className="text-link" onClick={()=>{setForgotMode(false);setForgotStep("email");setError("");setForgotMessage("")}}>
-       ← Back to login
-      </button>
-     </form>
-    )}
-
-    {!register && forgotMode && forgotStep === "confirm" && (
-     <form className="auth-form" onSubmit={confirmPasswordReset}>
-      {forgotMessage && <div className="lookup-message success">{forgotMessage}</div>}
-      <input className="auth-input auth-otp-input" required inputMode="numeric" maxLength="6" pattern="[0-9]{6}" placeholder="Reset code — 6 digits" value={forgotOtp} onChange={e=>setForgotOtp(e.target.value.replace(/\D/g,"").slice(0,6))}/>
-      <div className="password-field auth-password-field">
-       <input className="auth-input" required minLength="8" type={showNewPassword?"text":"password"} autoComplete="new-password" placeholder="New password (min 8 chars)" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/>
-       <button type="button" className="auth-password-toggle" onClick={()=>setShowNewPassword(v=>!v)} aria-label={showNewPassword?"Hide password":"Show password"} title={showNewPassword?"Hide password":"Show password"}>
-        {showNewPassword?<EyeOff size={19}/>:<Eye size={19}/>}
-       </button>
-      </div>
-      <button disabled={sending} className="btn primary full auth-submit-btn">
-       {sending?"UPDATING...":"UPDATE PASSWORD"} <CheckCircle size={17}/>
-      </button>
-      <button type="button" disabled={sending||seconds>0} className="btn outline full auth-secondary-btn" onClick={sendForgotOtp}>
-       {seconds?`RESEND CODE IN ${seconds}s`:"RESEND CODE"}
-      </button>
-      <button type="button" className="text-link" onClick={()=>{setForgotMode(false);setForgotStep("email");setError("");setForgotMessage("")}}>
-       ← Back to login
-      </button>
-     </form>
-    )}
-
-    {!register && forgotMode && forgotStep === "done" && (
-     <div className="auth-form">
-      <div className="lookup-message success">{forgotMessage||"Password updated successfully!"}</div>
-      <button type="button" className="btn primary full auth-submit-btn" onClick={()=>{setForgotMode(false);setForgotStep("email");setError("");setForgotMessage("")}}>
-       CONTINUE TO LOGIN <ArrowRight size={17}/>
-      </button>
-     </div>
-    )}
-
-    {register ? (
-     <p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>
-    ) : (
-     <>
-      <p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>
-      <p className="auth-switch" style={{marginTop:"10px",borderTop:"1px solid #222",paddingTop:"14px"}}>
-        Store Administrator? <Link to="/admin" style={{color:"#c8b69a",fontWeight:"700"}}>Admin Portal →</Link>
-      </p>
-     </>
-    )}
-   </div>
-
-   {showGoogleDevModal && (
-    <div className="modal-backdrop" onClick={()=>setShowGoogleDevModal(false)}>
-     <div className="modal-card google-dev-modal" onClick={e=>e.stopPropagation()}>
-      <div className="modal-header">
-       <h3>CONTINUE WITH GOOGLE</h3>
-       <button type="button" className="icon-btn" onClick={()=>setShowGoogleDevModal(false)} aria-label="Close"><X size={18}/></button>
-      </div>
-      <p className="muted" style={{fontSize:"12px",lineHeight:"1.5",margin:"10px 0 16px"}}>
-       To enable live Google Sign-In, add your <code>VITE_GOOGLE_CLIENT_ID</code> to <code>.env</code>. You can test instant Google authentication below:
-      </p>
-      <div className="auth-form" style={{gap:"12px"}}>
-       <input
-        className="auth-input"
-        type="email"
-        placeholder="Google Email address"
-        value={devGoogleEmail}
-        onChange={e=>setDevGoogleEmail(e.target.value)}
-       />
-       <input
-        className="auth-input"
-        placeholder="Full name"
-        value={devGoogleName}
-        onChange={e=>setDevGoogleName(e.target.value)}
-       />
-       <button
-        type="button"
-        disabled={googleLoading || !devGoogleEmail}
-        className="btn primary full auth-submit-btn"
-        onClick={()=>{
-         setShowGoogleDevModal(false);
-         handleGoogleAuthSuccess({ email: devGoogleEmail, name: devGoogleName });
-        }}
-       >
-        {googleLoading ? "SIGNING IN..." : "CONTINUE WITH GOOGLE ACCOUNT"} <ArrowRight size={16}/>
-       </button>
-       <button
-        type="button"
-        className="btn outline full auth-secondary-btn"
-        onClick={()=>setShowGoogleDevModal(false)}
-       >
-        CANCEL
-       </button>
-      </div>
-     </div>
+function AddressLookupFields({ form, setForm, setError, compact = false }) {
+  const [cityOptions, setCityOptions] = useState([]);
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [pincodeBusy, setPincodeBusy] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState("");
+  const cityTimer = useRef(null);
+  const update = (key, value) => setForm(f => ({ ...f, [key]: value }));
+  const lookupPincode = async value => {
+    const pin = String(value || "").replace(/\D/g, "").slice(0, 6);
+    update("pincode", pin); setLookupMessage("");
+    if (pin.length !== 6) return;
+    setPincodeBusy(true);
+    try {
+      const d = await api(`/pincode/${pin}`);
+      if (!d.valid) throw new Error(d.message || "Pincode not found. Enter the city and choose a PIN.");
+      setForm(f => ({ ...f, pincode: pin, city: d.city || d.district || f.city, state: d.state || f.state, district: d.district || "", postOffice: d.postOffice || "" }));
+      setLookupMessage(`✓ ${d.city || d.district || "Location found"}${d.state ? `, ${d.state}` : ""}`);
+    } catch (e) { setLookupMessage(e.message || "Could not find this pincode. You can enter city/state manually."); }
+    finally { setPincodeBusy(false); }
+  };
+  const lookupCity = async () => {
+    const city = String(form.city || "").trim();
+    if (city.length < 2) { setLookupMessage("Enter a city name first."); return; }
+    setLookupBusy(true); setLookupMessage("");
+    try {
+      const d = await api(`/pincode/city/${encodeURIComponent(city)}`);
+      const list = Array.isArray(d.pincodes) ? d.pincodes : [];
+      setCityOptions(list);
+      if (list.length === 1) { await lookupPincode(list[0].pincode); }
+      else if (list.length > 1) { setLookupMessage(`${list.length} PIN codes found. Choose your locality below.`); }
+      else setLookupMessage("No PIN codes found. Check the city spelling or enter your PIN code manually.");
+    } catch (e) { setLookupMessage(e.message || "PIN lookup is temporarily unavailable. Try again in a moment."); }
+    finally { setLookupBusy(false); }
+  };
+  useEffect(() => () => { if (cityTimer.current) clearTimeout(cityTimer.current) }, []);
+  return <>
+    <input required placeholder="Full name" value={form.name || ""} onChange={e => update("name", e.target.value)} />
+    <input required inputMode="tel" placeholder="Phone" value={form.phone || ""} onChange={e => update("phone", e.target.value.replace(/\D/g, "").slice(-10))} />
+    <input required className="wide" placeholder="Flat / House / Street / Area" value={form.address || ""} onChange={e => update("address", e.target.value)} />
+    <div className="address-city-row">
+      <input required placeholder="City" value={form.city || ""} onChange={e => { update("city", e.target.value); setCityOptions([]); setLookupMessage(""); if (cityTimer.current) clearTimeout(cityTimer.current); const val = e.target.value; if (val.trim().length >= 3) cityTimer.current = setTimeout(() => lookupCity(), 650) }} onBlur={() => { if (String(form.city || "").trim().length >= 2) lookupCity() }} />
+      <button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy ? "SEARCHING..." : "FIND PINCODE"}</button>
     </div>
-   )}
-  </main>
- );
+    {cityOptions.length > 1 && <select className="wide address-select" value={form.pincode || ""} onChange={e => lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city || "").toUpperCase()}</option>{cityOptions.map((x, i) => <option key={`${x.pincode}-${i}`} value={x.pincode}>{x.pincode}{x.postOffice ? ` — ${x.postOffice}` : ""}{x.district ? ` · ${x.district}` : ""}</option>)}</select>}
+    <input required placeholder="State" value={form.state || ""} onChange={e => update("state", e.target.value)} />
+    <div className="pincode-control"><input required inputMode="numeric" maxLength="6" placeholder="6-digit Pincode" value={form.pincode || ""} onChange={e => lookupPincode(e.target.value)} />{pincodeBusy && <span>LOOKING UP…</span>}</div>
+    {lookupMessage && <div className={`lookup-message ${lookupMessage.startsWith("✓") ? "success" : ""}`}>{lookupMessage}</div>}
+  </>
 }
 
-function AddressLookupFields({form,setForm,setError,compact=false}){
- const[cityOptions,setCityOptions]=useState([]);
- const[lookupBusy,setLookupBusy]=useState(false);
- const[pincodeBusy,setPincodeBusy]=useState(false);
- const[lookupMessage,setLookupMessage]=useState("");
- const cityTimer=useRef(null);
- const update=(key,value)=>setForm(f=>({...f,[key]:value}));
- const lookupPincode=async value=>{
-  const pin=String(value||"").replace(/\D/g,"").slice(0,6);
-  update("pincode",pin); setLookupMessage("");
-  if(pin.length!==6)return;
-  setPincodeBusy(true);
-  try{
-   const d=await api(`/pincode/${pin}`);
-   if(!d.valid)throw new Error(d.message||"Pincode not found. Enter the city and choose a PIN.");
-   setForm(f=>({...f,pincode:pin,city:d.city||d.district||f.city,state:d.state||f.state,district:d.district||"",postOffice:d.postOffice||""}));
-   setLookupMessage(`✓ ${d.city||d.district||"Location found"}${d.state?`, ${d.state}`:""}`);
-  }catch(e){setLookupMessage(e.message||"Could not find this pincode. You can enter city/state manually.");}
-  finally{setPincodeBusy(false);}
- };
- const lookupCity=async()=>{
-  const city=String(form.city||"").trim();
-  if(city.length<2){setLookupMessage("Enter a city name first.");return;}
-  setLookupBusy(true);setLookupMessage("");
-  try{
-   const d=await api(`/pincode/city/${encodeURIComponent(city)}`);
-   const list=Array.isArray(d.pincodes)?d.pincodes:[];
-   setCityOptions(list);
-   if(list.length===1){await lookupPincode(list[0].pincode);}
-   else if(list.length>1){setLookupMessage(`${list.length} PIN codes found. Choose your locality below.`);}
-   else setLookupMessage("No PIN codes found. Check the city spelling or enter your PIN code manually.");
-  }catch(e){setLookupMessage(e.message||"PIN lookup is temporarily unavailable. Try again in a moment.");}
-  finally{setLookupBusy(false);}
- };
- useEffect(()=>()=>{if(cityTimer.current)clearTimeout(cityTimer.current)},[]);
- return <>
-  <input required placeholder="Full name" value={form.name||""} onChange={e=>update("name",e.target.value)}/>
-  <input required inputMode="tel" placeholder="Phone" value={form.phone||""} onChange={e=>update("phone",e.target.value.replace(/\D/g,"").slice(-10))}/>
-  <input required className="wide" placeholder="Flat / House / Street / Area" value={form.address||""} onChange={e=>update("address",e.target.value)}/>
-  <div className="address-city-row">
-   <input required placeholder="City" value={form.city||""} onChange={e=>{update("city",e.target.value);setCityOptions([]);setLookupMessage("");if(cityTimer.current)clearTimeout(cityTimer.current);const val=e.target.value;if(val.trim().length>=3)cityTimer.current=setTimeout(()=>lookupCity(),650)}} onBlur={()=>{if(String(form.city||"").trim().length>=2)lookupCity()}}/>
-   <button type="button" className="address-mini-btn" onClick={lookupCity} disabled={lookupBusy}>{lookupBusy?"SEARCHING...":"FIND PINCODE"}</button>
-  </div>
-  {cityOptions.length>1&&<select className="wide address-select" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}><option value="">SELECT PINCODE FOR {String(form.city||"").toUpperCase()}</option>{cityOptions.map((x,i)=><option key={`${x.pincode}-${i}`} value={x.pincode}>{x.pincode}{x.postOffice?` — ${x.postOffice}`:""}{x.district?` · ${x.district}`:""}</option>)}</select>}
-  <input required placeholder="State" value={form.state||""} onChange={e=>update("state",e.target.value)}/>
-  <div className="pincode-control"><input required inputMode="numeric" maxLength="6" placeholder="6-digit Pincode" value={form.pincode||""} onChange={e=>lookupPincode(e.target.value)}/>{pincodeBusy&&<span>LOOKING UP…</span>}</div>
-  {lookupMessage&&<div className={`lookup-message ${lookupMessage.startsWith("✓")?"success":""}`}>{lookupMessage}</div>}
- </>
-}
-
-function Checkout(){
+function Checkout() {
   const { cart, subtotal, shipping, total, clearCart, updateQty, removeFromCart } = useCart();
   const products = useProducts();
   const nav = useNavigate();
@@ -1870,7 +1970,7 @@ function Checkout(){
         order_id: data.razorpayOrderId,
         prefill: { name: form.name, email: user?.email, contact: digits },
         theme: { color: "#111111" },
-        modal: { ondismiss: () => {} },
+        modal: { ondismiss: () => { } },
         handler: async (response) => {
           await api("/checkout/verify", {
             method: "POST",
@@ -2362,54 +2462,54 @@ function Checkout(){
     </main>
   );
 }
-function OrderDetails(){
- const id=useLocation().pathname.split("/").pop();
- const nav=useNavigate();
- const[order,setOrder]=useState(null);
- const[loading,setLoading]=useState(true);
- const[error,setError]=useState("");
- const[actionBusy,setActionBusy]=useState(false);
- const[message,setMessage]=useState("");
- const load=async()=>{setLoading(true);setError("");try{const o=await api(`/orders/${id}`);setOrder(o)}catch(e){setError(e.message||"Could not load this order.")}finally{setLoading(false)}};
- useEffect(()=>{if(!localStorage.getItem("enytm-token")){nav("/login");return}load();const refresh=window.setInterval(()=>{api(`/orders/${id}`).then(setOrder).catch(()=>{})},30000);return()=>window.clearInterval(refresh)},[id]);
- const status=String(order?.status||"payment_pending");
- const shipped=["shipped","out_for_delivery","delivered"].includes(status);
- const cancelled=status==="cancelled";
- const statusIndex={payment_pending:0,confirmed:1,packed:2,shipped:3,out_for_delivery:4,delivered:5,cancelled:0}[status]??0;
- const statusLabel=status==="payment_pending"?"PAYMENT PENDING":status.replace(/_/g," ").toUpperCase();
- const deliveryDate=order?.estimatedDeliveryDate?new Date(order.estimatedDeliveryDate):null;
- const formatDate=d=>d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
- const cancelOrder=async()=>{if(!window.confirm("Cancel this order? You will be asked to choose where an eligible refund should go."))return;const paid=Number(order?.advancePaid||0)+Number(order?.balancePaid||0);let refundTo="original";if(paid>0){const choice=window.prompt("Refund preference: type WALLET to refund to your ENYTM wallet, or ORIGINAL to refund to the original payment method.","ORIGINAL");if(choice===null)return;const normalized=choice.trim().toLowerCase();if(!["wallet","original"].includes(normalized)){setMessage("Please type WALLET or ORIGINAL. No cancellation was made.");return;}refundTo=normalized;}setActionBusy(true);setMessage("");try{const o=await api(`/orders/${id}/cancel`,{method:"POST",body:JSON.stringify({refundTo})});setOrder(o);setMessage(o.refundStatus==="initiated"?"Order cancelled. Your refund has been initiated.":o.refundStatus==="wallet_credited"?"Order cancelled and eligible refund credited to your ENYTM wallet.":"Order cancelled successfully.")}catch(e){setMessage(e.message||"Could not cancel the order.")}finally{setActionBusy(false)}};
- const payBalance=async()=>{setActionBusy(true);setMessage("");try{const data=await api(`/orders/${id}/balance/order`,{method:"POST"});if(!window.Razorpay)throw new Error("Razorpay Checkout could not load. Check your internet connection.");const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:"ENYTM APPARELS",description:"ENYTM pre-order balance",order_id:data.razorpayOrderId,theme:{color:"#111111"},handler:async response=>{try{const result=await api("/checkout/verify",{method:"POST",body:JSON.stringify({...response,orderId:data.orderId})});setOrder(result.order);setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch.");}catch(e){setMessage(e.message||"Payment verification is pending. Refresh the order shortly.");}},modal:{ondismiss:()=>setActionBusy(false)}});rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Balance payment failed. Please try again.");setActionBusy(false)});rzp.open();}catch(e){setMessage(e.message||"Could not start balance payment.");setActionBusy(false)}};
- if(loading)return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
- if(error||!order)return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error&&<div className="error">{error}</div>}<Link className="btn primary" to="/orders">BACK TO MY ORDERS</Link></main>;
- const steps=[
-  ["confirmed","ORDER CONFIRMED","We received your order."],
-  ["packed","PACKED","Your order is being prepared."],
-  ["shipped","SHIPPED","Your package is on the way."],
-  ["out_for_delivery","OUT FOR DELIVERY","Your package is arriving today."],
-  ["delivered","DELIVERED","Delivered to your address."]
- ];
- return <main className="order-detail-page">
-  <div className="order-detail-top"><div><p className="eyebrow">ENYTM / ORDER DETAILS</p><h1>{order.receipt||order.id}</h1><p className="muted">Placed on {new Date(order.createdAt).toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div><Link className="text-link" to="/orders">← MY ORDERS</Link></div>
-  {message&&<div className="order-action-message">{message}</div>}
-  <section className="order-status-card">
-   <div className="order-status-head"><div><span className={`order-status-big ${cancelled?"cancelled":""}`}>{cancelled?"ORDER CANCELLED":statusLabel}</span><h2>{cancelled?"This order has been cancelled.":deliveryDate?`Estimated delivery: ${formatDate(deliveryDate)}`:"Delivery date will be updated soon."}</h2></div>{!cancelled&&<Truck size={30}/>}</div>
-   {!cancelled?<div className="order-timeline">{steps.map((step,i)=>{const active=i<=statusIndex;return <div className={`timeline-step ${active?"active":""}`} key={step[0]}><div className="timeline-dot">{active?<CheckCircle size={16}/>:<span>{i+1}</span>}</div><div><b>{step[1]}</b><small>{step[2]}</small></div></div>})}</div>:<div className="cancelled-note">If your payment was online, refund status: <b>{String(order.refundStatus||"pending").replace(/_/g," ")}</b>.</div>}
-  </section>
-  <div className="order-detail-grid">
-   <section className="order-detail-main">
-    <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length||0} ITEM{order.items?.length===1?"":"S"}</span></div>{(order.items||[]).map((item,idx)=><article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name}/><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size||"—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p></div><strong>₹{(Number(item.price)*Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
-    {order.tracking?.trackingNumber&&<div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK SHIPMENT</h2><span>{order.tracking.courier}</span></div><div className="tracking-row"><Package size={22}/><div><b>{order.tracking.trackingNumber}</b><small>Tracking number</small></div>{order.tracking.trackingUrl&&<a className="btn outline" href={order.tracking.trackingUrl} target="_blank" rel="noreferrer">TRACK NOW <ArrowRight size={15}/></a>}</div></div>}
-    <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18}/></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
-   </section>
-   <aside className="order-detail-side">
-    <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal||0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping||0)?`₹${Number(order.shipping).toLocaleString("en-IN")}`:"FREE"}</b></div>{Number(order.buy2Discount||0)>0&&<div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount||0)>0&&!order.buy2Discount&&<div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount||0)>0&&<div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee||0)>0&&<div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr/><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total||0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Cash on Delivery (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid||0).toLocaleString("en-IN")}</b></div><div><span>Cash due on delivery (70%)</span><b>₹{Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid||order.total||0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod||"online").toUpperCase()} · {String(order.paymentStatus||"").replace(/_/g," ").toUpperCase()}</p>{!cancelled&&order.paymentStatus!=="paid"&&order.paymentMethod!=="cod"&&Number(order.advancePaid||0)>0&&<button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy?"PROCESSING...":`PAY BALANCE ₹${Math.max(0,Number(order.total||0)-Number(order.advancePaid||0)-Number(order.balancePaid||0)).toLocaleString("en-IN")}`}</button>}</div>
-    <div className="order-panel delivery-summary"><div className="panel-head"><h2>DELIVERY</h2><CalendarDays size={18}/></div><b>{deliveryDate?formatDate(deliveryDate):"To be confirmed"}</b><p className="muted">Standard delivery</p></div>
-    <div className="order-actions-panel">{!cancelled&&<><button className="btn primary full" disabled={actionBusy||shipped} onClick={cancelOrder}>{shipped?"CANCELLATION CLOSED":actionBusy?"PROCESSING...":"CANCEL ORDER"}</button><p className="action-note">Cancellation is available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
-   </aside>
-  </div>
- </main>
+function OrderDetails() {
+  const id = useLocation().pathname.split("/").pop();
+  const nav = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionBusy, setActionBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const load = async () => { setLoading(true); setError(""); try { const o = await api(`/orders/${id}`); setOrder(o) } catch (e) { setError(e.message || "Could not load this order.") } finally { setLoading(false) } };
+  useEffect(() => { if (!localStorage.getItem("enytm-token")) { nav("/login"); return } load(); const refresh = window.setInterval(() => { api(`/orders/${id}`).then(setOrder).catch(() => { }) }, 30000); return () => window.clearInterval(refresh) }, [id]);
+  const status = String(order?.status || "payment_pending");
+  const shipped = ["shipped", "out_for_delivery", "delivered"].includes(status);
+  const cancelled = status === "cancelled";
+  const statusIndex = { payment_pending: 0, confirmed: 1, packed: 2, shipped: 3, out_for_delivery: 4, delivered: 5, cancelled: 0 }[status] ?? 0;
+  const statusLabel = status === "payment_pending" ? "PAYMENT PENDING" : status.replace(/_/g, " ").toUpperCase();
+  const deliveryDate = order?.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate) : null;
+  const formatDate = d => d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  const cancelOrder = async () => { if (!window.confirm("Cancel this order? You will be asked to choose where an eligible refund should go.")) return; const paid = Number(order?.advancePaid || 0) + Number(order?.balancePaid || 0); let refundTo = "original"; if (paid > 0) { const choice = window.prompt("Refund preference: type WALLET to refund to your ENYTM wallet, or ORIGINAL to refund to the original payment method.", "ORIGINAL"); if (choice === null) return; const normalized = choice.trim().toLowerCase(); if (!["wallet", "original"].includes(normalized)) { setMessage("Please type WALLET or ORIGINAL. No cancellation was made."); return; } refundTo = normalized; } setActionBusy(true); setMessage(""); try { const o = await api(`/orders/${id}/cancel`, { method: "POST", body: JSON.stringify({ refundTo }) }); setOrder(o); setMessage(o.refundStatus === "initiated" ? "Order cancelled. Your refund has been initiated." : o.refundStatus === "wallet_credited" ? "Order cancelled and eligible refund credited to your ENYTM wallet." : "Order cancelled successfully.") } catch (e) { setMessage(e.message || "Could not cancel the order.") } finally { setActionBusy(false) } };
+  const payBalance = async () => { setActionBusy(true); setMessage(""); try { const data = await api(`/orders/${id}/balance/order`, { method: "POST" }); if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection."); const rzp = new window.Razorpay({ key: data.keyId, amount: data.amount, currency: data.currency, name: "ENYTM APPARELS", description: "ENYTM pre-order balance", order_id: data.razorpayOrderId, theme: { color: "#111111" }, handler: async response => { try { const result = await api("/checkout/verify", { method: "POST", body: JSON.stringify({ ...response, orderId: data.orderId }) }); setOrder(result.order); setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch."); } catch (e) { setMessage(e.message || "Payment verification is pending. Refresh the order shortly."); } }, modal: { ondismiss: () => setActionBusy(false) } }); rzp.on("payment.failed", r => { setMessage(r.error?.description || "Balance payment failed. Please try again."); setActionBusy(false) }); rzp.open(); } catch (e) { setMessage(e.message || "Could not start balance payment."); setActionBusy(false) } };
+  if (loading) return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
+  if (error || !order) return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error && <div className="error">{error}</div>}<Link className="btn primary" to="/orders">BACK TO MY ORDERS</Link></main>;
+  const steps = [
+    ["confirmed", "ORDER CONFIRMED", "We received your order."],
+    ["packed", "PACKED", "Your order is being prepared."],
+    ["shipped", "SHIPPED", "Your package is on the way."],
+    ["out_for_delivery", "OUT FOR DELIVERY", "Your package is arriving today."],
+    ["delivered", "DELIVERED", "Delivered to your address."]
+  ];
+  return <main className="order-detail-page">
+    <div className="order-detail-top"><div><p className="eyebrow">ENYTM / ORDER DETAILS</p><h1>{order.receipt || order.id}</h1><p className="muted">Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</p></div><Link className="text-link" to="/orders">← MY ORDERS</Link></div>
+    {message && <div className="order-action-message">{message}</div>}
+    <section className="order-status-card">
+      <div className="order-status-head"><div><span className={`order-status-big ${cancelled ? "cancelled" : ""}`}>{cancelled ? "ORDER CANCELLED" : statusLabel}</span><h2>{cancelled ? "This order has been cancelled." : deliveryDate ? `Estimated delivery: ${formatDate(deliveryDate)}` : "Delivery date will be updated soon."}</h2></div>{!cancelled && <Truck size={30} />}</div>
+      {!cancelled ? <div className="order-timeline">{steps.map((step, i) => { const active = i <= statusIndex; return <div className={`timeline-step ${active ? "active" : ""}`} key={step[0]}><div className="timeline-dot">{active ? <CheckCircle size={16} /> : <span>{i + 1}</span>}</div><div><b>{step[1]}</b><small>{step[2]}</small></div></div> })}</div> : <div className="cancelled-note">If your payment was online, refund status: <b>{String(order.refundStatus || "pending").replace(/_/g, " ")}</b>.</div>}
+    </section>
+    <div className="order-detail-grid">
+      <section className="order-detail-main">
+        <div className="order-panel"><div className="panel-head"><h2>ITEMS</h2><span>{order.items?.length || 0} ITEM{order.items?.length === 1 ? "" : "S"}</span></div>{(order.items || []).map((item, idx) => <article className="order-item-detail" key={`${item.productId}-${idx}`}><img src={item.image} alt={item.name} /><div className="order-item-copy"><h3>{item.name}</h3><p>Size: <b>{item.size || "—"}</b> · Qty: <b>{item.qty}</b></p><p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p></div><strong>₹{(Number(item.price) * Number(item.qty)).toLocaleString("en-IN")}</strong></article>)}</div>
+        {order.tracking?.trackingNumber && <div className="order-panel tracking-panel"><div className="panel-head"><h2>TRACK SHIPMENT</h2><span>{order.tracking.courier}</span></div><div className="tracking-row"><Package size={22} /><div><b>{order.tracking.trackingNumber}</b><small>Tracking number</small></div>{order.tracking.trackingUrl && <a className="btn outline" href={order.tracking.trackingUrl} target="_blank" rel="noreferrer">TRACK NOW <ArrowRight size={15} /></a>}</div></div>}
+        <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18} /></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
+      </section>
+      <aside className="order-detail-side">
+        <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal || 0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping || 0) ? `₹${Number(order.shipping).toLocaleString("en-IN")}` : "FREE"}</b></div>{Number(order.buy2Discount || 0) > 0 && <div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount || 0) > 0 && !order.buy2Discount && <div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount || 0) > 0 && <div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee || 0) > 0 && <div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr /><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total || 0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Cash on Delivery (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid || 0).toLocaleString("en-IN")}</b></div><div><span>Cash due on delivery (70%)</span><b>₹{Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid || order.total || 0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod || "online").toUpperCase()} · {String(order.paymentStatus || "").replace(/_/g, " ").toUpperCase()}</p>{!cancelled && order.paymentStatus !== "paid" && order.paymentMethod !== "cod" && Number(order.advancePaid || 0) > 0 && <button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy ? "PROCESSING..." : `PAY BALANCE ₹${Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}`}</button>}</div>
+        <div className="order-panel delivery-summary"><div className="panel-head"><h2>DELIVERY</h2><CalendarDays size={18} /></div><b>{deliveryDate ? formatDate(deliveryDate) : "To be confirmed"}</b><p className="muted">Standard delivery</p></div>
+        <div className="order-actions-panel">{!cancelled && <><button className="btn primary full" disabled={actionBusy || shipped} onClick={cancelOrder}>{shipped ? "CANCELLATION CLOSED" : actionBusy ? "PROCESSING..." : "CANCEL ORDER"}</button><p className="action-note">Cancellation is available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
+      </aside>
+    </div>
+  </main>
 }
 
 function OrderSuccess() {
@@ -2437,7 +2537,7 @@ function OrderSuccess() {
   );
 }
 
-function Cart(){
+function Cart() {
   const { cart, updateQty, removeFromCart, subtotal } = useCart();
   const nav = useNavigate();
   const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
@@ -2574,6 +2674,18 @@ function Cart(){
 function Account() {
   const { wishlist } = useCart();
   const nav = useNavigate();
+  const location = useLocation();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (location.pathname === "/orders") return "orders";
+    return null;
+  });
+
+  useEffect(() => {
+    if (location.pathname === "/orders") {
+      setActiveTab("orders");
+    }
+  }, [location.pathname]);
 
   const cachedUser = (() => {
     try {
@@ -2735,10 +2847,12 @@ function Account() {
     setProfileSaving(true);
     setProfileMessage("");
     try {
-      const updated = await api("/auth/profile", { method: "PUT", body: JSON.stringify({
-        name: profileForm.name.trim(), phone: profileForm.phone.trim(),
-        whatsappOptIn: profileForm.whatsappOptIn, emailOptIn: profileForm.emailOptIn
-      }) });
+      const updated = await api("/auth/profile", {
+        method: "PUT", body: JSON.stringify({
+          name: profileForm.name.trim(), phone: profileForm.phone.trim(),
+          whatsappOptIn: profileForm.whatsappOptIn, emailOptIn: profileForm.emailOptIn
+        })
+      });
       setUser(updated);
       setProfileForm({ name: updated.name || "", phone: updated.phone || "", whatsappOptIn: Boolean(updated.whatsappOptIn), emailOptIn: updated.emailOptIn !== false });
       setProfileEditing(false);
@@ -2980,42 +3094,11 @@ function Account() {
       </section>
 
 
-      {/* STATS */}
-
-      <div className="account-stats">
-
-        <div>
-          <span>ORDERS</span>
-          <strong>{orders.length}</strong>
-        </div>
-
-        <div>
-          <span>SPENT</span>
-          <strong>
-            ₹{spent.toLocaleString("en-IN")}
-          </strong>
-        </div>
-
-        <div>
-          <span>WISHLIST</span>
-          <strong>{wishlist.length}</strong>
-        </div>
-
-        <div>
-          <span>MEMBER SINCE</span>
-          <strong>
-            {user.createdAt
-              ? new Date(user.createdAt).getFullYear()
-              : "—"}
-          </strong>
-        </div>
-
-      </div>
 
 
       {/* MAIN GRID */}
 
-      <div className="account-grid">
+      <div className={`account-grid ${!activeTab ? "single-col" : ""}`}>
 
         {/* PROFILE */}
 
@@ -3042,10 +3125,10 @@ function Account() {
           </button>
           {profileMessage && <p className="profile-feedback" role="status">{profileMessage}</p>}
           {profileEditing && <form className="profile-edit-form" onSubmit={saveProfile}>
-            <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({...v, name:e.target.value}))} /></label>
-            <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({...v, phone:e.target.value}))} /></label>
-            <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({...v, whatsappOptIn:e.target.checked}))} /> Receive order updates on WhatsApp</label>
-            <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({...v, emailOptIn:e.target.checked}))} /> Receive order updates by email</label>
+            <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({ ...v, name: e.target.value }))} /></label>
+            <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({ ...v, phone: e.target.value }))} /></label>
+            <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({ ...v, whatsappOptIn: e.target.checked }))} /> Receive order updates on WhatsApp</label>
+            <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({ ...v, emailOptIn: e.target.checked }))} /> Receive order updates by email</label>
             <button className="btn primary full" type="submit" disabled={profileSaving}>{profileSaving ? "SAVING PROFILE..." : "SAVE PROFILE"}</button>
           </form>}
 
@@ -3063,18 +3146,59 @@ function Account() {
 
           </div>
 
+          <div className="profile-menu-section">
+            <span className="profile-menu-kicker">ACCOUNT MENU</span>
+            <div className="profile-menu-list">
+              <button
+                type="button"
+                className={`profile-menu-item ${activeTab === "orders" ? "active" : ""}`}
+                onClick={() => setActiveTab(prev => prev === "orders" ? null : "orders")}
+              >
+                <div className="profile-menu-item-left">
+                  <Package size={15} />
+                  <span>ORDERS</span>
+                </div>
+                <div className="profile-menu-item-right">
+                  <span className="profile-menu-badge">{orders.length}</span>
+                  <ChevronRight size={13} className={`menu-chevron ${activeTab === "orders" ? "rotated" : ""}`} />
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`profile-menu-item ${activeTab === "addresses" ? "active" : ""}`}
+                onClick={() => setActiveTab(prev => prev === "addresses" ? null : "addresses")}
+              >
+                <div className="profile-menu-item-left">
+                  <MapPin size={15} />
+                  <span>SAVED ADDRESSES</span>
+                </div>
+                <div className="profile-menu-item-right">
+                  <span className="profile-menu-badge">{addresses.length}</span>
+                  <ChevronRight size={13} className={`menu-chevron ${activeTab === "addresses" ? "rotated" : ""}`} />
+                </div>
+              </button>
+
+              <Link
+                to="/wishlist"
+                className="profile-menu-item"
+              >
+                <div className="profile-menu-item-left">
+                  <Heart size={15} />
+                  <span>WISHLIST</span>
+                </div>
+                <div className="profile-menu-item-right">
+                  <span className="profile-menu-badge">{wishlist.length}</span>
+                  <ChevronRight size={13} />
+                </div>
+              </Link>
+            </div>
+          </div>
+
           <div className="account-actions">
 
-            <Link
-              className="btn outline"
-              to="/wishlist"
-            >
-              <Heart size={15} />
-              WISHLIST
-            </Link>
-
             <button
-              className="btn outline"
+              className="btn outline full"
               onClick={logout}
             >
               <LogOut size={15} />
@@ -3088,434 +3212,456 @@ function Account() {
 
         {/* ORDERS */}
 
-        <section className="account-card orders-card">
+        {activeTab === "orders" && (
+          <section id="account-orders" className="account-card orders-card">
 
-          <div className="card-kicker">
-            02 / ORDER HISTORY
-          </div>
+            <div className="card-kicker">
+              02 / ORDER HISTORY
+            </div>
 
-          <div className="orders-title">
+            <div className="orders-title">
 
-            <h2>YOUR ORDERS</h2>
+              <h2>YOUR ORDERS</h2>
 
-            <Link to="/shop">
-              CONTINUE SHOPPING
-              <ArrowRight size={15} />
-            </Link>
-
-          </div>
-
-          {!orders.length ? (
-
-            <div className="empty-orders">
-
-              <Package size={38} />
-
-              <h3>
-                Your story starts here.
-              </h3>
-
-              <p>
-                You haven't placed an order yet.
-              </p>
-
-              <Link
-                className="btn primary"
-                to="/shop"
-              >
-                EXPLORE COLLECTION
-              </Link>
+              <div className="orders-header-actions">
+                <Link to="/shop">
+                  CONTINUE SHOPPING
+                  <ArrowRight size={15} />
+                </Link>
+                <button
+                  type="button"
+                  className="card-close-btn"
+                  onClick={() => setActiveTab(null)}
+                  aria-label="Close orders"
+                >
+                  <X size={14} /> CLOSE
+                </button>
+              </div>
 
             </div>
 
-          ) : (
+            {!orders.length ? (
 
-            orders.map(order => (
+              <div className="empty-orders">
 
-              <div
-                className="order-row"
-                key={order.id}
-                role="link"
-                tabIndex={0}
-                aria-label={`Open order ${order.receipt || order.id}`}
-                onClick={() => nav(`/order-success/${order.id}`)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    nav(`/order-success/${order.id}`);
-                  }
-                }}
-              >
+                <Package size={38} />
 
-                <div className="order-thumb" aria-hidden="true">
-                  {order.items?.[0]?.image ? (
-                    <img src={order.items[0].image} alt="" loading="lazy" />
-                  ) : (
-                    <Package size={22} />
-                  )}
-                  {order.items?.length > 1 && <span>+{order.items.length - 1}</span>}
-                </div>
+                <h3>
+                  Your story starts here.
+                </h3>
 
-                <div className="order-ref">
-
-                  <b>{order.receipt}</b>
-
-                  <small>
-                    {new Date(
-                      order.createdAt
-                    ).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                      }
-                    )}
-                  </small>
-
-                </div>
-
-                <span
-                  className={`order-status ${
-                    order.paymentStatus
-                  }`}
-                >
-                  {String(
-                    order.status || ""
-                  ).replaceAll("_", " ")}
-                </span>
-
-                <strong>
-                  ₹
-                  {Number(
-                    order.total || 0
-                  ).toLocaleString("en-IN")}
-                </strong>
+                <p>
+                  You haven't placed an order yet.
+                </p>
 
                 <Link
-                  to={`/order-success/${order.id}`}
-                  aria-label="View order"
+                  className="btn primary"
+                  to="/shop"
                 >
-                  <ArrowRight size={16} />
+                  EXPLORE COLLECTION
                 </Link>
 
               </div>
 
-            ))
+            ) : (
 
-          )}
+              orders.map(order => (
 
-        </section>
+                <div
+                  className="order-row"
+                  key={order.id}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open order ${order.receipt || order.id}`}
+                  onClick={() => nav(`/order-success/${order.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      nav(`/order-success/${order.id}`);
+                    }
+                  }}
+                >
 
-      </div>
+                  <div className="order-thumb" aria-hidden="true">
+                    {order.items?.[0]?.image ? (
+                      <img src={order.items[0].image} alt="" loading="lazy" />
+                    ) : (
+                      <Package size={22} />
+                    )}
+                    {order.items?.length > 1 && <span>+{order.items.length - 1}</span>}
+                  </div>
 
+                  <div className="order-ref">
 
-      {/* SAVED ADDRESSES */}
+                    <b>{order.receipt}</b>
 
-      <section className="account-card saved-addresses-card">
+                    <small>
+                      {new Date(
+                        order.createdAt
+                      ).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric"
+                        }
+                      )}
+                    </small>
 
-        <div className="card-kicker">
-          03 / DELIVERY
-        </div>
+                  </div>
 
-        <div className="orders-title">
-
-          <div>
-            <h2>SAVED ADDRESSES</h2>
-            <p className="muted">
-              Select and manage your delivery addresses.
-            </p>
-          </div>
-
-          <button
-            className="btn primary"
-            onClick={startAddAddress}
-          >
-            + ADD ADDRESS
-          </button>
-
-        </div>
-
-
-        {addressError && (
-          <div className="error">
-            {addressError}
-          </div>
-        )}
-
-
-        {showAddressForm && (
-
-          <form
-            className="address-form"
-            onSubmit={saveAddress}
-          >
-
-            <div className="form-grid">
-
-              <input
-                required
-                placeholder="Full name"
-                value={addressForm.name}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    name: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                placeholder="Phone"
-                value={addressForm.phone}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    phone: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                className="wide"
-                placeholder="Complete address"
-                value={addressForm.address}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    address: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                placeholder="City"
-                value={addressForm.city}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    city: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                placeholder="State"
-                value={addressForm.state}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    state: e.target.value
-                  })
-                }
-              />
-
-              <input
-                required
-                inputMode="numeric"
-                maxLength="6"
-                placeholder="Pincode"
-                value={addressForm.pincode}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    pincode: e.target.value
-                      .replace(/\D/g, "")
-                      .slice(0, 6)
-                  })
-                }
-              />
-
-              <select
-                value={addressForm.label}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    label: e.target.value
-                  })
-                }
-              >
-                <option value="Home">
-                  Home
-                </option>
-
-                <option value="Work">
-                  Work
-                </option>
-
-                <option value="Other">
-                  Other
-                </option>
-              </select>
-
-            </div>
-
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={addressForm.isDefault}
-                onChange={e =>
-                  setAddressForm({
-                    ...addressForm,
-                    isDefault: e.target.checked
-                  })
-                }
-              />
-
-              Make this my default address
-            </label>
-
-            <div className="account-actions">
-
-              <button
-                type="submit"
-                className="btn primary"
-                disabled={addressLoading}
-              >
-                {addressLoading
-                  ? "SAVING..."
-                  : editingId
-                    ? "UPDATE ADDRESS"
-                    : "SAVE ADDRESS"}
-              </button>
-
-              <button
-                type="button"
-                className="btn outline"
-                onClick={() => {
-                  setShowAddressForm(false);
-                  setEditingId(null);
-                  setAddressError("");
-                }}
-              >
-                CANCEL
-              </button>
-
-            </div>
-
-          </form>
-
-        )}
-
-
-        {!addresses.length && !showAddressForm ? (
-
-          <div className="empty-orders">
-
-            <MapPin size={38} />
-
-            <h3>
-              No saved addresses yet.
-            </h3>
-
-            <p>
-              Add an address so checkout is faster next time.
-            </p>
-
-            <button
-              className="btn primary"
-              onClick={startAddAddress}
-            >
-              ADD YOUR FIRST ADDRESS
-            </button>
-
-          </div>
-
-        ) : (
-
-          <div className="saved-address-grid">
-
-            {addresses.map(address => (
-
-              <article
-                className={`saved-address ${
-                  address.id === defaultAddressId
-                    ? "is-default"
-                    : ""
-                }`}
-                key={address.id}
-              >
-
-                <div className="saved-address-top">
+                  <span
+                    className={`order-status ${order.paymentStatus
+                      }`}
+                  >
+                    {String(
+                      order.status || ""
+                    ).replaceAll("_", " ")}
+                  </span>
 
                   <strong>
-                    {address.label || "Address"}
+                    ₹
+                    {Number(
+                      order.total || 0
+                    ).toLocaleString("en-IN")}
                   </strong>
 
-                  {address.id === defaultAddressId && (
-                    <span className="default-badge">
-                      DEFAULT
-                    </span>
-                  )}
-
-                </div>
-
-                <p>
-                  {address.name}
-                  <br />
-                  {address.phone}
-                  <br />
-                  {address.address}
-                  <br />
-                  {address.city},{" "}
-                  {address.state}{" "}
-                  {address.pincode}
-                </p>
-
-                <div className="saved-address-actions">
-
-                  {address.id !== defaultAddressId && (
-                    <button
-                      className="text-link"
-                      onClick={() =>
-                        makeDefault(address.id)
-                      }
-                    >
-                      MAKE DEFAULT
-                    </button>
-                  )}
-
-                  <button
-                    className="text-link"
-                    onClick={() =>
-                      editAddress(address)
-                    }
+                  <Link
+                    to={`/order-success/${order.id}`}
+                    aria-label="View order"
                   >
-                    EDIT
-                  </button>
-
-                  {address.id !== "legacy-address" && (
-                    <button
-                      className="text-link danger"
-                      onClick={() =>
-                        removeAddress(address.id)
-                      }
-                    >
-                      REMOVE
-                    </button>
-                  )}
+                    <ArrowRight size={16} />
+                  </Link>
 
                 </div>
 
-              </article>
+              ))
 
-            ))}
+            )}
 
-          </div>
-
+          </section>
         )}
 
-      </section>
+
+        {/* SAVED ADDRESSES */}
+
+        {activeTab === "addresses" && (
+          <section id="account-addresses" className="account-card saved-addresses-card">
+
+            <div className="card-kicker">
+              03 / DELIVERY
+            </div>
+
+            <div className="orders-title">
+
+              <div>
+                <h2>SAVED ADDRESSES</h2>
+                <p className="muted">
+                  Select and manage your delivery addresses.
+                </p>
+              </div>
+
+              <div className="orders-header-actions">
+                <button
+                  className="btn primary"
+                  onClick={startAddAddress}
+                >
+                  + ADD ADDRESS
+                </button>
+                <button
+                  type="button"
+                  className="card-close-btn"
+                  onClick={() => setActiveTab(null)}
+                  aria-label="Close saved addresses"
+                >
+                  <X size={14} /> CLOSE
+                </button>
+              </div>
+
+            </div>
+
+
+            {addressError && (
+              <div className="error">
+                {addressError}
+              </div>
+            )}
+
+
+            {showAddressForm && (
+
+              <form
+                className="address-form"
+                onSubmit={saveAddress}
+              >
+
+                <div className="form-grid">
+
+                  <input
+                    required
+                    placeholder="Full name"
+                    value={addressForm.name}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        name: e.target.value
+                      })
+                    }
+                  />
+
+                  <input
+                    required
+                    placeholder="Phone"
+                    value={addressForm.phone}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        phone: e.target.value
+                      })
+                    }
+                  />
+
+                  <input
+                    required
+                    className="wide"
+                    placeholder="Complete address"
+                    value={addressForm.address}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        address: e.target.value
+                      })
+                    }
+                  />
+
+                  <input
+                    required
+                    placeholder="City"
+                    value={addressForm.city}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        city: e.target.value
+                      })
+                    }
+                  />
+
+                  <input
+                    required
+                    placeholder="State"
+                    value={addressForm.state}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        state: e.target.value
+                      })
+                    }
+                  />
+
+                  <input
+                    required
+                    inputMode="numeric"
+                    maxLength="6"
+                    placeholder="Pincode"
+                    value={addressForm.pincode}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        pincode: e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 6)
+                      })
+                    }
+                  />
+
+                  <select
+                    value={addressForm.label}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        label: e.target.value
+                      })
+                    }
+                  >
+                    <option value="Home">
+                      Home
+                    </option>
+
+                    <option value="Work">
+                      Work
+                    </option>
+
+                    <option value="Other">
+                      Other
+                    </option>
+                  </select>
+
+                </div>
+
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={addressForm.isDefault}
+                    onChange={e =>
+                      setAddressForm({
+                        ...addressForm,
+                        isDefault: e.target.checked
+                      })
+                    }
+                  />
+
+                  Make this my default address
+                </label>
+
+                <div className="account-actions">
+
+                  <button
+                    type="submit"
+                    className="btn primary"
+                    disabled={addressLoading}
+                  >
+                    {addressLoading
+                      ? "SAVING..."
+                      : editingId
+                        ? "UPDATE ADDRESS"
+                        : "SAVE ADDRESS"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn outline"
+                    onClick={() => {
+                      setShowAddressForm(false);
+                      setEditingId(null);
+                      setAddressError("");
+                    }}
+                  >
+                    CANCEL
+                  </button>
+
+                </div>
+
+              </form>
+
+            )}
+
+
+            {!addresses.length && !showAddressForm ? (
+
+              <div className="empty-orders">
+
+                <MapPin size={38} />
+
+                <h3>
+                  No saved addresses yet.
+                </h3>
+
+                <p>
+                  Add an address so checkout is faster next time.
+                </p>
+
+                <button
+                  className="btn primary"
+                  onClick={startAddAddress}
+                >
+                  ADD YOUR FIRST ADDRESS
+                </button>
+
+              </div>
+
+            ) : (
+
+              <div className="saved-address-grid">
+
+                {addresses.map(address => (
+
+                  <article
+                    className={`saved-address ${address.id === defaultAddressId
+                        ? "is-default"
+                        : ""
+                      }`}
+                    key={address.id}
+                  >
+
+                    <div className="saved-address-top">
+
+                      <strong>
+                        {address.label || "Address"}
+                      </strong>
+
+                      {address.id === defaultAddressId && (
+                        <span className="default-badge">
+                          DEFAULT
+                        </span>
+                      )}
+
+                    </div>
+
+                    <p>
+                      {address.name}
+                      <br />
+                      {address.phone}
+                      <br />
+                      {address.address}
+                      <br />
+                      {address.city},{" "}
+                      {address.state}{" "}
+                      {address.pincode}
+                    </p>
+
+                    <div className="saved-address-actions">
+
+                      {address.id !== defaultAddressId && (
+                        <button
+                          className="text-link"
+                          onClick={() =>
+                            makeDefault(address.id)
+                          }
+                        >
+                          MAKE DEFAULT
+                        </button>
+                      )}
+
+                      <button
+                        className="text-link"
+                        onClick={() =>
+                          editAddress(address)
+                        }
+                      >
+                        EDIT
+                      </button>
+
+                      {address.id !== "legacy-address" && (
+                        <button
+                          className="text-link danger"
+                          onClick={() =>
+                            removeAddress(address.id)
+                          }
+                        >
+                          REMOVE
+                        </button>
+                      )}
+
+                    </div>
+
+                  </article>
+
+                ))}
+
+              </div>
+
+            )}
+
+          </section>
+        )}
+
+      </div>
 
     </main>
   );
 }
-function Wishlist(){const products=useProducts();const{wishlist}=useCart();const items=products.filter(p=>wishlist.includes(p.id));return <main className="shop-page"><div className="page-heading"><p className="eyebrow">SAVED FOR LATER</p><h1>WISHLIST</h1></div>{items.length?<div className="product-grid shop-grid">{items.map(p=><ProductCard key={p.id} product={p}/>)}</div>:<div className="empty"><Heart size={50}/><h2>Your wishlist is empty.</h2><Link className="btn primary" to="/shop">EXPLORE PRODUCTS</Link></div>}</main>}
-function About(){return <main className="enytm-about-page"><section className="about-hero"><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2200&q=90" alt="A curated clothing store"/><div><p className="eyebrow">THE STORY</p><h1>MORE THAN<br/><em>A MOMENT.</em></h1></div></section><section className="about-quality-section"><div className="about-quality-heading"><p className="eyebrow">THE DETAILS MATTER</p><h2>FEEL THE<br/><em>DIFFERENCE.</em></h2><p>Premium-feeling fabrics. Thoughtful construction. Everyday pieces made to be reached for again and again.</p></div><img className="about-quality-triptych" src="/enytm-quality-triptych.png" alt="Close-up details of ENYTM garment fabric, collar, folded clothing and stitching"/><div className="about-quality-caption"><span>FABRIC, FIT & FINISH</span><span>MADE FOR EVERYDAY WEAR</span></div></section><section className="about-copy"><p className="eyebrow">01 / A LITTLE ABOUT ENYTM</p><h2>MADE FOR THE<br/><em>WAY YOU LIVE.</em></h2><p>ENYTM APPARELS began with a simple belief: what you wear should feel as natural as being yourself. We create everyday streetwear with considered silhouettes, comfortable fabrics and clean details.</p><p>From oversized tees and polos to heavyweight layers, each piece is designed to bring together ease, character and lasting versatility—without unnecessary noise.</p><div className="about-vision"><p className="eyebrow">OUR VISION</p><p>To make everyday clothing feel more personal: pieces that move with you, fit into your life and let your confidence speak quietly.</p></div></section><section className="about-why"><p className="eyebrow">02 / WHY ENYTM</p><h2>LESS NOISE.<br/><em>MORE YOU.</em></h2><div className="about-why-grid"><div><span>01</span><h3>CONSIDERED FITS</h3><p>Relaxed silhouettes and balanced proportions made for everyday movement.</p></div><div><span>02</span><h3>BETTER-FEELING FABRICS</h3><p>We pay attention to fabric weight, texture and the way a garment feels in use.</p></div><div><span>03</span><h3>DETAILS THAT LAST</h3><p>Clean finishes and versatile design, made to be worn, styled and worn again.</p></div></div><Link className="btn outline" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></section></main>}
+function Wishlist() { const products = useProducts(); const { wishlist } = useCart(); const items = products.filter(p => wishlist.includes(p.id)); return <main className="shop-page"><div className="page-heading"><p className="eyebrow">SAVED FOR LATER</p><h1>WISHLIST</h1></div>{items.length ? <div className="product-grid shop-grid">{items.map(p => <ProductCard key={p.id} product={p} />)}</div> : <div className="empty"><Heart size={50} /><h2>Your wishlist is empty.</h2><Link className="btn primary" to="/shop">EXPLORE PRODUCTS</Link></div>}</main> }
+function About() { return <main className="enytm-about-page"><section className="about-hero"><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2200&q=90" alt="A curated clothing store" /><div><p className="eyebrow">THE STORY</p><h1>MORE THAN<br /><em>A MOMENT.</em></h1></div></section><section className="about-quality-section"><div className="about-quality-heading"><p className="eyebrow">THE DETAILS MATTER</p><h2>FEEL THE<br /><em>DIFFERENCE.</em></h2><p>Premium-feeling fabrics. Thoughtful construction. Everyday pieces made to be reached for again and again.</p></div><img className="about-quality-triptych" src="/enytm-quality-triptych.png" alt="Close-up details of ENYTM garment fabric, collar, folded clothing and stitching" /><div className="about-quality-caption"><span>FABRIC, FIT & FINISH</span><span>MADE FOR EVERYDAY WEAR</span></div></section><section className="about-copy"><p className="eyebrow">01 / A LITTLE ABOUT ENYTM</p><h2>MADE FOR THE<br /><em>WAY YOU LIVE.</em></h2><p>ENYTM APPARELS began with a simple belief: what you wear should feel as natural as being yourself. We create everyday streetwear with considered silhouettes, comfortable fabrics and clean details.</p><p>From oversized tees and polos to heavyweight layers, each piece is designed to bring together ease, character and lasting versatility—without unnecessary noise.</p><div className="about-vision"><p className="eyebrow">OUR VISION</p><p>To make everyday clothing feel more personal: pieces that move with you, fit into your life and let your confidence speak quietly.</p></div></section><section className="about-why"><p className="eyebrow">02 / WHY ENYTM</p><h2>LESS NOISE.<br /><em>MORE YOU.</em></h2><div className="about-why-grid"><div><span>01</span><h3>CONSIDERED FITS</h3><p>Relaxed silhouettes and balanced proportions made for everyday movement.</p></div><div><span>02</span><h3>BETTER-FEELING FABRICS</h3><p>We pay attention to fabric weight, texture and the way a garment feels in use.</p></div><div><span>03</span><h3>DETAILS THAT LAST</h3><p>Clean finishes and versatile design, made to be worn, styled and worn again.</p></div></div><Link className="btn outline" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16} /></Link></section></main> }
 function PrivacyPolicyPage() {
   return (
     <main className="policy-page">
@@ -3972,8 +4118,8 @@ function SizeGuidePage() {
   );
 }
 
-function Footer(){
-  const whatsappLink="https://wa.me/message/5KFLGKP4XCG7C1";
+function Footer() {
+  const whatsappLink = "https://wa.me/message/5KFLGKP4XCG7C1";
   return (
     <>
       <a className="whatsapp-float" href={whatsappLink} target="_blank" rel="noreferrer" aria-label="Chat with ENYTM on WhatsApp" title="WhatsApp">
@@ -3997,14 +4143,6 @@ function Footer(){
             </div>
           </div>
           <div className="footer-col">
-            <h4>COLLECTIONS</h4>
-            <Link to="/shop">All Products</Link>
-            <Link to="/shop?category=Oversized">Oversized T-Shirts</Link>
-            <Link to="/shop?category=Polos">Polos</Link>
-            <Link to="/shop?category=Hoodies">Hoodies & Sweatshirts</Link>
-            <Link to="/shop?category=Lowers">Heavyweight Lowers</Link>
-          </div>
-          <div className="footer-col">
             <h4>CUSTOMER CARE</h4>
             <Link to="/track">Track Your Order</Link>
             <Link to="/size-guide">Garment Size Guide</Link>
@@ -4018,11 +4156,6 @@ function Footer(){
             <Link to="/shipping-policy">Shipping & Delivery</Link>
             <Link to="/refund-policy">Returns & Refunds</Link>
             <Link to="/terms">Terms & Conditions</Link>
-            <div className="footer-social-links">
-              <a href="https://www.instagram.com/enytm_official/?__d=1%253Futm_source%253Dig_embed" target="_blank" rel="noreferrer">
-                <Instagram size={17} /> Instagram
-              </a>
-            </div>
           </div>
         </div>
         <div className="footer-bottom">
@@ -4120,136 +4253,139 @@ function SearchOverlay({ close }) {
     </div>
   );
 }
-function WalletPage(){
- const [wallet,setWallet]=useState({balance:0,transactions:[]});
- const [amount,setAmount]=useState("500");
- const [busy,setBusy]=useState(false);
- const [message,setMessage]=useState("");
- const load=async()=>{try{setWallet(await api("/wallet"));}catch(e){setMessage(e.message||"Could not load wallet.");}};
- useEffect(()=>{load()},[]);
- const addMoney=async()=>{
-  const rupees=Number(amount);
-  if(!Number.isFinite(rupees)||rupees<100||rupees>50000){setMessage("Enter an amount from ₹100 to ₹50,000.");return;}
-  setBusy(true);setMessage("");
-  try{
-   const data=await api("/wallet/topup/order",{method:"POST",body:JSON.stringify({amount:rupees})});
-   if(!window.Razorpay)throw new Error("Payment checkout could not load. Please try again.");
-   const rzp=new window.Razorpay({key:data.keyId,amount:data.amount,currency:"INR",name:"ENYTM APPARELS",description:"Add money to ENYTM Wallet",order_id:data.razorpayOrderId,theme:{color:"#c8b69a"},handler:async response=>{
-    try{await api("/wallet/topup/verify",{method:"POST",body:JSON.stringify({...response,topupId:data.topupId})});await load();setMessage("Wallet credited successfully.");}
-    catch(e){setMessage(e.message||"Payment verification pending. Refresh wallet shortly.");}
-   },modal:{ondismiss:()=>setBusy(false)}});
-   rzp.on("payment.failed",r=>{setMessage(r.error?.description||"Payment failed.");setBusy(false)});rzp.open();
-  }catch(e){setMessage(e.message||"Unable to start wallet top-up.");setBusy(false);}
- };
- return <main className="account-page"><div className="page-heading compact"><p className="eyebrow">ENYTM MEMBERS</p><h1>MY WALLET</h1><p>Your balance and wallet activity.</p></div><section className="account-card wallet-card"><p className="eyebrow">AVAILABLE BALANCE</p><h2 style={{fontSize:42,margin:"8px 0 24px"}}>₹{Number(wallet.balance||0).toLocaleString("en-IN")}</h2><div className="wallet-topup"><label htmlFor="wallet-add-amount">ADD MONEY (₹100–₹50,000)</label><input id="wallet-add-amount" inputMode="numeric" value={amount} onChange={e=>setAmount(e.target.value.replace(/\D/g,""))}/><button className="btn primary" disabled={busy} onClick={addMoney}>{busy?"PROCESSING...":"ADD MONEY SECURELY"}</button></div>{message&&<p className="order-action-message">{message}</p>}<h2>WALLET ACTIVITY</h2>{wallet.transactions?.length?wallet.transactions.map((t,i)=><div className="wallet-transaction" key={t.id||i}><span>{t.description||t.type||"Wallet transaction"}<small>{t.createdAt?new Date(t.createdAt).toLocaleString("en-IN"):""}</small></span><b>{t.amount>=0?"+":"−"}₹{Math.abs(Number(t.amount||0)).toLocaleString("en-IN")}</b></div>):<p className="muted">No wallet transactions yet.</p>}</section></main>
+function WalletPage() {
+  const [wallet, setWallet] = useState({ balance: 0, transactions: [] });
+  const [amount, setAmount] = useState("500");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const load = async () => { try { setWallet(await api("/wallet")); } catch (e) { setMessage(e.message || "Could not load wallet."); } };
+  useEffect(() => { load() }, []);
+  const addMoney = async () => {
+    const rupees = Number(amount);
+    if (!Number.isFinite(rupees) || rupees < 100 || rupees > 50000) { setMessage("Enter an amount from ₹100 to ₹50,000."); return; }
+    setBusy(true); setMessage("");
+    try {
+      const data = await api("/wallet/topup/order", { method: "POST", body: JSON.stringify({ amount: rupees }) });
+      if (!window.Razorpay) throw new Error("Payment checkout could not load. Please try again.");
+      const rzp = new window.Razorpay({
+        key: data.keyId, amount: data.amount, currency: "INR", name: "ENYTM APPARELS", description: "Add money to ENYTM Wallet", order_id: data.razorpayOrderId, theme: { color: "#c8b69a" }, handler: async response => {
+          try { await api("/wallet/topup/verify", { method: "POST", body: JSON.stringify({ ...response, topupId: data.topupId }) }); await load(); setMessage("Wallet credited successfully."); }
+          catch (e) { setMessage(e.message || "Payment verification pending. Refresh wallet shortly."); }
+        }, modal: { ondismiss: () => setBusy(false) }
+      });
+      rzp.on("payment.failed", r => { setMessage(r.error?.description || "Payment failed."); setBusy(false) }); rzp.open();
+    } catch (e) { setMessage(e.message || "Unable to start wallet top-up."); setBusy(false); }
+  };
+  return <main className="account-page"><div className="page-heading compact"><p className="eyebrow">ENYTM MEMBERS</p><h1>MY WALLET</h1><p>Your balance and wallet activity.</p></div><section className="account-card wallet-card"><p className="eyebrow">AVAILABLE BALANCE</p><h2 style={{ fontSize: 42, margin: "8px 0 24px" }}>₹{Number(wallet.balance || 0).toLocaleString("en-IN")}</h2><div className="wallet-topup"><label htmlFor="wallet-add-amount">ADD MONEY (₹100–₹50,000)</label><input id="wallet-add-amount" inputMode="numeric" value={amount} onChange={e => setAmount(e.target.value.replace(/\D/g, ""))} /><button className="btn primary" disabled={busy} onClick={addMoney}>{busy ? "PROCESSING..." : "ADD MONEY SECURELY"}</button></div>{message && <p className="order-action-message">{message}</p>}<h2>WALLET ACTIVITY</h2>{wallet.transactions?.length ? wallet.transactions.map((t, i) => <div className="wallet-transaction" key={t.id || i}><span>{t.description || t.type || "Wallet transaction"}<small>{t.createdAt ? new Date(t.createdAt).toLocaleString("en-IN") : ""}</small></span><b>{t.amount >= 0 ? "+" : "−"}₹{Math.abs(Number(t.amount || 0)).toLocaleString("en-IN")}</b></div>) : <p className="muted">No wallet transactions yet.</p>}</section></main>
 }
 
-function Admin(){
- const[logged,setLogged]=useState(!!localStorage.getItem("enytm-admin"));
- const[tab,setTab]=useState("dashboard");
- const[data,setData]=useState(null);
- const[orders,setOrders]=useState([]);
- const[customers,setCustomers]=useState([]);
- const[products,setProducts]=useState([]);
- const[email,setEmail]=useState("");
- const[password,setPassword]=useState("");
- const[busy,setBusy]=useState(false);
- const[error,setError]=useState("");
- const load=async()=>{try{setData(await api("/admin/dashboard"));setOrders(await api("/admin/orders"));setCustomers(await api("/admin/customers"));setProducts(await api("/admin/products"));}catch{localStorage.removeItem("enytm-admin");setLogged(false)}};
- useEffect(()=>{if(logged)load()},[logged]);
- const login=async()=>{
-  setBusy(true); setError("");
-  try{
-   const r=await api("/admin/login",{method:"POST",body:JSON.stringify({email:email.trim().toLowerCase(),password})});
-   localStorage.setItem("enytm-admin",r.token);
-   setLogged(true);
-  }catch(e){setError(e.message||"Admin login failed.");}
-  finally{setBusy(false)}
- };
- if(!logged)return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>{error&&<div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy?"CHECKING...":"LOGIN"}</button></div></main>;
- return <main className="admin-page"><aside className="admin-side"><div className="logo"><BrandLogo /></div>{["dashboard","orders","customers","products","coupons","settings"].map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={()=>{localStorage.removeItem("enytm-admin");setLogged(false)}}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab==="dashboard"&&data&&<div className="metric-grid">{[["REVENUE",`₹${data.revenue.toLocaleString("en-IN")}`],["ORDERS",data.orders],["PAID",data.paidOrders],["CUSTOMERS",data.customers],["PRODUCTS",data.products],["PENDING",data.pendingPayments]].map(([a,b])=><div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab==="orders"&&<AdminOrders orders={orders} reload={load}/>} {tab==="customers"&&<AdminTable headers={["NAME","EMAIL","PHONE","CREATED","WHATSAPP","EMAIL"]} rows={customers.map(c=>[c.name,c.email,c.phone||"—",new Date(c.createdAt).toLocaleDateString(),c.whatsappOptIn?"ON":"OFF",c.emailOptIn?"ON":"OFF"])}/>} {tab==="products"&&<AdminProducts products={products} reload={load}/>} {tab==="coupons"&&<AdminCoupons products={products}/>} {tab==="settings"&&<AdminSettings/>}</section></main>}
+function Admin() {
+  const [logged, setLogged] = useState(!!localStorage.getItem("enytm-admin"));
+  const [tab, setTab] = useState("dashboard");
+  const [data, setData] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const load = async () => { try { setData(await api("/admin/dashboard")); setOrders(await api("/admin/orders")); setCustomers(await api("/admin/customers")); setProducts(await api("/admin/products")); } catch { localStorage.removeItem("enytm-admin"); setLogged(false) } };
+  useEffect(() => { if (logged) load() }, [logged]);
+  const login = async () => {
+    setBusy(true); setError("");
+    try {
+      const r = await api("/admin/login", { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
+      localStorage.setItem("enytm-admin", r.token);
+      setLogged(true);
+    } catch (e) { setError(e.message || "Admin login failed."); }
+    finally { setBusy(false) }
+  };
+  if (!logged) return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} /><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} />{error && <div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy ? "CHECKING..." : "LOGIN"}</button></div></main>;
+  return <main className="admin-page"><aside className="admin-side"><div className="logo"><BrandLogo /></div>{["dashboard", "orders", "customers", "products", "coupons", "settings"].map(t => <button className={tab === t ? "active" : ""} onClick={() => setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={() => { localStorage.removeItem("enytm-admin"); setLogged(false) }}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab === "dashboard" && data && <div className="metric-grid">{[["REVENUE", `₹${data.revenue.toLocaleString("en-IN")}`], ["ORDERS", data.orders], ["PAID", data.paidOrders], ["CUSTOMERS", data.customers], ["PRODUCTS", data.products], ["PENDING", data.pendingPayments]].map(([a, b]) => <div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab === "orders" && <AdminOrders orders={orders} reload={load} />} {tab === "customers" && <AdminTable headers={["NAME", "EMAIL", "PHONE", "CREATED", "WHATSAPP", "EMAIL"]} rows={customers.map(c => [c.name, c.email, c.phone || "—", new Date(c.createdAt).toLocaleDateString(), c.whatsappOptIn ? "ON" : "OFF", c.emailOptIn ? "ON" : "OFF"])} />} {tab === "products" && <AdminProducts products={products} reload={load} />} {tab === "coupons" && <AdminCoupons products={products} />} {tab === "settings" && <AdminSettings />}</section></main>
+}
 function AdminOrders({ orders, reload }) {
- const [selected, setSelected] = useState(null);
- const [status, setStatus] = useState("confirmed");
- const [courier, setCourier] = useState("");
- const [trackingNumber, setTrackingNumber] = useState("");
- const [trackingUrl, setTrackingUrl] = useState("");
- const [saving, setSaving] = useState(false);
- const [message, setMessage] = useState("");
- const money = value => `₹${Number(value || 0).toLocaleString("en-IN")}`;
- const date = value => value ? new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
- const field = (label, value) => <div className="order-detail-field" key={label}><span>{label}</span><strong>{value || "—"}</strong></div>;
- const openOrder = order => { setSelected(order); setStatus(order.status || "confirmed"); setCourier(order.tracking?.courier || ""); setTrackingNumber(order.tracking?.trackingNumber || ""); setTrackingUrl(order.tracking?.trackingUrl || ""); setMessage(""); };
- const saveDelivery = async () => {
-  if (!selected) return;
-  setSaving(true); setMessage("");
-  try {
-   const updated = await api(`/admin/orders/${selected.id}/status`, { method: "PUT", body: JSON.stringify({ status, tracking: { courier: courier.trim(), trackingNumber: trackingNumber.trim(), trackingUrl: trackingUrl.trim() } }) });
-   setSelected(updated); setStatus(updated.status || status); setCourier(updated.tracking?.courier || ""); setTrackingNumber(updated.tracking?.trackingNumber || ""); setTrackingUrl(updated.tracking?.trackingUrl || "");
-   setMessage("Delivery details saved. The customer order page will reflect the updated status.");
-   if (reload) await reload();
-  } catch (e) { setMessage(e.message || "Could not update delivery details."); }
-  finally { setSaving(false); }
- };
- if (selected) {
-  const order = selected;
-  const customer = order.customer || {};
-  const items = Array.isArray(order.items) ? order.items : [];
-  return <section className="admin-order-detail">
-   <div className="admin-order-detail-head"><button className="btn outline" onClick={() => setSelected(null)}>← BACK TO ORDERS</button><div><p className="eyebrow">ORDER DETAILS</p><h2>{order.receipt || order.id}</h2><p className="admin-order-muted">Placed {date(order.createdAt)}</p></div><button className="btn outline" onClick={() => window.print()}>PRINT ORDER</button></div>
-   <div className="admin-order-badges"><span>ORDER: {String(order.status || "unknown").replaceAll("_", " ")}</span><span>PAYMENT: {String(order.paymentStatus || "unknown").replaceAll("_", " ")}</span></div>
-   <section className="admin-order-card admin-delivery-editor"><p className="eyebrow">DELIVERY & CUSTOMER TRACKING</p><h3>Update order progress</h3><p className="admin-order-muted">Save changes here to update the status shown in the customer's order details. Add courier tracking details when available.</p>
-    <div className="admin-delivery-form">
-     <label>ORDER STATUS<select value={status} onChange={e=>setStatus(e.target.value)}>{[["payment_pending","Payment pending"],["confirmed","Order confirmed"],["processing","Processing"],["packed","Packed"],["shipped","Shipped"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-     <label>COURIER PARTNER<input value={courier} onChange={e=>setCourier(e.target.value)} placeholder="e.g. Delhivery, Shiprocket"/></label>
-     <label>TRACKING / AWB NUMBER<input value={trackingNumber} onChange={e=>setTrackingNumber(e.target.value)} placeholder="Enter AWB or tracking number"/></label>
-     <label>TRACKING URL<input type="url" value={trackingUrl} onChange={e=>setTrackingUrl(e.target.value)} placeholder="https://courier-tracking-link"/></label>
-    </div>
-    <button className="btn primary" disabled={saving} onClick={saveDelivery}>{saving?"SAVING...":"SAVE DELIVERY UPDATE"}</button>{message&&<p className="admin-save-message">{message}</p>}
-   </section>
-   <div className="admin-order-detail-grid">
-    <section className="admin-order-card"><p className="eyebrow">CUSTOMER & DELIVERY</p><h3>{customer.name || "Customer details unavailable"}</h3><div className="admin-order-fields">{field("Email", customer.email)}{field("Phone", customer.phone)}{field("Address", customer.address)}{field("City", customer.city)}{field("State", customer.state)}{field("PIN code", customer.pincode)}{field("Landmark", customer.landmark)}</div></section>
-    <section className="admin-order-card"><p className="eyebrow">PAYMENT INFORMATION</p><div className="admin-order-fields">{field("Payment status", order.paymentStatus)}{field("Payment method", order.paymentMethod)}{field("Payment ID", order.paymentId)}{field("Gateway order ID", order.razorpayOrderId)}{field("Order ID", order.receipt || order.id)}{field("Last updated", date(order.updatedAt))}</div></section>
-   </div>
-   <section className="admin-order-card admin-order-items"><p className="eyebrow">ITEMS IN THIS ORDER</p><div className="admin-order-item-list">{items.length ? items.map((item, i) => <div className="admin-order-item" key={`${item.productId || item.name}-${i}`}><div className="admin-order-item-image">{item.image ? <img src={item.image} alt={item.name || "Ordered product"}/> : <span>ENYTM</span>}</div><div className="admin-order-item-name"><strong>{item.name || "Product"}</strong><span>{item.category || "Apparel"}{item.size ? ` · Size ${item.size}` : ""}{item.color ? ` · ${item.color}` : ""}</span><small>Qty: {Number(item.qty || 1)}</small></div><div className="admin-order-item-price"><span>{money(item.price)} each</span><strong>{money(Number(item.price || 0) * Number(item.qty || 1))}</strong></div></div>) : <p className="admin-order-muted">No product line items were saved with this order.</p>}</div>
-   <div className="admin-order-totals">{field("Subtotal", money(order.subtotal))}{field("Discount", money(order.discount))}{field("Shipping", Number(order.shipping || 0) ? money(order.shipping) : "Free")}{field("Order total", money(order.total))}</div></section>
-   <p className="admin-order-note">Details are shown from the order record saved by your store. Fields that were not collected at checkout appear as “—”.</p>
-  </section>;
- }
- return <div className="admin-table-wrap admin-orders-table"><table><thead><tr>{["ORDER ID · CLICK TO OPEN","CUSTOMER","PHONE","TOTAL","PAYMENT","ORDER STATUS","DATE"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{orders.map(order=><tr key={order.id || order.receipt}><td><button className="admin-order-link" onClick={() => openOrder(order)}>{order.receipt || order.id}</button></td><td>{order.customer?.name || "—"}</td><td>{order.customer?.phone || "—"}</td><td>{money(order.total)}</td><td>{order.paymentStatus || "—"}</td><td>{String(order.status || "—").replaceAll("_", " ")}</td><td>{date(order.createdAt)}</td></tr>)}</tbody></table>{!orders.length&&<p className="admin-order-muted">No orders found.</p>}</div>;
+  const [selected, setSelected] = useState(null);
+  const [status, setStatus] = useState("confirmed");
+  const [courier, setCourier] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [trackingUrl, setTrackingUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const money = value => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+  const date = value => value ? new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
+  const field = (label, value) => <div className="order-detail-field" key={label}><span>{label}</span><strong>{value || "—"}</strong></div>;
+  const openOrder = order => { setSelected(order); setStatus(order.status || "confirmed"); setCourier(order.tracking?.courier || ""); setTrackingNumber(order.tracking?.trackingNumber || ""); setTrackingUrl(order.tracking?.trackingUrl || ""); setMessage(""); };
+  const saveDelivery = async () => {
+    if (!selected) return;
+    setSaving(true); setMessage("");
+    try {
+      const updated = await api(`/admin/orders/${selected.id}/status`, { method: "PUT", body: JSON.stringify({ status, tracking: { courier: courier.trim(), trackingNumber: trackingNumber.trim(), trackingUrl: trackingUrl.trim() } }) });
+      setSelected(updated); setStatus(updated.status || status); setCourier(updated.tracking?.courier || ""); setTrackingNumber(updated.tracking?.trackingNumber || ""); setTrackingUrl(updated.tracking?.trackingUrl || "");
+      setMessage("Delivery details saved. The customer order page will reflect the updated status.");
+      if (reload) await reload();
+    } catch (e) { setMessage(e.message || "Could not update delivery details."); }
+    finally { setSaving(false); }
+  };
+  if (selected) {
+    const order = selected;
+    const customer = order.customer || {};
+    const items = Array.isArray(order.items) ? order.items : [];
+    return <section className="admin-order-detail">
+      <div className="admin-order-detail-head"><button className="btn outline" onClick={() => setSelected(null)}>← BACK TO ORDERS</button><div><p className="eyebrow">ORDER DETAILS</p><h2>{order.receipt || order.id}</h2><p className="admin-order-muted">Placed {date(order.createdAt)}</p></div><button className="btn outline" onClick={() => window.print()}>PRINT ORDER</button></div>
+      <div className="admin-order-badges"><span>ORDER: {String(order.status || "unknown").replaceAll("_", " ")}</span><span>PAYMENT: {String(order.paymentStatus || "unknown").replaceAll("_", " ")}</span></div>
+      <section className="admin-order-card admin-delivery-editor"><p className="eyebrow">DELIVERY & CUSTOMER TRACKING</p><h3>Update order progress</h3><p className="admin-order-muted">Save changes here to update the status shown in the customer's order details. Add courier tracking details when available.</p>
+        <div className="admin-delivery-form">
+          <label>ORDER STATUS<select value={status} onChange={e => setStatus(e.target.value)}>{[["payment_pending", "Payment pending"], ["confirmed", "Order confirmed"], ["processing", "Processing"], ["packed", "Packed"], ["shipped", "Shipped"], ["out_for_delivery", "Out for delivery"], ["delivered", "Delivered"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label>COURIER PARTNER<input value={courier} onChange={e => setCourier(e.target.value)} placeholder="e.g. Delhivery, Shiprocket" /></label>
+          <label>TRACKING / AWB NUMBER<input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} placeholder="Enter AWB or tracking number" /></label>
+          <label>TRACKING URL<input type="url" value={trackingUrl} onChange={e => setTrackingUrl(e.target.value)} placeholder="https://courier-tracking-link" /></label>
+        </div>
+        <button className="btn primary" disabled={saving} onClick={saveDelivery}>{saving ? "SAVING..." : "SAVE DELIVERY UPDATE"}</button>{message && <p className="admin-save-message">{message}</p>}
+      </section>
+      <div className="admin-order-detail-grid">
+        <section className="admin-order-card"><p className="eyebrow">CUSTOMER & DELIVERY</p><h3>{customer.name || "Customer details unavailable"}</h3><div className="admin-order-fields">{field("Email", customer.email)}{field("Phone", customer.phone)}{field("Address", customer.address)}{field("City", customer.city)}{field("State", customer.state)}{field("PIN code", customer.pincode)}{field("Landmark", customer.landmark)}</div></section>
+        <section className="admin-order-card"><p className="eyebrow">PAYMENT INFORMATION</p><div className="admin-order-fields">{field("Payment status", order.paymentStatus)}{field("Payment method", order.paymentMethod)}{field("Payment ID", order.paymentId)}{field("Gateway order ID", order.razorpayOrderId)}{field("Order ID", order.receipt || order.id)}{field("Last updated", date(order.updatedAt))}</div></section>
+      </div>
+      <section className="admin-order-card admin-order-items"><p className="eyebrow">ITEMS IN THIS ORDER</p><div className="admin-order-item-list">{items.length ? items.map((item, i) => <div className="admin-order-item" key={`${item.productId || item.name}-${i}`}><div className="admin-order-item-image">{item.image ? <img src={item.image} alt={item.name || "Ordered product"} /> : <span>ENYTM</span>}</div><div className="admin-order-item-name"><strong>{item.name || "Product"}</strong><span>{item.category || "Apparel"}{item.size ? ` · Size ${item.size}` : ""}{item.color ? ` · ${item.color}` : ""}</span><small>Qty: {Number(item.qty || 1)}</small></div><div className="admin-order-item-price"><span>{money(item.price)} each</span><strong>{money(Number(item.price || 0) * Number(item.qty || 1))}</strong></div></div>) : <p className="admin-order-muted">No product line items were saved with this order.</p>}</div>
+        <div className="admin-order-totals">{field("Subtotal", money(order.subtotal))}{field("Discount", money(order.discount))}{field("Shipping", Number(order.shipping || 0) ? money(order.shipping) : "Free")}{field("Order total", money(order.total))}</div></section>
+      <p className="admin-order-note">Details are shown from the order record saved by your store. Fields that were not collected at checkout appear as “—”.</p>
+    </section>;
+  }
+  return <div className="admin-table-wrap admin-orders-table"><table><thead><tr>{["ORDER ID · CLICK TO OPEN", "CUSTOMER", "PHONE", "TOTAL", "PAYMENT", "ORDER STATUS", "DATE"].map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{orders.map(order => <tr key={order.id || order.receipt}><td><button className="admin-order-link" onClick={() => openOrder(order)}>{order.receipt || order.id}</button></td><td>{order.customer?.name || "—"}</td><td>{order.customer?.phone || "—"}</td><td>{money(order.total)}</td><td>{order.paymentStatus || "—"}</td><td>{String(order.status || "—").replaceAll("_", " ")}</td><td>{date(order.createdAt)}</td></tr>)}</tbody></table>{!orders.length && <p className="admin-order-muted">No orders found.</p>}</div>;
 }
 
-function AdminTable({headers,rows}){return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>)}</tbody></table></div>}
-function AdminMediaUpload({fieldKey,label,hint,value,onUploaded,video=false}){
- const[busy,setBusy]=useState(false);const[error,setError]=useState("");
- const upload=async file=>{if(!file)return;setBusy(true);setError("");try{const form=new FormData();form.append(video?"video":"image",file);const result=await api(video?"/admin/upload-video":"/admin/upload-image",{method:"POST",body:form});onUploaded(result.url)}catch(e){setError(e.message||"Upload failed.")}finally{setBusy(false)}};
- return <div className="admin-media-upload"><div className="admin-media-preview">{value?(video?<video src={value} controls/>:<img src={value} alt={label}/>):<div className="admin-media-empty"><Package size={23}/><span>{video?"VIDEO":"IMAGE"}</span></div>}</div><div className="admin-media-meta"><strong>{label}</strong><small>{hint}</small><label className="admin-upload-button">{busy?"UPLOADING...":value?"REPLACE FILE":"CHOOSE FILE"}<input type="file" accept={video?"video/mp4,video/webm,video/quicktime":"image/jpeg,image/png,image/webp"} disabled={busy} onChange={e=>{upload(e.target.files?.[0]);e.target.value=""}}/></label>{value&&<button type="button" className="admin-media-remove" onClick={()=>onUploaded("")}>REMOVE</button>}{error&&<small className="admin-media-error">{error}</small>}</div></div>
+function AdminTable({ headers, rows }) { return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div> }
+function AdminMediaUpload({ fieldKey, label, hint, value, onUploaded, video = false }) {
+  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const upload = async file => { if (!file) return; setBusy(true); setError(""); try { const form = new FormData(); form.append(video ? "video" : "image", file); const result = await api(video ? "/admin/upload-video" : "/admin/upload-image", { method: "POST", body: form }); onUploaded(result.url) } catch (e) { setError(e.message || "Upload failed.") } finally { setBusy(false) } };
+  return <div className="admin-media-upload"><div className="admin-media-preview">{value ? (video ? <video src={value} controls /> : <img src={value} alt={label} />) : <div className="admin-media-empty"><Package size={23} /><span>{video ? "VIDEO" : "IMAGE"}</span></div>}</div><div className="admin-media-meta"><strong>{label}</strong><small>{hint}</small><label className="admin-upload-button">{busy ? "UPLOADING..." : value ? "REPLACE FILE" : "CHOOSE FILE"}<input type="file" accept={video ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp"} disabled={busy} onChange={e => { upload(e.target.files?.[0]); e.target.value = "" }} /></label>{value && <button type="button" className="admin-media-remove" onClick={() => onUploaded("")}>REMOVE</button>}{error && <small className="admin-media-error">{error}</small>}</div></div>
 }
-function AdminCoupons({products}){
- const empty={code:"",title:"",discountType:"percentage",discountValue:10,maxDiscount:0,minOrderValue:0,usageLimit:0,perCustomerLimit:1,startsAt:"",expiresAt:"",categories:[],productIds:[],active:true};
- const[coupon,setCoupon]=useState(empty);const[list,setList]=useState([]);const[editing,setEditing]=useState(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
- const load=async()=>{try{setList(await api("/admin/coupons"))}catch(e){setMessage(e.message||"Could not load coupons.")}};
- useEffect(()=>{load()},[]);
- const save=async()=>{setBusy(true);setMessage("");try{await api("/admin/coupons",{method:"POST",body:JSON.stringify({...coupon,id:editing||undefined,code:coupon.code.toUpperCase(),startsAt:coupon.startsAt?new Date(coupon.startsAt).toISOString():"",expiresAt:coupon.expiresAt?new Date(coupon.expiresAt).toISOString():""})});setCoupon(empty);setEditing(null);setMessage("Coupon saved.");await load()}catch(e){setMessage(e.message||"Could not save coupon.")}finally{setBusy(false)}};
- const edit=c=>{setEditing(c.id);setCoupon({...empty,...c,startsAt:c.startsAt?new Date(c.startsAt).toISOString().slice(0,16):"",expiresAt:c.expiresAt?new Date(c.expiresAt).toISOString().slice(0,16):""});setMessage("")};
- const remove=async c=>{if(!window.confirm(`Delete coupon ${c.code}?`))return;try{await api(`/admin/coupons/${c.id}`,{method:"DELETE"});await load()}catch(e){setMessage(e.message||"Could not delete coupon.")}};
- const toggleCategory=(value,checked)=>setCoupon(c=>({...c,categories:checked?[...c.categories,value]:c.categories.filter(x=>x!==value)}));
- return <div className="admin-coupons"><section className="admin-product-editor"><div className="admin-editor-head"><div><p className="eyebrow">{editing?"EDIT COUPON":"PROMOTIONS"}</p><h2>{editing?"Update coupon":"Create a coupon code"}</h2><p className="muted">Build seasonal offers, influencer codes and customer promotions without editing code.</p></div>{editing&&<button className="admin-text-btn" onClick={()=>{setEditing(null);setCoupon(empty)}}>CANCEL</button>}</div><div className="admin-product-form">
- <label className="admin-product-field"><span>COUPON CODE</span><input value={coupon.code} placeholder="DIWALI20" onChange={e=>setCoupon(c=>({...c,code:e.target.value.toUpperCase().replace(/\s/g,"")}))}/></label>
- <label className="admin-product-field"><span>CAMPAIGN / CREATOR NAME</span><input value={coupon.title} placeholder="Diwali campaign or creator name" onChange={e=>setCoupon(c=>({...c,title:e.target.value}))}/></label>
- <label className="admin-product-field"><span>DISCOUNT TYPE</span><select value={coupon.discountType} onChange={e=>setCoupon(c=>({...c,discountType:e.target.value}))}><option value="percentage">Percentage (%)</option><option value="fixed">Fixed amount (₹)</option></select></label>
- <label className="admin-product-field"><span>DISCOUNT VALUE</span><input type="number" min="1" max={coupon.discountType==="percentage"?100:undefined} value={coupon.discountValue} onChange={e=>setCoupon(c=>({...c,discountValue:e.target.value}))}/></label>
- <label className="admin-product-field"><span>MAX DISCOUNT (₹, 0 = NONE)</span><input type="number" min="0" value={coupon.maxDiscount} onChange={e=>setCoupon(c=>({...c,maxDiscount:e.target.value}))} disabled={coupon.discountType==="fixed"}/></label>
- <label className="admin-product-field"><span>MINIMUM ORDER VALUE (₹)</span><input type="number" min="0" value={coupon.minOrderValue} onChange={e=>setCoupon(c=>({...c,minOrderValue:e.target.value}))}/></label>
- <label className="admin-product-field"><span>TOTAL USAGE LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.usageLimit} onChange={e=>setCoupon(c=>({...c,usageLimit:e.target.value}))}/></label>
- <label className="admin-product-field"><span>PER CUSTOMER LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.perCustomerLimit} onChange={e=>setCoupon(c=>({...c,perCustomerLimit:e.target.value}))}/></label>
- <label className="admin-product-field"><span>START DATE / TIME</span><input type="datetime-local" value={coupon.startsAt} onChange={e=>setCoupon(c=>({...c,startsAt:e.target.value}))}/></label>
- <label className="admin-product-field"><span>EXPIRY DATE / TIME</span><input type="datetime-local" value={coupon.expiresAt} onChange={e=>setCoupon(c=>({...c,expiresAt:e.target.value}))}/></label>
- <div className="admin-product-field admin-product-wide"><span>APPLIES TO CATEGORIES (NONE = ALL)</span><div className="admin-coupon-checks">{["Oversized","Polos","Hoodies","Sweatshirts"].map(cat=><label key={cat}><input type="checkbox" checked={coupon.categories.includes(cat)} onChange={e=>toggleCategory(cat,e.target.checked)}/>{cat}</label>)}</div></div>
- <div className="admin-product-field admin-product-wide"><span>SPECIFIC PRODUCTS (NONE = ALL)</span><select multiple value={coupon.productIds.map(String)} onChange={e=>setCoupon(c=>({...c,productIds:[...e.target.selectedOptions].map(o=>Number(o.value))}))}>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
- <label className="admin-coupon-active admin-product-wide"><input type="checkbox" checked={coupon.active} onChange={e=>setCoupon(c=>({...c,active:e.target.checked}))}/> Coupon is active and can be used at checkout</label>
- </div><div className="admin-editor-actions"><button className="btn primary" disabled={busy} onClick={save}>{busy?"SAVING...":editing?"SAVE COUPON":"CREATE COUPON"}</button>{editing&&<button className="btn outline" onClick={()=>{setEditing(null);setCoupon(empty)}}>CANCEL</button>}</div>{message&&<div className="admin-save-message">{message}</div>}</section>
- <div className="admin-product-list-head"><div><p className="eyebrow">CAMPAIGN LIBRARY</p><h2>{list.length} COUPONS</h2></div></div><div className="admin-table-wrap"><table><thead><tr>{["CODE","CAMPAIGN","OFFER","USAGE","VALID UNTIL","STATUS","ACTIONS"].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{list.map(c=><tr key={c.id}><td><strong>{c.code}</strong></td><td>{c.title||"—"}</td><td>{c.discountType==="fixed"?`₹${c.discountValue} off`:`${c.discountValue}% off`}{c.maxDiscount>0&&c.discountType==="percentage"?` (max ₹${c.maxDiscount})`:""}</td><td>{c.usageCount||0}{c.usageLimit?` / ${c.usageLimit}`:" / ∞"}</td><td>{c.expiresAt?new Date(c.expiresAt).toLocaleString("en-IN"):"No expiry"}</td><td>{c.active?"ACTIVE":"INACTIVE"}</td><td><div className="admin-actions"><button className="admin-icon-btn" title="Edit" onClick={()=>edit(c)}><Pencil size={17}/></button><button className="admin-icon-btn admin-delete-icon" title="Delete" onClick={()=>remove(c)}><Trash2 size={17}/></button></div></td></tr>)}</tbody></table>{!list.length&&<p className="admin-order-muted">No coupons yet. Create your first campaign above.</p>}</div></div>
+function AdminCoupons({ products }) {
+  const empty = { code: "", title: "", discountType: "percentage", discountValue: 10, maxDiscount: 0, minOrderValue: 0, usageLimit: 0, perCustomerLimit: 1, startsAt: "", expiresAt: "", categories: [], productIds: [], active: true };
+  const [coupon, setCoupon] = useState(empty); const [list, setList] = useState([]); const [editing, setEditing] = useState(null); const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
+  const load = async () => { try { setList(await api("/admin/coupons")) } catch (e) { setMessage(e.message || "Could not load coupons.") } };
+  useEffect(() => { load() }, []);
+  const save = async () => { setBusy(true); setMessage(""); try { await api("/admin/coupons", { method: "POST", body: JSON.stringify({ ...coupon, id: editing || undefined, code: coupon.code.toUpperCase(), startsAt: coupon.startsAt ? new Date(coupon.startsAt).toISOString() : "", expiresAt: coupon.expiresAt ? new Date(coupon.expiresAt).toISOString() : "" }) }); setCoupon(empty); setEditing(null); setMessage("Coupon saved."); await load() } catch (e) { setMessage(e.message || "Could not save coupon.") } finally { setBusy(false) } };
+  const edit = c => { setEditing(c.id); setCoupon({ ...empty, ...c, startsAt: c.startsAt ? new Date(c.startsAt).toISOString().slice(0, 16) : "", expiresAt: c.expiresAt ? new Date(c.expiresAt).toISOString().slice(0, 16) : "" }); setMessage("") };
+  const remove = async c => { if (!window.confirm(`Delete coupon ${c.code}?`)) return; try { await api(`/admin/coupons/${c.id}`, { method: "DELETE" }); await load() } catch (e) { setMessage(e.message || "Could not delete coupon.") } };
+  const toggleCategory = (value, checked) => setCoupon(c => ({ ...c, categories: checked ? [...c.categories, value] : c.categories.filter(x => x !== value) }));
+  return <div className="admin-coupons"><section className="admin-product-editor"><div className="admin-editor-head"><div><p className="eyebrow">{editing ? "EDIT COUPON" : "PROMOTIONS"}</p><h2>{editing ? "Update coupon" : "Create a coupon code"}</h2><p className="muted">Build seasonal offers, influencer codes and customer promotions without editing code.</p></div>{editing && <button className="admin-text-btn" onClick={() => { setEditing(null); setCoupon(empty) }}>CANCEL</button>}</div><div className="admin-product-form">
+    <label className="admin-product-field"><span>COUPON CODE</span><input value={coupon.code} placeholder="DIWALI20" onChange={e => setCoupon(c => ({ ...c, code: e.target.value.toUpperCase().replace(/\s/g, "") }))} /></label>
+    <label className="admin-product-field"><span>CAMPAIGN / CREATOR NAME</span><input value={coupon.title} placeholder="Diwali campaign or creator name" onChange={e => setCoupon(c => ({ ...c, title: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>DISCOUNT TYPE</span><select value={coupon.discountType} onChange={e => setCoupon(c => ({ ...c, discountType: e.target.value }))}><option value="percentage">Percentage (%)</option><option value="fixed">Fixed amount (₹)</option></select></label>
+    <label className="admin-product-field"><span>DISCOUNT VALUE</span><input type="number" min="1" max={coupon.discountType === "percentage" ? 100 : undefined} value={coupon.discountValue} onChange={e => setCoupon(c => ({ ...c, discountValue: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>MAX DISCOUNT (₹, 0 = NONE)</span><input type="number" min="0" value={coupon.maxDiscount} onChange={e => setCoupon(c => ({ ...c, maxDiscount: e.target.value }))} disabled={coupon.discountType === "fixed"} /></label>
+    <label className="admin-product-field"><span>MINIMUM ORDER VALUE (₹)</span><input type="number" min="0" value={coupon.minOrderValue} onChange={e => setCoupon(c => ({ ...c, minOrderValue: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>TOTAL USAGE LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.usageLimit} onChange={e => setCoupon(c => ({ ...c, usageLimit: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>PER CUSTOMER LIMIT (0 = UNLIMITED)</span><input type="number" min="0" value={coupon.perCustomerLimit} onChange={e => setCoupon(c => ({ ...c, perCustomerLimit: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>START DATE / TIME</span><input type="datetime-local" value={coupon.startsAt} onChange={e => setCoupon(c => ({ ...c, startsAt: e.target.value }))} /></label>
+    <label className="admin-product-field"><span>EXPIRY DATE / TIME</span><input type="datetime-local" value={coupon.expiresAt} onChange={e => setCoupon(c => ({ ...c, expiresAt: e.target.value }))} /></label>
+    <div className="admin-product-field admin-product-wide"><span>APPLIES TO CATEGORIES (NONE = ALL)</span><div className="admin-coupon-checks">{["Oversized", "Polos", "Hoodies", "Sweatshirts"].map(cat => <label key={cat}><input type="checkbox" checked={coupon.categories.includes(cat)} onChange={e => toggleCategory(cat, e.target.checked)} />{cat}</label>)}</div></div>
+    <div className="admin-product-field admin-product-wide"><span>SPECIFIC PRODUCTS (NONE = ALL)</span><select multiple value={coupon.productIds.map(String)} onChange={e => setCoupon(c => ({ ...c, productIds: [...e.target.selectedOptions].map(o => Number(o.value)) }))}>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+    <label className="admin-coupon-active admin-product-wide"><input type="checkbox" checked={coupon.active} onChange={e => setCoupon(c => ({ ...c, active: e.target.checked }))} /> Coupon is active and can be used at checkout</label>
+  </div><div className="admin-editor-actions"><button className="btn primary" disabled={busy} onClick={save}>{busy ? "SAVING..." : editing ? "SAVE COUPON" : "CREATE COUPON"}</button>{editing && <button className="btn outline" onClick={() => { setEditing(null); setCoupon(empty) }}>CANCEL</button>}</div>{message && <div className="admin-save-message">{message}</div>}</section>
+    <div className="admin-product-list-head"><div><p className="eyebrow">CAMPAIGN LIBRARY</p><h2>{list.length} COUPONS</h2></div></div><div className="admin-table-wrap"><table><thead><tr>{["CODE", "CAMPAIGN", "OFFER", "USAGE", "VALID UNTIL", "STATUS", "ACTIONS"].map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{list.map(c => <tr key={c.id}><td><strong>{c.code}</strong></td><td>{c.title || "—"}</td><td>{c.discountType === "fixed" ? `₹${c.discountValue} off` : `${c.discountValue}% off`}{c.maxDiscount > 0 && c.discountType === "percentage" ? ` (max ₹${c.maxDiscount})` : ""}</td><td>{c.usageCount || 0}{c.usageLimit ? ` / ${c.usageLimit}` : " / ∞"}</td><td>{c.expiresAt ? new Date(c.expiresAt).toLocaleString("en-IN") : "No expiry"}</td><td>{c.active ? "ACTIVE" : "INACTIVE"}</td><td><div className="admin-actions"><button className="admin-icon-btn" title="Edit" onClick={() => edit(c)}><Pencil size={17} /></button><button className="admin-icon-btn admin-delete-icon" title="Delete" onClick={() => remove(c)}><Trash2 size={17} /></button></div></td></tr>)}</tbody></table>{!list.length && <p className="admin-order-muted">No coupons yet. Create your first campaign above.</p>}</div></div>
 }
 function AdminProducts({ products, reload }) {
   const empty = {
@@ -4267,7 +4403,7 @@ function AdminProducts({ products, reload }) {
     modelFront: "",
     modelBack: "",
     video: "",
-    sizes: ["S","M","L","XL","XXL"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
   };
 
   const [p, setP] = useState(empty);
@@ -4346,7 +4482,7 @@ function AdminProducts({ products, reload }) {
     } catch (e) {
       setMessage(
         e.message ||
-          "Could not save product."
+        "Could not save product."
       );
     } finally {
       setBusy(false);
@@ -4374,7 +4510,7 @@ function AdminProducts({ products, reload }) {
     } catch (e) {
       setMessage(
         e.message ||
-          "Could not delete product."
+        "Could not delete product."
       );
     }
   };
@@ -4502,13 +4638,13 @@ function AdminProducts({ products, reload }) {
 
           <div className="admin-media-upload-grid admin-product-wide">
             {[
-              ["image","FRONT VIEW","Upload the primary product photo"],
-              ["image2","BACK VIEW","Product back view"],
-              ["image3","FABRIC DETAIL","Close-up of fabric and texture"],
-              ["modelFront","MODEL FRONT","Front view worn by a model"],
-              ["modelBack","MODEL BACK","Back view worn by a model"]
-            ].map(([key,label,hint])=><AdminMediaUpload key={key} fieldKey={key} label={label} hint={hint} value={p[key]} onUploaded={url=>setP(current=>({...current,[key]:url}))}/>)}
-            <AdminMediaUpload fieldKey="video" label="PRODUCT VIDEO (OPTIONAL)" hint="MP4, WEBM or MOV · up to 100 MB" value={p.video} video onUploaded={url=>setP(current=>({...current,video:url}))}/>
+              ["image", "FRONT VIEW", "Upload the primary product photo"],
+              ["image2", "BACK VIEW", "Product back view"],
+              ["image3", "FABRIC DETAIL", "Close-up of fabric and texture"],
+              ["modelFront", "MODEL FRONT", "Front view worn by a model"],
+              ["modelBack", "MODEL BACK", "Back view worn by a model"]
+            ].map(([key, label, hint]) => <AdminMediaUpload key={key} fieldKey={key} label={label} hint={hint} value={p[key]} onUploaded={url => setP(current => ({ ...current, [key]: url }))} />)}
+            <AdminMediaUpload fieldKey="video" label="PRODUCT VIDEO (OPTIONAL)" hint="MP4, WEBM or MOV · up to 100 MB" value={p.video} video onUploaded={url => setP(current => ({ ...current, video: url }))} />
           </div>
 
           <label className="admin-product-field admin-product-wide">
@@ -4543,8 +4679,8 @@ function AdminProducts({ products, reload }) {
             {busy
               ? "SAVING..."
               : editing
-              ? "SAVE CHANGES"
-              : "ADD PRODUCT"}
+                ? "SAVE CHANGES"
+                : "ADD PRODUCT"}
           </button>
 
           {editing && (
@@ -4614,19 +4750,19 @@ function AdminProducts({ products, reload }) {
                   Number(
                     product.oldPrice
                   ) >
-                  Number(
-                    product.price
-                  )
+                    Number(
+                      product.price
+                    )
                     ? Math.round(
-                        (1 -
-                          Number(
-                            product.price
-                          ) /
-                            Number(
-                              product.oldPrice
-                            )) *
-                          100
-                      )
+                      (1 -
+                        Number(
+                          product.price
+                        ) /
+                        Number(
+                          product.oldPrice
+                        )) *
+                      100
+                    )
                     : 0;
 
                 return (
@@ -4767,8 +4903,8 @@ function AdminProducts({ products, reload }) {
 
     </div>
   );
-}function AdminSettings(){const[s,setS]=useState({shippingFreeAbove:0,shippingCharge:0});useEffect(()=>{api("/admin/settings").then(setS)},[]);return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Shipping Policy <input value="Free shipping on all orders (₹0 minimum)" disabled style={{opacity:0.8,cursor:"not-allowed"}}/></label><label>Standard shipping charge (₹) <input value={s.shippingCharge||"0"} onChange={e=>setS({...s,shippingCharge:Number(e.target.value)||0,shippingFreeAbove:0})}/></label><button className="btn primary" onClick={async()=>{await api("/admin/settings",{method:"PUT",body:JSON.stringify({...s,shippingFreeAbove:0,shippingCharge:0})});alert("Settings saved")}}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div>}
-function BrandIntro(){
+} function AdminSettings() { const [s, setS] = useState({ shippingFreeAbove: 0, shippingCharge: 0 }); useEffect(() => { api("/admin/settings").then(setS) }, []); return <div className="admin-settings"><h2>STORE SETTINGS</h2><label>Shipping Policy <input value="Free shipping on all orders (₹0 minimum)" disabled style={{ opacity: 0.8, cursor: "not-allowed" }} /></label><label>Standard shipping charge (₹) <input value={s.shippingCharge || "0"} onChange={e => setS({ ...s, shippingCharge: Number(e.target.value) || 0, shippingFreeAbove: 0 })} /></label><button className="btn primary" onClick={async () => { await api("/admin/settings", { method: "PUT", body: JSON.stringify({ ...s, shippingFreeAbove: 0, shippingCharge: 0 }) }); alert("Settings saved") }}>SAVE SETTINGS</button><p className="muted">Payment credentials, SMTP and WhatsApp credentials belong in the server .env file, not the browser.</p></div> }
+function BrandIntro() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
     const timer = window.setTimeout(() => setVisible(false), 3900);
@@ -4822,12 +4958,12 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <main className="empty" style={{minHeight:"60vh",display:"grid",placeItems:"center",textAlign:"center",padding:"80px 20px"}}>
+        <main className="empty" style={{ minHeight: "60vh", display: "grid", placeItems: "center", textAlign: "center", padding: "80px 20px" }}>
           <div>
             <p className="eyebrow">SOMETHING WENT WRONG</p>
-            <h1 style={{fontSize:"clamp(28px,4vw,48px)",margin:"15px 0"}}>PAGE COULD NOT LOAD</h1>
-            <p style={{color:"#888",maxWidth:440,margin:"0 auto 25px"}}>{this.state.error?.message || "An unexpected error occurred while rendering this page."}</p>
-            <a className="btn primary" href="/" onClick={()=>this.setState({hasError:false})}>RETURN HOME</a>
+            <h1 style={{ fontSize: "clamp(28px,4vw,48px)", margin: "15px 0" }}>PAGE COULD NOT LOAD</h1>
+            <p style={{ color: "#888", maxWidth: 440, margin: "0 auto 25px" }}>{this.state.error?.message || "An unexpected error occurred while rendering this page."}</p>
+            <a className="btn primary" href="/" onClick={() => this.setState({ hasError: false })}>RETURN HOME</a>
           </div>
         </main>
       );
@@ -4836,7 +4972,7 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function ScrollToTopOnRouteChange(){const route=useLocation();useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[route.pathname,route.search]);return null;}
+function ScrollToTopOnRouteChange() { const route = useLocation(); useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [route.pathname, route.search]); return null; }
 function App() {
   const [search, setSearch] = useState(false);
   const route = useLocation();
