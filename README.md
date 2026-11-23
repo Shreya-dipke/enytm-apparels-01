@@ -238,4 +238,4 @@ Before launch:
 
 ### Current data storage
 
-The starter uses `data/db.json` so it can run immediately without a database server. It is intended for development/small testing. For production, use PostgreSQL/Supabase or another managed database and proper object storage for product images.
+ENYTM APPARELS uses MongoDB Atlas cloud database for real-time universal synchronization across all environments and live visitors.
