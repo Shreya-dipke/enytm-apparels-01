@@ -8,6 +8,8 @@ import {
   Menu,
   X,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Instagram,
   Minus,
   Plus,
@@ -83,7 +85,7 @@ const TICKER_ITEMS = [
 ];
 const TICKER_GROUP_ITEMS = Array.from({ length: 6 }, () => TICKER_ITEMS).flat();
 
-function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const location=useLocation();const[token,setToken]=useState(()=>localStorage.getItem("enytm-token"));useEffect(()=>{setToken(localStorage.getItem("enytm-token"));},[location.pathname]);const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className="nav-links"><Link to="/shop">SHOP</Link><Link to="/shop?category=Oversized">OVERSIZED</Link><Link to="/shop?category=Polos">POLOS</Link><Link to="/shop?category=Hoodies">HOODIES</Link><Link to="/shop?category=Lowers">LOWERS</Link><Link to={token?"/account":"/login"}>ORDERS</Link><Link to="/about">ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch} aria-label="Search"><Search/></button><Link className="icon-btn badge-icon nav-wishlist-btn" to="/wishlist" aria-label="Wishlist"><Heart/><b>{token?safeWishlist.length:0}</b></Link><Link className="icon-btn badge-icon" to="/cart" aria-label="Cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn wallet-nav-link" aria-label="Wallet" title="Wallet" to={token?"/wallet":"/login"}><span className="wallet-nav-symbol" aria-hidden="true">₹</span></Link><Link className="icon-btn" aria-label="Account" title={token?"My Account & Orders":"Login"} to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track"><div className="ticker-group">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g1-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div><div className="ticker-group" aria-hidden="true">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g2-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></div></>}
+function Navbar({onSearch}){const{cartCount,wishlist}=useCart();const location=useLocation();const[token,setToken]=useState(()=>localStorage.getItem("enytm-token"));useEffect(()=>{setToken(localStorage.getItem("enytm-token"));},[location.pathname]);const safeWishlist=Array.isArray(wishlist)?wishlist:[];return <><header className="nav"><Link className="logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><nav className="nav-links"><Link to="/shop">SHOP</Link><Link to="/shop?category=Oversized">OVERSIZED</Link><Link to="/shop?category=Polos">POLOS</Link><Link to="/shop?category=Hoodies">HOODIES</Link><Link to="/shop?category=Lowers">LOWERS</Link><Link to={token?"/account":"/login"}>ORDERS</Link><Link to="/about">ABOUT</Link></nav><div className="nav-actions"><button className="icon-btn" onClick={onSearch} aria-label="Search"><Search/></button><Link className="icon-btn badge-icon nav-wishlist-btn" to="/wishlist" aria-label="Wishlist"><Heart/>{token&&safeWishlist.length>0&&<b>{safeWishlist.length}</b>}</Link><Link className="icon-btn badge-icon" to="/cart" aria-label="Cart"><ShoppingBag/>{token&&cartCount>0&&<b>{cartCount}</b>}</Link><Link className="icon-btn" aria-label="Account" title={token?"My Account & Orders":"Login"} to={token?"/account":"/login"}><User/></Link></div></header><div className="announcement" role="region" aria-label="Store Announcements"><div className="announcement-ticker-track"><div className="ticker-group">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g1-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div><div className="ticker-group" aria-hidden="true">{TICKER_GROUP_ITEMS.map((item, idx) => (<span key={`g2-${idx}`}>{item.highlight ? (<strong className="ticker-highlight">{item.text}</strong>) : (item.text)}<b className="ticker-star" aria-hidden="true">✳</b></span>))}</div></div></div></>}
 function ProductCard({product}){
   if (!product) return null;
   const{addToCart,wishlist,toggleWishlist}=useCart();
@@ -163,7 +165,7 @@ function LaunchCountdown(){
     {number:"03",name:"OVERSIZED HOODIES",detail:"Comfort with presence",image:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=85",query:"Oversized%20Hoodies"},
     {number:"04",name:"BAGGY LOWER",detail:"Move your way",image:"https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85",query:"Baggy%20Lower"}
   ];
-  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><Link className="countdown-back" to="/">← BACK TO INTRO</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
+  return <main className="enytm-countdown-page"><style>{`.enytm-countdown-page a:focus-visible{outline:2px solid #c8b69a;outline-offset:5px}`}</style><header className="countdown-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><Link className="countdown-back" to="/">← BACK TO STORE</Link></header><section className="countdown-main"><div className="countdown-inner"><p className="countdown-overline">ENYTM APPARELS · DROP 001</p><h1 className="countdown-title">THE WAIT<br/>IS <em>ALMOST OVER.</em></h1><p className="countdown-subtitle">Your new everyday arrives 8 November 2026.</p>{time.live?<><p className="countdown-overline">WE ARE LIVE</p><Link className="countdown-shop" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16}/></Link></>:<><div className="countdown-grid" role="timer" aria-label="Countdown until ENYTM launch">{units.map(([key,label])=><div className="countdown-unit" key={key}><div className="countdown-number">{String(time[key]).padStart(2,"0")}</div><div className="countdown-label">{label}</div></div>)}</div><p className="countdown-launch-date">LAUNCHING · 08 NOVEMBER 2026 · 12:00 AM IST</p></>}</div></section>{!time.live&&<section className="countdown-preorder"><div className="countdown-offer-copy"><p className="countdown-overline">DROP 001 · PRE-LAUNCH OFFER</p><h2>YOUR FIRST ENYTM.<br/><em>RESERVE THE DROP.</em></h2><p>Reserve selected styles with 30% advance. Balance due online before dispatch.</p><div className="countdown-offer-points"><span>30% ADVANCE</span><span>70% BEFORE DISPATCH</span><span>NO COD</span></div><Link className="countdown-shop countdown-preorder-cta" to="/shop">SHOP THE PRE-LAUNCH OFFER <ArrowRight size={17}/></Link></div><div className="countdown-category-grid">{categories.map(category=><Link className="countdown-category-card" to={`/shop?category=${category.query}`} key={category.number}><div className="countdown-category-image"><img src={category.image} alt={category.name} loading="lazy"/><span className="countdown-category-number">{category.number}</span><span className="countdown-category-arrow">↗</span></div><div className="countdown-category-info"><div><strong>{category.name}</strong><span>{category.detail}</span></div><span className="countdown-category-link">EXPLORE</span></div></Link>)}</div></section>}<footer className="countdown-footer"><span>MORE THAN A MOMENT</span><span>ENYTM.CO.IN · DROP 001</span></footer></main>
 }
 
 function Home() {
@@ -498,9 +500,76 @@ function Home() {
     </main>
   );
 }
+function CustomDropdown({ label, value, options, onChange, className = "" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  return (
+    <div className={`enytm-custom-dropdown ${className} ${open ? "is-open" : ""}`} ref={ref}>
+      <button
+        type="button"
+        className="enytm-dropdown-trigger"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        {label && <span className="enytm-dropdown-label">{label}</span>}
+        <span className="enytm-dropdown-current">{selectedOption ? selectedOption.label : value}</span>
+        <ChevronDown size={14} className={`enytm-dropdown-arrow ${open ? "rotated" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="enytm-dropdown-menu" role="listbox">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={`enytm-dropdown-item ${isSelected ? "selected" : ""}`}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <Check size={13} className="enytm-dropdown-check" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Shop(){
  const products=useProducts();
  const location=useLocation();
+ const navigate=useNavigate();
  const params=new URLSearchParams(location.search);
  const requested=params.get("category")||"All";
  const [sort,setSort]=useState("featured");
@@ -508,43 +577,101 @@ function Shop(){
  const resultsRef=useRef(null);
  useEffect(()=>{
   setCategory(requested);
-  if(location.search){
-   window.requestAnimationFrame(()=>resultsRef.current?.scrollIntoView({behavior:"smooth",block:"start"}));
-  }
- },[requested,location.search]);
+ },[requested]);
  const categoryKey=(value)=>{
   const s=String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
   if(!s||s==="all")return "all";
   if(s.includes("oversized")||s.includes("oversize")||s==="tee"||s.includes("t shirt")||s.includes("tshirt"))return "oversized";
   if(s.includes("polo"))return "polos";
   if(s.includes("hoodie")||s.includes("hooded"))return "hoodies";
+  if(s.includes("sweatshirt"))return "sweatshirts";
   if(s.includes("baggy")||s.includes("lower")||s.includes("trouser")||s.includes("pant"))return "baggy";
   return s;
  };
- const categoryTitle=category==="All"?"SHOP ALL":category==="Oversized"||categoryKey(category)==="oversized"?"OVERSIZED TEES":categoryKey(category)==="polos"?"PREMIUM POLOS":categoryKey(category)==="hoodies"?"OVERSIZED HOODIES":categoryKey(category)==="baggy"?"BAGGY LOWER":"SHOP ALL";
+ const categoryTitle=category==="All"?"SHOP ALL":category==="Oversized"||categoryKey(category)==="oversized"?"OVERSIZED TEES":categoryKey(category)==="polos"?"PREMIUM POLOS":categoryKey(category)==="hoodies"?"OVERSIZED HOODIES":categoryKey(category)==="sweatshirts"?"SWEATSHIRTS":categoryKey(category)==="baggy"?"LOWERS":"SHOP ALL";
  const shown=useMemo(()=>{
   let list=categoryKey(category)==="all"?[...products]:products.filter(p=>categoryKey(p.category)===categoryKey(category));
   if(sort==="low")list.sort((x,y)=>Number(x.price)-Number(y.price));
   if(sort==="high")list.sort((x,y)=>Number(y.price)-Number(x.price));
   return list;
  },[products,category,sort]);
- const choices=[["All","ALL"],["Oversized","OVERSIZED TEES"],["Polos","PREMIUM POLOS"],["Hoodies","HOODIES"],["Baggy Lower","BAGGY LOWER"]];
+ const choices=[
+  ["All","ALL"],
+  ["Oversized","OVERSIZED TEES"],
+  ["Polos","PREMIUM POLOS"],
+  ["Hoodies","HOODIES"],
+  ["Lowers","LOWERS"]
+ ];
+
+ const handleCategoryChange=(val)=>{
+  setCategory(val);
+  navigate(val==="All"?"/shop":`/shop?category=${encodeURIComponent(val)}`,{replace:true});
+ };
+
  return <main className="shop-page shop-page-v2">
-  <section className="shop-intro-v2">
-   <div className="shop-intro-kicker"><span className="shop-live-dot"/> ENYTM APPARELS <span>DROP 001 / EVERYDAY, ELEVATED</span></div>
-   <p className="eyebrow">THE ENYTM EDIT</p>
-   <h1>{categoryTitle.split(" ").map((word,i)=><React.Fragment key={word}>{i>0&&" "}{word}</React.Fragment>)}</h1>
-   <p className="shop-intro-copy">{categoryKey(category)==="all"?"Considered fits. Better-feeling fabrics. Find the pieces you'll live in.":`A closer look at ${categoryTitle.toLowerCase()}. Thoughtful fits, made for everyday.`}</p>
-   <div className="shop-intro-bottom"><span>MORE THAN A MOMENT™</span><span>{String(shown.length).padStart(2,"0")} {shown.length===1?"STYLE":"STYLES"} {categoryKey(category)!=="all"?"IN THIS EDIT":"IN THE COLLECTION"}</span></div>
-  </section>
-  <section className="shop-toolbar-v2">
-   <div className="shop-filter-head"><span>FIND YOUR FIT</span><span>01 — 06 / CATEGORIES</span></div>
-   <div className="shop-chips-v2">{choices.map(([value,label])=><Link key={value} to={value==="All"?"/shop":`/shop?category=${encodeURIComponent(value)}`} className={`shop-chip-v2 ${categoryKey(category)===categoryKey(value)?"active":""}`}>{label}<ArrowRight size={13}/></Link>)}</div>
-   <label className="shop-sort-v2"><span>SORT BY</span><select value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select><ChevronDown size={15}/></label>
-  </section>
+  <div className="shop-simple-header">
+   <div className="shop-simple-title-row">
+    <div>
+     <span className="shop-simple-eyebrow">COLLECTION</span>
+     <h1 className="shop-simple-title">{categoryTitle}</h1>
+    </div>
+    <span className="shop-simple-count">{shown.length} {shown.length===1?"STYLE":"STYLES"}</span>
+   </div>
+
+   <div className="shop-simple-toolbar">
+    <div className="shop-simple-pills" role="tablist" aria-label="Category filter">
+     {choices.map(([value,label])=>(
+      <button
+       key={value}
+       type="button"
+       role="tab"
+       aria-selected={categoryKey(category)===categoryKey(value)}
+       onClick={()=>handleCategoryChange(value)}
+       className={`shop-simple-pill ${categoryKey(category)===categoryKey(value)?"active":""}`}
+      >
+       {label}
+      </button>
+     ))}
+    </div>
+
+    <div className="shop-simple-selects">
+     <CustomDropdown
+      className="shop-category-select-wrap"
+      label="CATEGORY:"
+      value={choices.some(([v])=>categoryKey(v)===categoryKey(category))?category:"All"}
+      options={choices.map(([value,label])=>({value,label}))}
+      onChange={handleCategoryChange}
+     />
+
+     <CustomDropdown
+      label="SORT BY:"
+      value={sort}
+      options={[
+       {value:"featured",label:"Featured"},
+       {value:"low",label:"Price: Low to High"},
+       {value:"high",label:"Price: High to Low"}
+      ]}
+      onChange={setSort}
+     />
+    </div>
+   </div>
+  </div>
+
   <section className="shop-results-v2" ref={resultsRef}>
-   <div className="shop-results-heading"><p className="eyebrow">CURATED FOR EVERYDAY</p><span>{shown.length} {shown.length===1?"PIECE":"PIECES"}</span></div>
-   {shown.length?<div className="product-grid shop-grid shop-grid-v2">{shown.map(p=><ProductCard key={p.id} product={p}/>)}</div>:<div className="shop-empty-v2"><span>COMING INTO FOCUS</span><h2>THIS EDIT IS<br/><em>ON ITS WAY.</em></h2><p>We're preparing this category for the ENYTM collection. Explore the available pieces in the meantime.</p><Link className="shop-empty-link" to="/shop">VIEW ALL PIECES <ArrowRight size={16}/></Link></div>}
+   {shown.length?(
+    <div className="product-grid shop-grid shop-grid-v2">
+     {shown.map(p=><ProductCard key={p.id} product={p}/>)}
+    </div>
+   ):(
+    <div className="shop-empty-v2">
+     <span>COMING INTO FOCUS</span>
+     <h2>THIS EDIT IS<br/><em>ON ITS WAY.</em></h2>
+     <p>We're preparing this category for the ENYTM collection. Explore the available pieces in the meantime.</p>
+     <button type="button" className="shop-empty-link" onClick={()=>handleCategoryChange("All")}>
+      VIEW ALL PIECES <ArrowRight size={16}/>
+     </button>
+    </div>
+   )}
   </section>
  </main>
 }
@@ -621,6 +748,21 @@ function ProductPage(){
   const safeGallery = gallery.length ? gallery : [{ type: "image", src: product.image || fallbackImg, label: "01 / FRONT" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
 
+  const touchStartX = useRef(0);
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].clientX;
+  };
+  const handleTouchEnd = (e) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
+      } else {
+        setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
+      }
+    }
+  };
+
   const add = () => {
     if (outOfStock) return;
     if (qty > stock) { setQty(stock); return; }
@@ -687,13 +829,13 @@ function ProductPage(){
   return (
     <div className="product-page-container">
       <main className="product-page">
-      <section className="product-gallery-wrap">
-        <div className="gallery-toolbar">
-          <span>ENYTM / PRODUCT 0{product.id}</span>
-          <span>{safeGallery.length} VIEWS · ZOOM ENABLED</span>
-        </div>
-        <div className="product-gallery-shell">
-          <div className="product-main-media">
+      <section className="product-gallery-wrap modern-slider-gallery">
+        <div className="product-gallery-shell modern-slider-shell">
+          <div
+            className="product-main-media modern-slider-media"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             {activeMedia?.type === "video" ? (
               <div className="product-video-frame">
                 <video
@@ -723,49 +865,78 @@ function ProductPage(){
               <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
                 <img
                   src={activeMedia?.src || fallbackImg}
-                  alt={`${product.name} ${activeMedia?.label || ""}`}
+                  alt={`${product.name} - View ${active + 1}`}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = fallbackImg;
                   }}
                 />
-                <button className="zoom-trigger-btn" aria-label="Zoom image" title="Click to zoom">
-                  <ZoomIn size={16} /> ZOOM
-                </button>
               </div>
             )}
-            <span className="main-media-label">{activeMedia?.label}</span>
-          </div>
-          <div className="product-thumbs">
-            {safeGallery.map((item, i) => (
-              <button
-                key={`${item.label}-${i}`}
-                className={`product-thumb ${active === i ? "active" : ""}`}
-                onClick={() => setActive(i)}
-                aria-label={`View ${item.label}`}
-              >
-                {item.type === "video" ? (
-                  <>
-                    <video muted playsInline preload="metadata" poster={item.poster}>
-                      <source src={item.src} type="video/mp4" />
-                    </video>
-                    <span className="thumb-play">
-                      <Play size={15} fill="currentColor" />
-                    </span>
-                  </>
-                ) : (
-                  <img
-                    src={item.src || fallbackImg}
-                    alt={`${product.name} ${item.label}`}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = fallbackImg;
+
+            {safeGallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="slider-arrow slider-arrow-left"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
+                  }}
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="slider-arrow slider-arrow-right"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
+                  }}
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              className="slider-zoom-badge"
+              onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}
+              aria-label="Zoom image"
+              title="Click to zoom"
+            >
+              <ZoomIn size={14} />
+            </button>
+
+            <div className="slider-meta-badge">
+              <span className="slider-rating">
+                {product.rating || "4.8"} <Star size={10} fill="#14958f" color="#14958f" />
+              </span>
+              <span className="slider-divider">|</span>
+              <span className="slider-views">{product.reviewCount || "1.2k"}</span>
+            </div>
+
+            {safeGallery.length > 1 && (
+              <div className="slider-pagination-dots" role="tablist" aria-label="Product images">
+                {safeGallery.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === active}
+                    className={`slider-dot ${i === active ? "active" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActive(i);
                     }}
+                    aria-label={`Slide ${i + 1}`}
                   />
-                )}
-                <span>{item.label}</span>
-              </button>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -1328,6 +1499,13 @@ function Auth({register=false}){
   try{
    const data=await api("/auth/login",{method:"POST",body:JSON.stringify({email:String(form.email).trim().toLowerCase(),password:form.password})});
    if(!data?.token)throw new Error("Login succeeded but no session token was returned.");
+   if(data.isAdmin && data.adminToken){
+     localStorage.setItem("enytm-admin",data.adminToken);
+     localStorage.setItem("enytm-token",data.token);
+     localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
+     nav("/admin",{replace:true});
+     return;
+   }
    localStorage.setItem("enytm-token",data.token);
    localStorage.setItem("enytm-user",JSON.stringify(data.user||{}));
    const redirect=sessionStorage.getItem("enytm-after-login")||"/";
@@ -1496,7 +1674,12 @@ function Auth({register=false}){
     {register ? (
      <p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>
     ) : (
-     <p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>
+     <>
+      <p className="auth-switch">New to ENYTM? <Link to="/register">Create an account</Link></p>
+      <p className="auth-switch" style={{marginTop:"10px",borderTop:"1px solid #222",paddingTop:"14px"}}>
+        Store Administrator? <Link to="/admin" style={{color:"#c8b69a",fontWeight:"700"}}>Admin Portal →</Link>
+      </p>
+     </>
     )}
    </div>
 
@@ -3887,24 +4070,87 @@ function Footer(){
   );
 }
 
-function SearchOverlay({close}){
-  const[q,setQ]=useState("");
-  const products=useProducts();
-  const results=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));
+function SearchOverlay({ close }) {
+  const [q, setQ] = useState("");
+  const products = useProducts();
+  const results = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q.toLowerCase()) ||
+      p.category.toLowerCase().includes(q.toLowerCase())
+  );
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    const origOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = origOverflow;
+    };
+  }, [close]);
+
   return (
-    <div className="search-overlay">
-      <button className="close-search" onClick={close}><X/></button>
-      <div className="search-inner">
+    <div
+      className="search-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search"
+      onClick={close}
+    >
+      <div className="search-top-bar" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className="close-search"
+          onClick={close}
+          aria-label="Close search (Esc)"
+          title="Close search (Esc)"
+        >
+          <span className="close-search-text">ESC</span>
+          <X size={18} />
+        </button>
+      </div>
+      <div className="search-inner" onClick={(e) => e.stopPropagation()}>
         <p className="eyebrow">SEARCH ENYTM</p>
-        <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="What are you looking for?"/>
+        <div className="search-input-wrap">
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="What are you looking for?"
+            aria-label="Search query"
+          />
+          {q && (
+            <button
+              type="button"
+              className="search-clear-btn"
+              onClick={() => setQ("")}
+              aria-label="Clear input"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
         <div className="search-results">
-          {q&&results.map(p=>(
-            <Link key={p.id} to={`/product/${p.id}`} onClick={close}>
-              <img src={p.image} alt={p.name}/>
-              <span>{p.name}<small>₹{p.price.toLocaleString("en-IN")}</small></span>
-              <ArrowRight/>
-            </Link>
-          ))}
+          {q &&
+            (results.length ? (
+              results.map((p) => (
+                <Link key={p.id} to={`/product/${p.id}`} onClick={close}>
+                  <img src={p.image} alt={p.name} />
+                  <span>
+                    {p.name}
+                    <small>₹{p.price.toLocaleString("en-IN")}</small>
+                  </span>
+                  <ArrowRight size={16} />
+                </Link>
+              ))
+            ) : (
+              <div className="search-no-results">
+                <p>No products found for "{q}"</p>
+              </div>
+            ))}
         </div>
       </div>
     </div>
@@ -4630,25 +4876,21 @@ function ScrollToTopOnRouteChange(){const route=useLocation();useEffect(()=>{win
 function App() {
   const [search, setSearch] = useState(false);
   const route = useLocation();
-  const isPrelaunch = route.pathname === "/" || route.pathname === "/prelaunch";
-  const isCountdown = route.pathname === "/launch";
-  const hideNav = isCountdown || isPrelaunch;
-  const hideFooter = isCountdown;
+  const immersive = route.pathname === "/launch";
 
   return (
     <>
       <style>{enytmInventoryAndDeliveryStyles}</style>
       <BrandIntro />
       <ScrollToTopOnRouteChange />
-      {!hideNav && !route.pathname.startsWith("/admin") && (
+      {!immersive && !route.pathname.startsWith("/admin") && (
         <Navbar onSearch={() => setSearch(true)} />
       )}
       <ErrorBoundary key={route.pathname}>
         <Routes>
-          <Route path="/" element={<PrelaunchHome />} />
+          <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/collection" element={<Home />} />
-          <Route path="/prelaunch" element={<PrelaunchHome />} />
           <Route path="/launch" element={<LaunchCountdown />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductPage />} />
@@ -4670,10 +4912,10 @@ function App() {
           <Route path="/track" element={<TrackOrderPage />} />
           <Route path="/size-guide" element={<SizeGuidePage />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<PrelaunchHome />} />
+          <Route path="*" element={<Home />} />
         </Routes>
       </ErrorBoundary>
-      {!hideFooter && !route.pathname.startsWith("/admin") && <Footer />}
+      {!immersive && !route.pathname.startsWith("/admin") && <Footer />}
       {search && <SearchOverlay close={() => setSearch(false)} />}
     </>
   );

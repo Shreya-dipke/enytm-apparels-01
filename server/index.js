@@ -748,8 +748,22 @@ app.post("/api/auth/password-reset/confirm", async (req, res) => {
 });
 
 app.post("/api/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = db.data.users.find(u => u.email === String(email || "").toLowerCase());
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password ?? "");
+  const configuredAdminEmail = String(process.env.ADMIN_EMAIL || "admin@enytm.co.in").trim().toLowerCase();
+  const configuredAdminPassword = String(process.env.ADMIN_PASSWORD || "");
+
+  if (email === configuredAdminEmail && configuredAdminPassword && password === configuredAdminPassword) {
+    const adminToken = jwt.sign({ email: configuredAdminEmail, role: "admin" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "12h" });
+    return res.json({
+      token: adminToken,
+      adminToken,
+      isAdmin: true,
+      user: { id: "admin", name: "ENYTM Admin", email: configuredAdminEmail, role: "admin" }
+    });
+  }
+
+  const user = db.data.users.find(u => u.email === email);
   if (!user || !(await bcrypt.compare(password || "", user.passwordHash))) return res.status(401).json({ message: "Invalid email or password." });
   user.lastLoginAt = Date.now();
   await db.write();

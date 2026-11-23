@@ -25,8 +25,10 @@
       "phoneVerified": false,
       "role": "customer",
       "createdAt": 1792772462216,
-      "lastLoginAt": 1795335456501,
-      "addresses": []
+      "lastLoginAt": 1795420167192,
+      "addresses": [],
+      "googleId": "107492215245253247670",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIqbzP6V9EWqxVtRIDxACNYMij6MYZnI-WVly0tVJ89ZgNHMqw=s96-c"
     },
     {
       "id": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
@@ -42,7 +44,7 @@
       "emailVerified": true,
       "phoneVerified": false,
       "createdAt": 1795339907771,
-      "lastLoginAt": 1795340632393,
+      "lastLoginAt": 1795420105182,
       "addresses": []
     }
   ],
@@ -212,6 +214,307 @@
     }
   ],
   "orders": [
+    {
+      "id": "768db9fe-4351-43e2-b2ac-9dced723f92f",
+      "receipt": "ENYTM-1792780219374",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "At post jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRuNX5rQ813Pl",
+      "razorpayOrderIds": {
+        "advance": "order_TrRuNX5rQ813Pl"
+      },
+      "paymentIds": [],
+      "status": "packed",
+      "stockDeducted": false,
+      "createdAt": 1792780219691,
+      "updatedAt": 1795420016846,
+      "cancelledAt": 1795336939528,
+      "refundStatus": "not_required",
+      "tracking": {
+        "courier": "",
+        "trackingNumber": "",
+        "trackingUrl": ""
+      }
+    },
+    {
+      "id": "f4a5580f-ffab-4499-a4cc-14c7c20a9c3e",
+      "receipt": "ENYTM-1792779048203",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRZnVPCUFhks3",
+      "razorpayOrderIds": {
+        "advance": "order_TrRZnVPCUFhks3"
+      },
+      "paymentIds": [],
+      "status": "payment_pending",
+      "stockDeducted": false,
+      "createdAt": 1792779050720,
+      "updatedAt": 1792779050720
+    },
+    {
+      "id": "cefa3f34-64e7-40eb-a191-90ba4d317ee4",
+      "receipt": "ENYTM-1792779040101",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRZexJZIznLIF",
+      "razorpayOrderIds": {
+        "advance": "order_TrRZexJZIznLIF"
+      },
+      "paymentIds": [],
+      "status": "payment_pending",
+      "stockDeducted": false,
+      "createdAt": 1792779042864,
+      "updatedAt": 1792779042864
+    },
+    {
+      "id": "7f52ef85-faba-419d-9789-dab988cc8062",
+      "receipt": "ENYTM-1792779038445",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRZenGxHD6HYb",
+      "razorpayOrderIds": {
+        "advance": "order_TrRZenGxHD6HYb"
+      },
+      "paymentIds": [],
+      "status": "payment_pending",
+      "stockDeducted": false,
+      "createdAt": 1792779042723,
+      "updatedAt": 1792779042723
+    },
+    {
+      "id": "d0816eb3-64f3-4179-9e07-488d0bc124d8",
+      "receipt": "ENYTM-1792779029788",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRZRCnhcpYbmQ",
+      "razorpayOrderIds": {
+        "advance": "order_TrRZRCnhcpYbmQ"
+      },
+      "paymentIds": [],
+      "status": "payment_pending",
+      "stockDeducted": false,
+      "createdAt": 1792779030261,
+      "updatedAt": 1792779030261
+    },
+    {
+      "id": "5eca0b9d-eda3-4cbe-a000-856cf217fcfb",
+      "receipt": "ENYTM-1792778747383",
+      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Essential Oversized Tee",
+          "price": 649,
+          "qty": 1,
+          "size": "S",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
+        }
+      ],
+      "customer": {
+        "name": "Vedant Darokar",
+        "phone": "+918208772402",
+        "address": "At post jarud",
+        "city": "Amravati",
+        "state": "Maharashtra",
+        "pincode": "444908",
+        "district": "Amravati",
+        "postOffice": "Aloda",
+        "email": "vedantdarokar7@gmail.com"
+      },
+      "subtotal": 649,
+      "shipping": 0,
+      "discount": 0,
+      "couponCode": null,
+      "couponId": null,
+      "total": 649,
+      "advanceAmount": 195,
+      "advancePaid": 0,
+      "balanceAmount": 454,
+      "balancePaid": 0,
+      "paymentStage": "advance",
+      "paymentStatus": "created",
+      "paymentMethod": null,
+      "paymentId": null,
+      "razorpayOrderId": "order_TrRUT1AzvLFZqK",
+      "razorpayOrderIds": {
+        "advance": "order_TrRUT1AzvLFZqK"
+      },
+      "paymentIds": [],
+      "status": "payment_pending",
+      "stockDeducted": false,
+      "createdAt": 1792778747948,
+      "updatedAt": 1792778747948
+    },
     {
       "id": "9bfd370b-84cb-4445-80b0-cc3994bb1a77",
       "receipt": "ENYTM-1791480795215",
@@ -453,302 +756,6 @@
       "razorpayOrderId": "order_TkJr54REwrJ0qd",
       "createdAt": 1791223480377,
       "updatedAt": 1791223480377
-    },
-    {
-      "id": "5eca0b9d-eda3-4cbe-a000-856cf217fcfb",
-      "receipt": "ENYTM-1792778747383",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "At post jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRUT1AzvLFZqK",
-      "razorpayOrderIds": {
-        "advance": "order_TrRUT1AzvLFZqK"
-      },
-      "paymentIds": [],
-      "status": "payment_pending",
-      "stockDeducted": false,
-      "createdAt": 1792778747948,
-      "updatedAt": 1792778747948
-    },
-    {
-      "id": "d0816eb3-64f3-4179-9e07-488d0bc124d8",
-      "receipt": "ENYTM-1792779029788",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRZRCnhcpYbmQ",
-      "razorpayOrderIds": {
-        "advance": "order_TrRZRCnhcpYbmQ"
-      },
-      "paymentIds": [],
-      "status": "payment_pending",
-      "stockDeducted": false,
-      "createdAt": 1792779030261,
-      "updatedAt": 1792779030261
-    },
-    {
-      "id": "7f52ef85-faba-419d-9789-dab988cc8062",
-      "receipt": "ENYTM-1792779038445",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRZenGxHD6HYb",
-      "razorpayOrderIds": {
-        "advance": "order_TrRZenGxHD6HYb"
-      },
-      "paymentIds": [],
-      "status": "payment_pending",
-      "stockDeducted": false,
-      "createdAt": 1792779042723,
-      "updatedAt": 1792779042723
-    },
-    {
-      "id": "cefa3f34-64e7-40eb-a191-90ba4d317ee4",
-      "receipt": "ENYTM-1792779040101",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRZexJZIznLIF",
-      "razorpayOrderIds": {
-        "advance": "order_TrRZexJZIznLIF"
-      },
-      "paymentIds": [],
-      "status": "payment_pending",
-      "stockDeducted": false,
-      "createdAt": 1792779042864,
-      "updatedAt": 1792779042864
-    },
-    {
-      "id": "f4a5580f-ffab-4499-a4cc-14c7c20a9c3e",
-      "receipt": "ENYTM-1792779048203",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRZnVPCUFhks3",
-      "razorpayOrderIds": {
-        "advance": "order_TrRZnVPCUFhks3"
-      },
-      "paymentIds": [],
-      "status": "payment_pending",
-      "stockDeducted": false,
-      "createdAt": 1792779050720,
-      "updatedAt": 1792779050720
-    },
-    {
-      "id": "768db9fe-4351-43e2-b2ac-9dced723f92f",
-      "receipt": "ENYTM-1792780219374",
-      "userId": "f758f1fe-6b5a-4ed8-977f-fc728f3f473f",
-      "items": [
-        {
-          "productId": 1,
-          "name": "Essential Oversized Tee",
-          "price": 649,
-          "qty": 1,
-          "size": "S",
-          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85"
-        }
-      ],
-      "customer": {
-        "name": "Vedant Darokar",
-        "phone": "+918208772402",
-        "address": "At post jarud",
-        "city": "Amravati",
-        "state": "Maharashtra",
-        "pincode": "444908",
-        "district": "Amravati",
-        "postOffice": "Aloda",
-        "email": "vedantdarokar7@gmail.com"
-      },
-      "subtotal": 649,
-      "shipping": 0,
-      "discount": 0,
-      "couponCode": null,
-      "couponId": null,
-      "total": 649,
-      "advanceAmount": 195,
-      "advancePaid": 0,
-      "balanceAmount": 454,
-      "balancePaid": 0,
-      "paymentStage": "advance",
-      "paymentStatus": "created",
-      "paymentMethod": null,
-      "paymentId": null,
-      "razorpayOrderId": "order_TrRuNX5rQ813Pl",
-      "razorpayOrderIds": {
-        "advance": "order_TrRuNX5rQ813Pl"
-      },
-      "paymentIds": [],
-      "status": "cancelled",
-      "stockDeducted": false,
-      "createdAt": 1792780219691,
-      "updatedAt": 1795336939528,
-      "cancelledAt": 1795336939528,
-      "refundStatus": "not_required"
     }
   ],
   "carts": [
@@ -792,8 +799,65 @@
     },
     {
       "userId": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
-      "items": [],
-      "updatedAt": 1795341450393,
+      "items": [
+        {
+          "id": 1,
+          "name": "Essential Oversized Tee",
+          "category": "Oversized",
+          "price": 649,
+          "oldPrice": 1649,
+          "stock": 4,
+          "badge": "NEW",
+          "fabric": "240 GSM Premium Cotton",
+          "description": "A structured oversized silhouette made for everyday movement.",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          "sizes": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ],
+          "image2": "",
+          "image3": "",
+          "video": "",
+          "size": "M",
+          "qty": 2,
+          "key": "1-M"
+        }
+      ],
+      "updatedAt": 1795420126205,
+      "remindedAt": null
+    },
+    {
+      "items": [
+        {
+          "id": 1,
+          "name": "Essential Oversized Tee",
+          "category": "Oversized",
+          "price": 649,
+          "oldPrice": 1649,
+          "stock": 4,
+          "badge": "NEW",
+          "fabric": "240 GSM Premium Cotton",
+          "description": "A structured oversized silhouette made for everyday movement.",
+          "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+          "sizes": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ],
+          "image2": "",
+          "image3": "",
+          "video": "",
+          "size": "S",
+          "qty": 1,
+          "key": "1-S"
+        }
+      ],
+      "updatedAt": 1795419968364,
       "remindedAt": null
     }
   ],
@@ -817,7 +881,12 @@
     {
       "userId": "56523e57-2c90-4845-84dd-ad3b0b2ad1ce",
       "items": [],
-      "updatedAt": 1795341450394,
+      "updatedAt": 1795420094089,
+      "remindedAt": null
+    },
+    {
+      "items": [],
+      "updatedAt": 1795419968377,
       "remindedAt": null
     }
   ],
