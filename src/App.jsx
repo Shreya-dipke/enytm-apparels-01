@@ -63,6 +63,31 @@ function useProducts() {
   return Array.isArray(p) && p.length ? p : fallbackProducts;
 }
 
+export function normalizeImageUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+
+  // Google Drive file link formats:
+  // - https://drive.google.com/file/d/<FILE_ID>/view...
+  // - https://drive.google.com/open?id=<FILE_ID>
+  // - https://drive.google.com/uc?id=<FILE_ID>...
+  // - https://drive.google.com/uc?export=view&id=<FILE_ID>
+  const gDriveMatch = trimmed.match(/drive\.google\.com\/(?:file\/d\/([a-zA-Z0-9_-]+)|open\?id=([a-zA-Z0-9_-]+)|uc\?(?:.*&)?id=([a-zA-Z0-9_-]+))/i);
+  if (gDriveMatch) {
+    const fileId = gDriveMatch[1] || gDriveMatch[2] || gDriveMatch[3];
+    if (fileId) {
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+  }
+
+  // Dropbox share link to direct raw link
+  if (trimmed.includes("dropbox.com") && trimmed.includes("dl=0")) {
+    return trimmed.replace("dl=0", "raw=1");
+  }
+
+  return trimmed;
+}
+
 export function BrandLogo({ className = "", alt = "ENYTM™", style = {} }) {
   return (
     <span className={`brand-mark ${className}`.trim()} style={style} aria-label="ENYTM">
@@ -195,7 +220,7 @@ function ProductCard({ product }) {
   const hasDiscount = !isComingSoon && Number(product.oldPrice) > Number(product.price);
   return <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}><div className="product-image">{isComingSoon ? <span className="product-stock-badge coming-soon">COMING SOON</span> : outOfStock ? <span className="product-stock-badge out">OUT OF STOCK</span> : stock < 6 ? <span className="product-stock-badge low">{stock === 1 ? "ONLY 1 LEFT" : `ONLY ${stock} LEFT`}</span> : null}{product.badge && !outOfStock && !isComingSoon && <span className="product-badge">{product.badge}</span>}<button className={`heart ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}><Heart fill={liked ? "currentColor" : "none"} /></button><Link to={`/product/${product.id}`}>
     <img
-      src={product.image || ""}
+      src={normalizeImageUrl(product.image) || ""}
       alt={product.name}
       loading="lazy"
       onError={(e) => {
@@ -781,14 +806,14 @@ function ProductPage() {
   const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
 
   const gallery = [
-    product.image && { type: "image", src: product.image, label: "01 / FRONT" },
-    (product.image2 || product.image) && { type: "image", src: product.image2 || product.image, label: "02 / BACK" },
-    (product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85", label: "03 / CLOSE-UP" },
-    (product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85", label: "04 / LIFESTYLE" },
-    product.video && { type: "video", src: product.video, poster: product.image || fallbackImg, label: "05 / MOTION" }
+    product.image && { type: "image", src: normalizeImageUrl(product.image), label: "01 / FRONT" },
+    (product.image2 || product.image) && { type: "image", src: normalizeImageUrl(product.image2 || product.image), label: "02 / BACK" },
+    (product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: normalizeImageUrl(product.image3 || "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=1200&q=85"), label: "03 / CLOSE-UP" },
+    (product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85") && { type: "image", src: normalizeImageUrl(product.modelFront || "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"), label: "04 / LIFESTYLE" },
+    product.video && { type: "video", src: normalizeImageUrl(product.video), poster: normalizeImageUrl(product.image) || fallbackImg, label: "05 / MOTION" }
   ].filter(Boolean);
 
-  const safeGallery = gallery.length ? gallery : [{ type: "image", src: product.image || fallbackImg, label: "01 / FRONT" }];
+  const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product.image) || fallbackImg, label: "01 / FRONT" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
 
   const touchStartX = useRef(0);
@@ -2053,7 +2078,7 @@ function Checkout() {
     return (
       <div key={i.key} className="checkout-item-card">
         <div className="checkout-item-img-wrap">
-          <img src={i.image || fallbackProducts[0]?.image} alt={i.name} />
+          <img src={normalizeImageUrl(i.image) || fallbackProducts[0]?.image} alt={i.name} />
         </div>
         <div className="checkout-item-details">
           <div className="checkout-item-row-top">
@@ -2598,7 +2623,7 @@ function Cart() {
             <div className="cart-items">
               {cart.map((i) => (
                 <div className="cart-item" key={i.key}>
-                  <img src={i.image} alt={i.name} />
+                  <img src={normalizeImageUrl(i.image)} alt={i.name} />
                   <div className="cart-item-info">
                     <div>
                       <h3>{i.name}</h3>
@@ -4357,9 +4382,130 @@ function AdminOrders({ orders, reload }) {
 
 function AdminTable({ headers, rows }) { return <div className="admin-table-wrap"><table><thead><tr>{headers.map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div> }
 function AdminMediaUpload({ fieldKey, label, hint, value, onUploaded, video = false }) {
-  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  const upload = async file => { if (!file) return; setBusy(true); setError(""); try { const form = new FormData(); form.append(video ? "video" : "image", file); const result = await api(video ? "/admin/upload-video" : "/admin/upload-image", { method: "POST", body: form }); onUploaded(result.url) } catch (e) { setError(e.message || "Upload failed.") } finally { setBusy(false) } };
-  return <div className="admin-media-upload"><div className="admin-media-preview">{value ? (video ? <video src={value} controls /> : <img src={value} alt={label} />) : <div className="admin-media-empty"><Package size={23} /><span>{video ? "VIDEO" : "IMAGE"}</span></div>}</div><div className="admin-media-meta"><strong>{label}</strong><small>{hint}</small><label className="admin-upload-button">{busy ? "UPLOADING..." : value ? "REPLACE FILE" : "CHOOSE FILE"}<input type="file" accept={video ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp"} disabled={busy} onChange={e => { upload(e.target.files?.[0]); e.target.value = "" }} /></label>{value && <button type="button" className="admin-media-remove" onClick={() => onUploaded("")}>REMOVE</button>}{error && <small className="admin-media-error">{error}</small>}</div></div>
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [urlInput, setUrlInput] = useState(value || "");
+  const [gdriveDetected, setGdriveDetected] = useState(false);
+
+  useEffect(() => {
+    setUrlInput(value || "");
+    const isGDrive = /drive\.google\.com/i.test(value || "");
+    setGdriveDetected(isGDrive && typeof value === "string" && value.includes("googleusercontent.com/d/"));
+  }, [value]);
+
+  const handleUrlChange = (val) => {
+    setUrlInput(val);
+    setError("");
+    if (!val.trim()) {
+      onUploaded("");
+      setGdriveDetected(false);
+      return;
+    }
+    const isGDrive = /drive\.google\.com/i.test(val);
+    const normalized = normalizeImageUrl(val);
+    const converted = isGDrive && normalized.startsWith("https://lh3.googleusercontent.com/d/");
+    setGdriveDetected(converted);
+    onUploaded(normalized);
+  };
+
+  const upload = async (file) => {
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append(video ? "video" : "image", file);
+      const result = await api(video ? "/admin/upload-video" : "/admin/upload-image", { method: "POST", body: form });
+      onUploaded(result.url);
+      setUrlInput(result.url);
+      setGdriveDetected(false);
+    } catch (e) {
+      setError(e.message || "Upload failed. You can also paste an image link directly above.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const displaySrc = normalizeImageUrl(value);
+
+  return (
+    <div className="admin-media-upload">
+      <div className="admin-media-preview">
+        {displaySrc ? (
+          video ? (
+            <video src={displaySrc} controls />
+          ) : (
+            <img src={displaySrc} alt={label} onError={(e) => { e.currentTarget.style.opacity = "0.3"; }} />
+          )
+        ) : (
+          <div className="admin-media-empty">
+            <Package size={23} />
+            <span>{video ? "VIDEO" : "IMAGE"}</span>
+          </div>
+        )}
+      </div>
+      <div className="admin-media-meta">
+        <strong>{label}</strong>
+        <small>{hint}</small>
+
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "5px" }}>
+          <input
+            type="text"
+            placeholder={video ? "Paste video link (MP4, Cloudinary, etc.)" : "Paste Google Drive link or Image URL"}
+            value={urlInput}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "8px 10px",
+              background: "#161616",
+              border: "1px solid #333",
+              color: "#f5f5f2",
+              fontSize: "11px",
+              fontFamily: "inherit"
+            }}
+          />
+          {gdriveDetected && (
+            <small style={{ color: "#4ade80", fontSize: "10px", fontWeight: "600" }}>
+              ✓ Google Drive link converted to direct image
+            </small>
+          )}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "2px" }}>
+          <label className="admin-upload-button" style={{ margin: 0 }}>
+            {busy ? "UPLOADING..." : value ? "OR CHOOSE FILE" : "OR CHOOSE FILE"}
+            <input
+              type="file"
+              accept={video ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp"}
+              disabled={busy}
+              onChange={(e) => {
+                upload(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {value && (
+            <button
+              type="button"
+              className="admin-media-remove"
+              onClick={() => {
+                onUploaded("");
+                setUrlInput("");
+                setGdriveDetected(false);
+              }}
+            >
+              REMOVE
+            </button>
+          )}
+        </div>
+        <small style={{ color: "#8a847b", fontSize: "9.5px", lineHeight: 1.3 }}>
+          💡 Google Drive: Share → "Anyone with the link can view" → Copy link & paste here.
+        </small>
+        {error && <small className="admin-media-error">{error}</small>}
+      </div>
+    </div>
+  );
 }
 function AdminCoupons({ products }) {
   const empty = { code: "", title: "", discountType: "percentage", discountValue: 10, maxDiscount: 0, minOrderValue: 0, usageLimit: 0, perCustomerLimit: 1, startsAt: "", expiresAt: "", categories: [], productIds: [], active: true };
@@ -4438,6 +4584,12 @@ function AdminProducts({ products, reload }) {
     try {
       const payload = {
         ...p,
+        image: normalizeImageUrl(p.image),
+        image2: normalizeImageUrl(p.image2),
+        image3: normalizeImageUrl(p.image3),
+        modelFront: normalizeImageUrl(p.modelFront),
+        modelBack: normalizeImageUrl(p.modelBack),
+        video: normalizeImageUrl(p.video),
         price: Number(p.price),
         oldPrice: Number(p.oldPrice || 0),
         stock: Number(p.stock || 0),
@@ -4780,7 +4932,7 @@ function AdminProducts({ products, reload }) {
                         {product.image ? (
                           <img
                             src={
-                              product.image
+                              normalizeImageUrl(product.image)
                             }
                             alt={
                               product.name
