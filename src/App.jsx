@@ -4578,9 +4578,6 @@ function ProductPage() {
                   </button>
                 )}
               </div>
-              <small style={{ color: "#8a847b", fontSize: "9.5px", lineHeight: 1.3 }}>
-                💡 Google Drive: Share → "Anyone with the link can view" → Copy link & paste here.
-              </small>
               {error && <small className="admin-media-error">{error}</small>}
             </div>
           </div>
