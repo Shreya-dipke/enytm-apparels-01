@@ -23,6 +23,7 @@ export async function api(path, options = {}) {
 
   const endpoint = `${API_BASE}/api${path.startsWith("/") ? path : `/${path}`}`;
   const response = await fetch(endpoint, {
+    cache: "no-store",
     ...options,
     headers,
   });

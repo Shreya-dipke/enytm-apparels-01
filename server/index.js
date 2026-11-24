@@ -456,8 +456,26 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
 
 app.use(express.json());
 
-app.get("/api/products", (req, res) => res.json(db.data.products));
-app.get("/api/settings", (req, res) => res.json(db.data.settings));
+app.get("/api/products", async (req, res) => {
+  try {
+    await db.read("products");
+  } catch (e) {
+    console.error("[MongoDB] Products read error:", e.message);
+  }
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.json(db.data.products || []);
+});
+app.get("/api/settings", async (req, res) => {
+  try {
+    await db.read("settings");
+  } catch (e) {
+    console.error("[MongoDB] Settings read error:", e.message);
+  }
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.json(db.data.settings || {});
+});
 
 
 app.post("/api/auth/register/send-otp", async (req, res) => {
@@ -1409,18 +1427,34 @@ app.post("/api/admin/login", async (req, res) => {
   res.json({ token });
 });
 
-app.get("/api/admin/dashboard", adminAuth, (req, res) => {
+app.get("/api/admin/dashboard", adminAuth, async (req, res) => {
+  try {
+    await db.read(["orders", "users", "products"]);
+  } catch (e) {}
   const revenue = db.data.orders.filter(o => o.paymentStatus === "paid").reduce((s, o) => s + o.total, 0);
   const customers = db.data.users.filter(u => u.role !== "admin").length;
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json({
     revenue, orders: db.data.orders.length, paidOrders: db.data.orders.filter(o => o.paymentStatus === "paid").length,
     customers, products: db.data.products.length,
     pendingPayments: db.data.orders.filter(o => o.paymentStatus !== "paid").length
   });
 });
-app.get("/api/admin/orders", adminAuth, (req, res) => res.json(db.data.orders.sort((a, b) => b.createdAt - a.createdAt)));
-app.get("/api/admin/customers", adminAuth, (req, res) => res.json(db.data.users.filter(u => u.role !== "admin").map(publicUser).sort((a, b) => b.createdAt - a.createdAt)));
-app.get("/api/admin/products", adminAuth, (req, res) => res.json(db.data.products));
+app.get("/api/admin/orders", adminAuth, async (req, res) => {
+  try { await db.read("orders"); } catch (e) {}
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json(db.data.orders.sort((a, b) => b.createdAt - a.createdAt));
+});
+app.get("/api/admin/customers", adminAuth, async (req, res) => {
+  try { await db.read("users"); } catch (e) {}
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json(db.data.users.filter(u => u.role !== "admin").map(publicUser).sort((a, b) => b.createdAt - a.createdAt));
+});
+app.get("/api/admin/products", adminAuth, async (req, res) => {
+  try { await db.read("products"); } catch (e) {}
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json(db.data.products || []);
+});
 
 app.post("/api/admin/upload-image", adminAuth, (req, res) => {
   uploadImageFile.single("image")(req, res, (err) => {
@@ -1451,15 +1485,18 @@ app.post("/api/admin/upload-video", adminAuth, (req, res) => {
   });
 });
 app.post("/api/admin/products", adminAuth, async (req, res) => {
+  await db.read("products");
   const p = { ...req.body, id: Date.now(), price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S", "M", "L", "XL", "XXL"] };
-  db.data.products.push(p); await db.write(); res.json(p);
+  db.data.products.push(p); await db.write("products"); res.json(p);
 });
 app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
+  await db.read("products");
   const p = db.data.products.find(x => x.id === Number(req.params.id)); if (!p) return res.status(404).json({ message: "Product not found" });
-  Object.assign(p, req.body); await db.write(); res.json(p);
+  Object.assign(p, req.body); await db.write("products"); res.json(p);
 });
 app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
-  db.data.products = db.data.products.filter(x => x.id !== Number(req.params.id)); await db.write(); res.json({ ok: true });
+  await db.read("products");
+  db.data.products = db.data.products.filter(x => x.id !== Number(req.params.id)); await db.write("products"); res.json({ ok: true });
 });
 function couponDiscount(coupon, subtotal, items) {
   const eligible = !coupon.productIds?.length && !coupon.categories?.length

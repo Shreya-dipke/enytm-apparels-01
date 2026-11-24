@@ -72,9 +72,13 @@ class MongoDatabase {
     return this.connectPromise;
   }
 
-  async read() {
+  async read(target = null) {
     const db = await this.connect();
-    for (const name of COLLECTIONS) {
+    const cols = target
+      ? (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n))
+      : COLLECTIONS;
+
+    for (const name of cols) {
       try {
         const docs = await db.collection(name).find({}).toArray();
         this.data[name] = docs.map(({ _id, ...rest }) => rest);
@@ -84,22 +88,28 @@ class MongoDatabase {
       }
     }
 
-    try {
-      const settingsDoc = await db.collection("settings").findOne({ _id: "store_settings" });
-      if (settingsDoc) {
-        const { _id, ...rest } = settingsDoc;
-        this.data.settings = rest;
+    if (!target || target === "settings" || (Array.isArray(target) && target.includes("settings"))) {
+      try {
+        const settingsDoc = await db.collection("settings").findOne({ _id: "store_settings" });
+        if (settingsDoc) {
+          const { _id, ...rest } = settingsDoc;
+          this.data.settings = rest;
+        }
+      } catch (e) {
+        console.error("[MongoDB] Error reading settings:", e.message);
       }
-    } catch (e) {
-      console.error("[MongoDB] Error reading settings:", e.message);
     }
 
     return this.data;
   }
 
-  async write() {
+  async write(target = null) {
     const db = await this.connect();
-    for (const name of COLLECTIONS) {
+    const cols = target
+      ? (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n))
+      : COLLECTIONS;
+
+    for (const name of cols) {
       if (Array.isArray(this.data[name])) {
         try {
           const col = db.collection(name);
@@ -117,14 +127,16 @@ class MongoDatabase {
       }
     }
 
-    if (this.data.settings) {
-      try {
-        const col = db.collection("settings");
-        await col.deleteMany({});
-        const { _id, ...cleanSettings } = this.data.settings;
-        await col.insertOne({ _id: "store_settings", ...cleanSettings });
-      } catch (e) {
-        console.error("[MongoDB] Error writing settings:", e.message);
+    if (!target || target === "settings" || (Array.isArray(target) && target.includes("settings"))) {
+      if (this.data.settings) {
+        try {
+          const col = db.collection("settings");
+          await col.deleteMany({});
+          const { _id, ...cleanSettings } = this.data.settings;
+          await col.insertOne({ _id: "store_settings", ...cleanSettings });
+        } catch (e) {
+          console.error("[MongoDB] Error writing settings:", e.message);
+        }
       }
     }
   }
