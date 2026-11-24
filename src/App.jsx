@@ -211,11 +211,11 @@ function Navbar({ onSearch }) {
   </>;
 }
 function ProductCard({ product }) {
-  if (!product) return null;
   const { addToCart, wishlist, toggleWishlist } = useCart();
+  const [added, setAdded] = useState(false);
+  if (!product) return null;
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const liked = safeWishlist.includes(product.id);
-  const [added, setAdded] = useState(false);
   const isComingSoon = Boolean(product.comingSoon || product.category === "Hoodies" || product.category === "Sweatshirts" || product.category === "Lowers");
   const stock = Math.max(0, Number(product.stock || 0));
   const outOfStock = !isComingSoon && stock <= 0;
@@ -782,6 +782,7 @@ function ProductPage() {
     : stock;
   const isSizeOutOfStock = !isComingSoon && (product?.sizeStock ? sizeStockVal <= 0 : outOfStock);
   const videoRef = useRef(null);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     setActive(0);
@@ -808,22 +809,11 @@ function ProductPage() {
     return [...sameCategory, ...differentCategory].slice(0, 4);
   }, [productList, product]);
 
-  if (!product) {
-    return (
-      <main className="product-page" style={{ padding: "120px 4vw", textAlign: "center" }}>
-        <p className="eyebrow">ENYTM / APPARELS</p>
-        <h1>PRODUCT NOT FOUND</h1>
-        <p style={{ color: "#888", margin: "20px 0 30px" }}>The piece you're looking for is unavailable.</p>
-        <Link className="btn primary" to="/shop">VIEW ALL PIECES</Link>
-      </main>
-    );
-  }
-
   const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
 
-  const rawImages = Array.isArray(product.images) && product.images.length
+  const rawImages = product && Array.isArray(product.images) && product.images.length
     ? product.images.filter(Boolean)
-    : [product.image, product.image2, product.image3, product.modelFront, product.modelBack].filter(Boolean);
+    : [product?.image, product?.image2, product?.image3, product?.modelFront, product?.modelBack].filter(Boolean);
 
   const gallery = [
     ...(rawImages.length ? rawImages : [fallbackImg]).map((imgUrl, idx) => ({
@@ -831,65 +821,16 @@ function ProductPage() {
       src: normalizeImageUrl(imgUrl),
       label: `0${idx + 1} / VIEW`
     })),
-    product.video && {
+    product?.video && {
       type: "video",
       src: normalizeImageUrl(product.video),
-      poster: normalizeImageUrl(rawImages[0] || product.image) || fallbackImg,
+      poster: normalizeImageUrl(rawImages[0] || product?.image) || fallbackImg,
       label: "MOTION"
     }
   ].filter(Boolean);
 
-  const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product.image) || fallbackImg, label: "01 / VIEW" }];
+  const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product?.image) || fallbackImg, label: "01 / VIEW" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
-
-  const touchStartX = useRef(0);
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.changedTouches[0].clientX;
-  };
-  const handleTouchEnd = (e) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
-      } else {
-        setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
-      }
-    }
-  };
-
-  const add = () => {
-    if (outOfStock) return;
-    if (qty > stock) { setQty(stock); return; }
-    if (outOfStock || isSizeOutOfStock) return;
-    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
-    for (let i = 0; i < qty; i++) addToCart(product, size);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
-  };
-
-  const buyNow = () => {
-    if (outOfStock) return;
-    if (outOfStock || isSizeOutOfStock) return;
-    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
-    for (let i = 0; i < qty; i++) addToCart(product, size);
-    if (!localStorage.getItem("enytm-token")) {
-      sessionStorage.setItem("enytm-after-login", "/checkout");
-      nav("/login");
-    } else {
-      nav("/checkout");
-    }
-  };
-
-  const startVideo = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.currentTime = 0;
-    const promise = video.play();
-    if (promise?.then) promise.then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
-  };
 
   useEffect(() => {
     setVideoBlocked(false);
@@ -914,6 +855,65 @@ function ProductPage() {
       video.removeEventListener("canplay", tryPlay);
     };
   }, [active, activeMedia?.type, activeMedia?.src]);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].clientX;
+  };
+  const handleTouchEnd = (e) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
+      } else {
+        setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
+      }
+    }
+  };
+
+  const add = () => {
+    if (!product || outOfStock) return;
+    if (qty > stock) { setQty(stock); return; }
+    if (outOfStock || isSizeOutOfStock) return;
+    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
+    for (let i = 0; i < qty; i++) addToCart(product, size);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const buyNow = () => {
+    if (!product || outOfStock) return;
+    if (outOfStock || isSizeOutOfStock) return;
+    if (qty > sizeStockVal) { setQty(Math.max(1, sizeStockVal)); return; }
+    for (let i = 0; i < qty; i++) addToCart(product, size);
+    if (!localStorage.getItem("enytm-token")) {
+      sessionStorage.setItem("enytm-after-login", "/checkout");
+      nav("/login");
+    } else {
+      nav("/checkout");
+    }
+  };
+
+  const startVideo = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.currentTime = 0;
+    const promise = video.play();
+    if (promise?.then) promise.then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
+  };
+
+  if (!product) {
+    return (
+      <main className="product-page" style={{ padding: "120px 4vw", textAlign: "center" }}>
+        <p className="eyebrow">ENYTM / APPARELS</p>
+        <h1>PRODUCT NOT FOUND</h1>
+        <p style={{ color: "#888", margin: "20px 0 30px" }}>The piece you're looking for is unavailable.</p>
+        <Link className="btn primary" to="/shop">VIEW ALL PIECES</Link>
+      </main>
+    );
+  }
 
   const sizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL", "XXL"];
   const categoryLabel = String(product.category || "Oversized").toUpperCase();
