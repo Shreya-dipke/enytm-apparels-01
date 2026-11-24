@@ -46,24 +46,34 @@ import { useCart } from "./context/CartContext";
 import { api } from "./api";
 import "./index.css";
 
+let globalProductsCache = null;
+
 function useProducts() {
-  const [p, setP] = useState([]);
+  const [p, setP] = useState(globalProductsCache || []);
+  const [loading, setLoading] = useState(!globalProductsCache);
+
   useEffect(() => {
+    let active = true;
     api("/products")
       .then(data => {
-        if (Array.isArray(data)) {
-          setP(data);
-        } else if (data && Array.isArray(data.products)) {
-          setP(data.products);
-        } else {
-          setP([]);
+        const list = Array.isArray(data)
+          ? data
+          : (data && Array.isArray(data.products) ? data.products : []);
+        globalProductsCache = list;
+        if (active) {
+          setP(list);
+          setLoading(false);
         }
       })
       .catch(() => {
-        setP([]);
+        if (active) setLoading(false);
       });
+    return () => { active = false; };
   }, []);
-  return Array.isArray(p) ? p : [];
+
+  const result = Array.isArray(p) ? [...p] : [];
+  result.loading = loading;
+  return result;
 }
 
 export function normalizeImageUrl(url) {
@@ -905,6 +915,17 @@ function ProductPage() {
   };
 
   if (!product) {
+    if (products?.loading) {
+      return (
+        <main className="product-page" style={{ padding: "140px 4vw", textAlign: "center", minHeight: "65vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <p className="eyebrow" style={{ letterSpacing: ".2em", opacity: 0.7 }}>ENYTM / APPARELS</p>
+          <h2 style={{ fontSize: "16px", letterSpacing: ".15em", color: "#f5f5f2", margin: "16px 0 20px" }}>LOADING PIECE...</h2>
+          <div style={{ width: "48px", height: "2px", background: "#222", overflow: "hidden", position: "relative" }}>
+            <div style={{ width: "100%", height: "100%", background: "#d4af37", animation: "pulse 1.2s infinite ease-in-out" }} />
+          </div>
+        </main>
+      );
+    }
     return (
       <main className="product-page" style={{ padding: "120px 4vw", textAlign: "center" }}>
         <p className="eyebrow">ENYTM / APPARELS</p>
