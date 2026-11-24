@@ -6154,8 +6154,13 @@ footer {
 }
 
 .home-v3 .home-arrivals-v2 .product-image {
-  height: clamp(220px, 22vw, 320px) !important;
-  max-height: 330px !important;
+  height: clamp(320px, 26vw, 395px) !important;
+  max-height: 400px !important;
+}
+
+.home-v3 .home-arrivals-v2 .product-image img {
+  object-fit: cover !important;
+  object-position: top center !important;
 }
 
 .home-v3 .arrivals-footnote {
@@ -6637,8 +6642,12 @@ footer {
   }
 
   .home-v3 .home-arrivals-v2 .product-image {
-    height: 48vw !important;
-    max-height: 220px !important;
+    height: 58vw !important;
+    max-height: 260px !important;
+  }
+
+  .home-v3 .home-arrivals-v2 .product-image img {
+    object-position: top center !important;
   }
 
   .home-v3 .product-info {
@@ -14512,6 +14521,7 @@ a.btn.outline {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  object-position: top center !important;
 }
 
 .product-card .product-badge {
