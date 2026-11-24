@@ -133,18 +133,10 @@ class MongoDatabase {
     return this.data;
   }
 
-  async write(target = null, allowEmpty = false) {
+  async write(target = null) {
+    if (!target) return;
     const db = await this.connect();
-    
-    // Determine collections to write:
-    // If target is specified, only write that target.
-    // If target is omitted, ONLY write collections that have actually been read into memory to prevent wiping unread collections.
-    let cols = [];
-    if (target) {
-      cols = (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n));
-    } else {
-      cols = COLLECTIONS.filter(n => this.loadedCollections.has(n));
-    }
+    const cols = (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n));
 
     const tasks = cols.map(async (name) => {
       delete this.cacheTimestamps[name];
@@ -152,16 +144,6 @@ class MongoDatabase {
         try {
           const col = db.collection(name);
           const items = this.data[name];
-
-          // GUARD: If memory array is empty and allowEmpty is false, check if DB has documents.
-          // NEVER wipe existing data if the memory array happens to be empty due to cold-start or error.
-          if (items.length === 0 && !allowEmpty) {
-            const existingCount = await col.countDocuments();
-            if (existingCount > 0) {
-              console.warn(`[MongoDB SafeGuard] Refusing to wipe ${existingCount} documents in '${name}' because memory array is empty.`);
-              return;
-            }
-          }
 
           if (items.length > 0) {
             const seenIds = new Set();
@@ -191,11 +173,10 @@ class MongoDatabase {
               const currentIds = docsWithId.map(d => d.id);
               await col.deleteMany({ id: { $nin: currentIds } });
             } else {
-              // Fallback for documents without an id field
               await col.deleteMany({});
               await col.insertMany(cleanDocs);
             }
-          } else if (allowEmpty) {
+          } else {
             await col.deleteMany({});
           }
         } catch (e) {

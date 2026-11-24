@@ -1480,30 +1480,48 @@ app.post("/api/admin/upload-video", adminAuth, (req, res) => {
   });
 });
 app.post("/api/admin/products", adminAuth, async (req, res) => {
-  await db.read("products");
   const name = String(req.body?.name || "").trim();
   if (!name) return res.status(400).json({ message: "Product name is required." });
-  const duplicate = (db.data.products || []).some(x => String(x.name || "").trim().toLowerCase() === name.toLowerCase());
+  const col = (await db.connect()).collection("products");
+  const duplicate = await col.findOne({ name: { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } });
   if (duplicate) {
     return res.status(409).json({ message: `A product with the name "${name}" already exists. Product names must be unique.` });
   }
   const p = { ...req.body, id: Date.now(), name, price: Number(req.body.price), oldPrice: Number(req.body.oldPrice || 0), stock: Number(req.body.stock || 0), sizes: req.body.sizes || ["S", "M", "L", "XL", "XXL"] };
-  db.data.products.push(p); await db.write("products"); res.json(p);
+  await col.insertOne(p);
+  delete db.cacheTimestamps["products"];
+  if (Array.isArray(db.data.products)) db.data.products.push(p);
+  res.json(p);
 });
 app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
-  await db.read("products");
-  const p = db.data.products.find(x => x.id === Number(req.params.id)); if (!p) return res.status(404).json({ message: "Product not found" });
-  const name = typeof req.body?.name !== "undefined" ? String(req.body.name || "").trim() : p.name;
+  const id = Number(req.params.id);
+  const col = (await db.connect()).collection("products");
+  const existing = await col.findOne({ id });
+  if (!existing) return res.status(404).json({ message: "Product not found" });
+  const name = typeof req.body?.name !== "undefined" ? String(req.body.name || "").trim() : existing.name;
   if (!name) return res.status(400).json({ message: "Product name is required." });
-  const duplicate = (db.data.products || []).some(x => x.id !== p.id && String(x.name || "").trim().toLowerCase() === name.toLowerCase());
+  const duplicate = await col.findOne({ id: { $ne: id }, name: { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } });
   if (duplicate) {
     return res.status(409).json({ message: `A product with the name "${name}" already exists. Product names must be unique.` });
   }
-  Object.assign(p, req.body, { name }); await db.write("products"); res.json(p);
+  const { _id, ...cleanUpdate } = req.body;
+  const updated = { ...existing, ...cleanUpdate, id, name };
+  delete updated._id;
+  await col.replaceOne({ id }, updated);
+  delete db.cacheTimestamps["products"];
+  if (Array.isArray(db.data.products)) {
+    const idx = db.data.products.findIndex(x => x.id === id);
+    if (idx >= 0) db.data.products[idx] = updated;
+  }
+  res.json(updated);
 });
 app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
-  await db.read("products");
-  db.data.products = db.data.products.filter(x => x.id !== Number(req.params.id)); await db.write("products"); res.json({ ok: true });
+  const id = Number(req.params.id);
+  const col = (await db.connect()).collection("products");
+  await col.deleteOne({ id });
+  db.data.products = (db.data.products || []).filter(x => x.id !== id);
+  delete db.cacheTimestamps["products"];
+  res.json({ ok: true });
 });
 function couponDiscount(coupon, subtotal, items) {
   const eligible = !coupon.productIds?.length && !coupon.categories?.length
