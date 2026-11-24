@@ -56,9 +56,18 @@ function useProducts() {
     let active = true;
     api("/products")
       .then(data => {
-        const list = Array.isArray(data)
+        const rawList = Array.isArray(data)
           ? data
           : (data && Array.isArray(data.products) ? data.products : []);
+        const seen = new Set();
+        const list = [];
+        for (const item of rawList) {
+          const id = item?.id ? String(item.id) : null;
+          if (item && id && !seen.has(id)) {
+            seen.add(id);
+            list.push(item);
+          }
+        }
         globalProductsCache = list;
         if (active) {
           setP(list);
@@ -809,14 +818,23 @@ function ProductPage() {
 
   const recommendations = useMemo(() => {
     if (!product) return [];
-    const otherProducts = productList.filter((p) => String(p.id) !== String(product.id));
-    const sameCategory = otherProducts.filter(
-      (p) => p.category && product.category && String(p.category).toLowerCase() === String(product.category).toLowerCase()
-    );
-    const differentCategory = otherProducts.filter(
-      (p) => !p.category || !product.category || String(p.category).toLowerCase() !== String(product.category).toLowerCase()
-    );
-    return [...sameCategory, ...differentCategory].slice(0, 4);
+    const seen = new Set([String(product.id)]);
+    const recs = [];
+
+    for (const p of productList) {
+      if (!p || !p.id || seen.has(String(p.id))) continue;
+      if (p.category && product.category && String(p.category).toLowerCase() === String(product.category).toLowerCase()) {
+        seen.add(String(p.id));
+        recs.push(p);
+      }
+    }
+    for (const p of productList) {
+      if (recs.length >= 4) break;
+      if (!p || !p.id || seen.has(String(p.id))) continue;
+      seen.add(String(p.id));
+      recs.push(p);
+    }
+    return recs.slice(0, 4);
   }, [productList, product]);
 
   const fallbackImg = "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
@@ -1409,8 +1427,8 @@ function ProductPage() {
                   </Link>
                 </div>
                 <div className="product-grid related-products-grid">
-                  {recommendations.map((item) => (
-                    <ProductCard key={item.id} product={item} />
+                  {recommendations.map((item, idx) => (
+                    <ProductCard key={`rec-${item.id}-${idx}`} product={item} />
                   ))}
                 </div>
               </section>
