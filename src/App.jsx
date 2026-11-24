@@ -41,7 +41,10 @@ import {
   ShieldAlert,
   Check,
   SlidersHorizontal,
-  ShoppingCart
+  ShoppingCart,
+  Camera,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { useCart } from "./context/CartContext";
 import { api } from "./api";
@@ -198,7 +201,8 @@ function Navbar({ onSearch }) {
           aria-label="Search products"
         >
           <Search size={15} />
-          <span>Search products, drops, styles...</span>
+          <span>Search for T-Shirts, Polos, Customize Tees...</span>
+          <Camera size={16} className="search-camera-icon" style={{ marginLeft: "auto", opacity: 0.7 }} />
         </button>
         <div className="mobile-subnav-actions">
           <Link
@@ -399,8 +403,9 @@ function Home() {
   };
 
   const collections = [
-    { title: "OVERSIZED T-SHIRTS", desc: "240–260 GSM heavy combed cotton with relaxed drop-shoulders.", link: "/shop?category=Oversized", img: categoryImages.Oversized, num: "01", comingSoon: false },
-    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02", comingSoon: false }
+    { title: "T-Shirts", link: "/shop?category=Oversized", img: categoryImages.Oversized },
+    { title: "Polos", link: "/shop?category=Polos", img: categoryImages.Polos },
+    { title: "Customize Tees", link: "/shop?category=Oversized", img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=85", icon: <Pencil size={13} /> }
   ];
 
   const filteredProducts = useMemo(() => {
@@ -459,65 +464,26 @@ function Home() {
       </section>
 
 
-      {/* Featured Collections: Oversized, Polos, Hoodies, Lowers */}
+      {/* 3 Category Quick Tiles */}
       <section className="category-editorial category-editorial-v2" id="collections">
-        <div className="category-editorial-head">
-          <div>
-            <p className="eyebrow">01 / CORE SILHOUETTES</p>
-            <h2>
-              CURATED<br />
-              <span>COLLECTIONS.</span>
-            </h2>
-          </div>
-          <p>
-            Curated foundational cuts.<br />
-            Engineered for modern movement.
-          </p>
-        </div>
-        <div className="categories categories-four-col">
+        <div className="categories categories-three-col">
           {collections.map(c => (
             <Link
               key={c.title}
               to={c.link}
-              className={`category-tile category-tile-v2 ${c.comingSoon ? "is-coming-soon" : ""}`}
+              className="category-tile category-tile-v2"
             >
               <img
                 src={c.img}
                 alt={c.title}
                 loading="lazy"
-                onError={(e) => {
-                  const fallbacks = {
-                    "OVERSIZED T-SHIRTS": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-                    "POLOS": "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
-                    "HOODIES & SWEATSHIRTS": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-                    "HEAVYWEIGHT LOWERS": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
-                  };
-                  if (e.currentTarget.dataset.fallbackApplied !== "true") {
-                    e.currentTarget.dataset.fallbackApplied = "true";
-                    e.currentTarget.src = fallbacks[c.title] || "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
-                  }
-                }}
               />
               <div className="cat-tile-overlay" />
               <div className="cat-tile-body">
-                <div className="cat-tile-top">
-                  {c.comingSoon && (
-                    <div className="cat-tile-meta">
-                      <span className="cat-coming-soon-tag">COMING SOON</span>
-                    </div>
-                  )}
-                  <h3 className="cat-tile-title">{c.title}</h3>
-                </div>
-                <div className="cat-tile-bottom">
-                  {c.comingSoon ? (
-                    <div className="cat-explore-link cat-coming-soon-link">
-                      COMING SOON <span className="coming-soon-dot" />
-                    </div>
-                  ) : (
-                    <div className="cat-explore-link">
-                      SHOP NOW <ArrowRight size={14} />
-                    </div>
-                  )}
+                <div className="cat-tile-label-row">
+                  {c.icon && <span className="cat-tile-icon" style={{ display: "inline-flex", marginRight: 4 }}>{c.icon}</span>}
+                  <span className="cat-tile-label">{c.title}</span>
+                  <ArrowRight size={14} className="cat-tile-arrow" style={{ marginLeft: "auto" }} />
                 </div>
               </div>
             </Link>
@@ -525,16 +491,12 @@ function Home() {
         </div>
       </section>
 
-      {/* The Current Rotation with Tab Switcher */}
+      {/* Featured Drops */}
       <section className="section home-arrivals home-arrivals-v2" id="rotation">
         <div className="drop-heading">
-          <div>
-            <p className="eyebrow">02 / THE CURRENT ROTATION</p>
-            <p className="eyebrow">01 / THE CURRENT ROTATION</p>
-            <h2>
-              THE DROP<span className="heading-period"> 001.</span>
-            </h2>
-            <p className="drop-subtitle">A small edit. A strong point of view.</p>
+          <div className="featured-drops-head">
+            <p className="eyebrow" style={{ color: "#cbb89a", letterSpacing: "0.2em", fontSize: "11px", marginBottom: "4px" }}>FEATURED DROPS</p>
+            <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#fff", margin: 0 }}>The Black Label</h2>
           </div>
           <div className="drop-filter-wrap">
             <CustomDropdown
@@ -795,43 +757,54 @@ function Shop() {
   };
 
   return <main className="shop-page shop-page-v2">
-    <div className="shop-simple-header">
-      <div className="shop-simple-title-row">
-        <div>
-          <span className="shop-simple-eyebrow">COLLECTION</span>
-          <h1 className="shop-simple-title">
-            {categoryTitle === "OVERSIZED TEES" ? (
-              <>OVERSIZED <span style={{ color: "#cbb89a" }}>TEES</span></>
-            ) : categoryTitle === "PREMIUM POLOS" ? (
-              <>PREMIUM <span style={{ color: "#cbb89a" }}>POLOS</span></>
-            ) : (
-              <>SHOP <span style={{ color: "#cbb89a" }}>ALL</span></>
-            )}
-          </h1>
-          <p className="shop-simple-subtitle" style={{ fontSize: "12px", color: "#a5a199", margin: "6px 0 10px", letterSpacing: "0.03em" }}>
-            {categoryKey(category) === "oversized" ? "Relaxed Fits. Premium Comfort. Everyday Essential." :
-             categoryKey(category) === "polos" ? "Textured Organic Piqué. Elevated Minimal Branding." :
-             "Considered Silhouettes. Heavyweight Fabrics Built to Last."}
-          </p>
-          <div style={{ width: "32px", height: "2px", background: "#cbb89a", marginBottom: "14px" }} />
-        </div>
-        <span className="shop-simple-count">
-          {products?.loading && !shown.length ? "" : `${shown.length} ${shown.length === 1 ? "STYLE" : "STYLES"}`}
+    <div className="shop-editorial-hero">
+      <div className="shop-editorial-hero-content">
+        <span className="shop-simple-eyebrow">COLLECTION</span>
+        <h1 className="shop-simple-title">
+          {categoryTitle === "OVERSIZED TEES" ? (
+            <>OVERSIZED <span style={{ color: "#cbb89a" }}>TEES</span></>
+          ) : categoryTitle === "PREMIUM POLOS" ? (
+            <>PREMIUM <span style={{ color: "#cbb89a" }}>POLOS</span></>
+          ) : (
+            <>SHOP <span style={{ color: "#cbb89a" }}>ALL</span></>
+          )}
+        </h1>
+        <p className="shop-simple-subtitle">
+          {categoryKey(category) === "oversized" ? "Relaxed Fits. Premium Comfort. Everyday Essential." :
+           categoryKey(category) === "polos" ? "Textured Organic Piqué. Elevated Minimal Branding." :
+           "Considered Silhouettes. Heavyweight Fabrics Built to Last."}
+        </p>
+        <div className="shop-hero-divider" />
+      </div>
+    </div>
+
+    <div className="shop-controls-bar">
+      <div className="shop-controls-top-row">
+        <span className="shop-styles-count">
+          {products?.loading && !shown.length ? "" : `${shown.length} ${shown.length === 1 ? "Style" : "Styles"}`}
         </span>
+        <div className="shop-view-toggle">
+          <button type="button" className="view-btn active" aria-label="Grid view">
+            <LayoutGrid size={15} />
+          </button>
+          <button type="button" className="view-btn" aria-label="List view">
+            <List size={15} />
+          </button>
+        </div>
       </div>
 
       <div className="shop-simple-toolbar">
         <div className="shop-simple-selects">
           <CustomDropdown
             icon={<SlidersHorizontal size={13} />}
-            label="FILTER:"
+            label="Filter"
             value={choices.some(([v]) => categoryKey(v) === categoryKey(category)) ? category : "All"}
             options={choices.map(([value, label]) => ({ value, label }))}
             onChange={handleCategoryChange}
           />
 
           <CustomDropdown
-            label="SORT BY:"
+            label="Sort By:"
             value={sort}
             options={[
               { value: "featured", label: "Featured" },
