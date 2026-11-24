@@ -442,21 +442,21 @@ function Home() {
               <div className="cat-tile-overlay" />
               <div className="cat-tile-body">
                 <div className="cat-tile-top">
-                  <div className="cat-tile-meta">
-                    <span className="cat-tile-num">{c.num} / SILHOUETTE</span>
-                    {c.comingSoon && <span className="cat-coming-soon-tag">COMING SOON</span>}
-                  </div>
+                  {c.comingSoon && (
+                    <div className="cat-tile-meta">
+                      <span className="cat-coming-soon-tag">COMING SOON</span>
+                    </div>
+                  )}
                   <h3 className="cat-tile-title">{c.title}</h3>
                 </div>
                 <div className="cat-tile-bottom">
-                  <p className="cat-desc-preview">{c.desc}</p>
                   {c.comingSoon ? (
                     <div className="cat-explore-link cat-coming-soon-link">
                       COMING SOON <span className="coming-soon-dot" />
                     </div>
                   ) : (
                     <div className="cat-explore-link">
-                      EXPLORE <ArrowRight size={14} />
+                      SHOP NOW <ArrowRight size={14} />
                     </div>
                   )}
                 </div>
