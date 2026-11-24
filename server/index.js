@@ -1283,9 +1283,14 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
   res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: Math.round(balanceAmount * 100), currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, balanceAmount });
 });
 
-app.get("/api/orders/my", auth, (req, res) => res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a, b) => b.createdAt - a.createdAt)));
+app.get("/api/orders/my", auth, async (req, res) => {
+  try { await db.read("orders"); } catch (e) {}
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a, b) => b.createdAt - a.createdAt));
+});
 // GET SINGLE CUSTOMER ORDER
-app.get("/api/orders/:id", auth, (req, res) => {
+app.get("/api/orders/:id", auth, async (req, res) => {
+  try { await db.read("orders"); } catch (e) {}
   const order = db.data.orders.find(
     o => String(o.id) === String(req.params.id) &&
       String(o.userId) === String(req.user.id)
@@ -1297,12 +1302,7 @@ app.get("/api/orders/:id", auth, (req, res) => {
     });
   }
 
-  res.json(order);
-});
-// CUSTOMER ORDER DETAILS
-app.get("/api/orders/:id", auth, (req, res) => {
-  const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
-  if (!order) return res.status(404).json({ message: "Order not found." });
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json(order);
 });
 
