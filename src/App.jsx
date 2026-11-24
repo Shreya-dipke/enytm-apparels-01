@@ -46,7 +46,14 @@ import { useCart } from "./context/CartContext";
 import { api } from "./api";
 import "./index.css";
 
-let globalProductsCache = null;
+let globalProductsCache = (() => {
+  try {
+    const saved = localStorage.getItem("enytm_products_cache");
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) {
+    return null;
+  }
+})();
 
 function useProducts() {
   const [p, setP] = useState(globalProductsCache || []);
@@ -69,6 +76,9 @@ function useProducts() {
           }
         }
         globalProductsCache = list;
+        try {
+          localStorage.setItem("enytm_products_cache", JSON.stringify(list));
+        } catch (e) {}
         if (active) {
           setP(list);
           setLoading(false);
@@ -490,6 +500,12 @@ function Home() {
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
+        ) : products?.loading ? (
+          <div className="product-grid">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} style={{ background: "#111", minHeight: "380px", borderRadius: "2px", opacity: 0.6 }} />
+            ))}
+          </div>
         ) : (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "#888", border: "1px dashed #262626", background: "#0a0a0a", margin: "20px 0" }}>
             <p className="eyebrow" style={{ color: "#c8b69a" }}>COLLECTION</p>
@@ -728,7 +744,9 @@ function Shop() {
           <span className="shop-simple-eyebrow">COLLECTION</span>
           <h1 className="shop-simple-title">{categoryTitle}</h1>
         </div>
-        <span className="shop-simple-count">{shown.length} {shown.length === 1 ? "STYLE" : "STYLES"}</span>
+        <span className="shop-simple-count">
+          {products?.loading && !shown.length ? "" : `${shown.length} ${shown.length === 1 ? "STYLE" : "STYLES"}`}
+        </span>
       </div>
 
       <div className="shop-simple-toolbar">
@@ -759,6 +777,37 @@ function Shop() {
       {shown.length ? (
         <div className="product-grid shop-grid shop-grid-v2">
           {shown.map(p => <ProductCard key={p.id} product={p} />)}
+        </div>
+      ) : products?.loading ? (
+        <div className="product-grid shop-grid shop-grid-v2">
+          {[1, 2, 3].map(n => (
+            <div
+              key={n}
+              className="product-card"
+              style={{
+                background: "linear-gradient(180deg, #121212 0%, #0a0a0a 100%)",
+                border: "1px solid #1f1d1a",
+                borderRadius: "2px",
+                overflow: "hidden",
+                minHeight: "440px",
+                display: "flex",
+                flexDirection: "column"
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  aspectRatio: "3 / 4",
+                  background: "#161616",
+                  animation: "pulse 1.5s infinite ease-in-out"
+                }}
+              />
+              <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ width: "65%", height: "14px", background: "#222", borderRadius: "2px" }} />
+                <div style={{ width: "35%", height: "12px", background: "#1c1c1c", borderRadius: "2px" }} />
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="shop-empty-v2">
