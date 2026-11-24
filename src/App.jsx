@@ -240,7 +240,7 @@ function ProductCard({ product }) {
   const outOfStock = !isComingSoon && stock <= 0;
   const add = () => { if (outOfStock || isComingSoon) return; addToCart(product, "M"); setAdded(true); setTimeout(() => setAdded(false), 1800) };
   const hasDiscount = !isComingSoon && Number(product.oldPrice) > Number(product.price);
-  return <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}><div className="product-image">{isComingSoon ? <span className="product-stock-badge coming-soon">COMING SOON</span> : outOfStock ? <span className="product-stock-badge out">OUT OF STOCK</span> : stock < 6 ? <span className="product-stock-badge low">{stock === 1 ? "ONLY 1 LEFT" : `ONLY ${stock} LEFT`}</span> : null}{product.badge && !outOfStock && !isComingSoon && <span className="product-badge">{product.badge}</span>}<button className={`heart ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}><Heart fill={liked ? "currentColor" : "none"} /></button><Link to={`/product/${product.id}`}>
+  return <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}><div className="product-image">{isComingSoon ? <span className="product-stock-badge coming-soon">COMING SOON</span> : outOfStock ? <span className="product-stock-badge out">OUT OF STOCK</span> : stock < 6 ? <span className="product-stock-badge low">LOW STOCK</span> : null}{product.badge && !outOfStock && !isComingSoon && <span className="product-badge">{product.badge}</span>}<button className={`heart ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}><Heart fill={liked ? "currentColor" : "none"} /></button><Link to={`/product/${product.id}`}>
     <img
       src={normalizeImageUrl(product.image) || ""}
       alt={product.name}
@@ -1116,8 +1116,8 @@ function ProductPage() {
                 : outOfStock
                   ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
                   : sizeStockVal < 6
-                    ? `HURRY — ONLY ${sizeStockVal} LEFT IN SIZE ${size}.`
-                    : `IN STOCK · READY TO DISPATCH (${sizeStockVal} AVAILABLE IN SIZE ${size})`}
+                    ? "LOW STOCK"
+                    : "IN STOCK · READY TO DISPATCH"}
           </p>
 
             {/* OFFERS FOR YOU CARD */}
@@ -1205,7 +1205,7 @@ function ProductPage() {
                           if (targetStock > 0 && qty > targetStock) setQty(targetStock);
                         }
                       }}
-                      title={isSoldOut ? `Size ${s} - Out of stock` : sQty !== null ? `Size ${s} (${sQty} in stock)` : `Size ${s}`}
+                      title={isSoldOut ? `Size ${s} - Out of stock` : sQty !== null ? (sQty < 6 ? `Size ${s} - Low stock` : `Size ${s} - In stock`) : `Size ${s}`}
                     >
                       <span>{s}</span>
                       {isSoldOut && <small className="size-badge-out">OUT</small>}
@@ -2193,9 +2193,9 @@ function ProductPage() {
                 <span className="checkout-item-size-badge">SIZE {i.size}</span>
                 <span className="checkout-item-rate">₹{Number(i.price).toLocaleString("en-IN")} each</span>
                 {isOverStock ? (
-                  <span className="checkout-stock-pill out">Only {stockCount} in stock</span>
+                  <span className="checkout-stock-pill out">Exceeds available stock</span>
                 ) : isLowStock ? (
-                  <span className="checkout-stock-pill">Only {stockCount} left</span>
+                  <span className="checkout-stock-pill">Low stock</span>
                 ) : null}
               </div>
               <div className="checkout-item-controls">
