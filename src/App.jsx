@@ -1211,16 +1211,7 @@ function ProductPage() {
               </div>
             </div>
 
-            <p className="detail-copy">
-              {product.description || "Designed with an architectural oversized silhouette, clean drop shoulder drape and heavyweight hand-feel for effortless daily wear."}
-            </p>
 
-            <div className="detail-highlights">
-              <span className="gsm-box">{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240+ GSM"}</span>
-              <span>100% COMBED COTTON</span>
-              <span>OVERSIZED FIT</span>
-              <span>DROP SHOULDER</span>
-            </div>
 
             {product.fabric && (
               <div className="spec">
