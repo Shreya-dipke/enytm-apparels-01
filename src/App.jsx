@@ -420,19 +420,14 @@ function Home() {
   return (
     <main className="home-black-label home-v3">
       <section className="hero hero-v2">
-        <video
-          className="hero-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/hero-mobile.jpg"
-        >
-          <source src="/enytm-hero.mp4" type="video/mp4" />
-        </video>
+        <img
+          src="/enytm-hero.jpg"
+          alt="ENYTM The Black Label"
+          className="hero-desktop-img"
+        />
         <img
           src="/hero-mobile.jpg"
-          alt="ENYTM Drop 001"
+          alt="ENYTM The Black Label"
           className="hero-mobile-img"
         />
         <div className="hero-overlay" />
@@ -755,11 +750,24 @@ function Shop() {
 
   return <main className="shop-page shop-page-v2">
     <div className="shop-editorial-hero">
-      <img
-        src="/shop-hero-banner.jpg?v=2"
-        alt="The ENYTM Collection — Explore The Collection"
-        className="shop-hero-banner-img"
-      />
+      <div className="shop-editorial-hero-content">
+        <span className="shop-simple-eyebrow">COLLECTION</span>
+        <h1 className="shop-simple-title">
+          {categoryTitle === "OVERSIZED TEES" ? (
+            <>OVERSIZED <span style={{ color: "#cbb89a" }}>TEES</span></>
+          ) : categoryTitle === "PREMIUM POLOS" ? (
+            <>PREMIUM <span style={{ color: "#cbb89a" }}>POLOS</span></>
+          ) : (
+            <>SHOP <span style={{ color: "#cbb89a" }}>ALL</span></>
+          )}
+        </h1>
+        <p className="shop-simple-subtitle">
+          {categoryKey(category) === "oversized" ? "Relaxed Fits. Premium Comfort. Everyday Essential." :
+            categoryKey(category) === "polos" ? "Textured Organic Piqué. Elevated Minimal Branding." :
+              "Considered Silhouettes. Heavyweight Fabrics Built to Last."}
+        </p>
+        <div className="shop-hero-divider" />
+      </div>
     </div>
 
     <div className="shop-controls-bar">

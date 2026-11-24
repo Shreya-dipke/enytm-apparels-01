@@ -14807,12 +14807,26 @@ a.btn.outline {
   }
 }
 
-/* Mobile Hero Image Replacement (Replaces video on mobile view) */
+/* Hero Images (Replaced video of girl in yellow hoodie) */
+.hero-desktop-img {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 30% !important;
+  z-index: 0 !important;
+}
+
 .hero-mobile-img {
   display: none !important;
 }
 
 @media (max-width: 768px) {
+  .hero-desktop-img {
+    display: none !important;
+  }
 
   .hero-video,
   .hero>.hero-video,
