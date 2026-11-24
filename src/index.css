@@ -10573,20 +10573,14 @@ a.btn.outline {
   color: #dfcfb7 !important;
 }
 
-/* --- FOUR CATEGORIES HOMEPAGE GRID --- */
+/* --- CURATED CATEGORIES HOMEPAGE GRID --- */
 .categories-four-col {
   display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 18px !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 20px !important;
 }
 
-@media (max-width: 1024px) {
-  .categories-four-col {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .categories-four-col {
     grid-template-columns: 1fr !important;
   }

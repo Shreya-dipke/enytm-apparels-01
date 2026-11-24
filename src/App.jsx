@@ -177,8 +177,6 @@ function Navbar({ onSearch }) {
           <Link to="/shop" onClick={() => setOpen(false)}>SHOP</Link>
           <Link to="/shop?category=Oversized" onClick={() => setOpen(false)}>OVERSIZED</Link>
           <Link to="/shop?category=Polos" onClick={() => setOpen(false)}>POLOS</Link>
-          <Link to="/shop?category=Hoodies" onClick={() => setOpen(false)}>HOODIES</Link>
-          <Link to="/shop?category=Lowers" onClick={() => setOpen(false)}>LOWERS</Link>
           <Link to={token ? "/account" : "/login"} onClick={() => setOpen(false)}>ORDERS</Link>
           <Link to="/about" onClick={() => setOpen(false)}>ABOUT</Link>
         </nav>
@@ -337,9 +335,7 @@ function Home() {
 
   const collections = [
     { title: "OVERSIZED T-SHIRTS", desc: "240–260 GSM heavy combed cotton with relaxed drop-shoulders.", link: "/shop?category=Oversized", img: categoryImages.Oversized, num: "01", comingSoon: false },
-    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02", comingSoon: false },
-    { title: "HOODIES & SWEATSHIRTS", desc: "360–380 GSM heavyweight French Terry built for structured warmth.", link: "/shop?category=Hoodies", img: categoryImages.Hoodies, num: "03", comingSoon: true },
-    { title: "HEAVYWEIGHT LOWERS", desc: "Architectural straight-leg French Terry pants with tailored drape.", link: "/shop?category=Lowers", img: categoryImages.Lowers, num: "04", comingSoon: true }
+    { title: "POLOS", desc: "280 GSM textured organic piqué with minimal elevated branding.", link: "/shop?category=Polos", img: categoryImages.Polos, num: "02", comingSoon: false }
   ];
 
   const filteredProducts = useMemo(() => {
@@ -411,7 +407,7 @@ function Home() {
             </h2>
           </div>
           <p>
-            Four foundational cuts.<br />
+            Curated foundational cuts.<br />
             Engineered for modern movement.
           </p>
         </div>
@@ -727,9 +723,7 @@ function Shop() {
   const choices = [
     ["All", "ALL"],
     ["Oversized", "OVERSIZED TEES"],
-    ["Polos", "PREMIUM POLOS"],
-    ["Hoodies", "HOODIES"],
-    ["Lowers", "LOWERS"]
+    ["Polos", "PREMIUM POLOS"]
   ];
 
   const handleCategoryChange = (val) => {
