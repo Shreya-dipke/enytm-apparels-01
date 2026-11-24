@@ -73,10 +73,10 @@ function useProducts() {
         const seen = new Set();
         const list = [];
         for (const item of rawList) {
-          const id = item?.id ? String(item.id) : null;
+          const id = item?.id !== undefined && item?.id !== null ? String(item.id) : (item?._id ? String(item._id) : null);
           if (item && id && !seen.has(id)) {
             seen.add(id);
-            list.push(item);
+            list.push({ ...item, id: item.id ?? id });
           }
         }
         globalProductsCache = list;

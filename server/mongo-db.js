@@ -102,7 +102,13 @@ class MongoDatabase {
       }
       try {
         const docs = await db.collection(name).find({}).toArray();
-        this.data[name] = docs.map(({ _id, ...rest }) => rest);
+        this.data[name] = docs.map((doc) => {
+          const { _id, ...rest } = doc;
+          const id = rest.id !== undefined && rest.id !== null && rest.id !== ""
+            ? (typeof rest.id === "number" ? rest.id : (!isNaN(Number(rest.id)) ? Number(rest.id) : String(rest.id)))
+            : (_id ? (typeof _id === "object" ? _id.toString() : String(_id)) : Date.now());
+          return { ...rest, id, _id: _id ? String(_id) : String(id) };
+        });
         this.cacheTimestamps[name] = now;
         this.loadedCollections.add(name);
       } catch (e) {
@@ -145,39 +151,37 @@ class MongoDatabase {
           const col = db.collection(name);
           const items = this.data[name];
 
-          if (items.length > 0) {
-            const seenIds = new Set();
-            const cleanDocs = [];
-            for (const item of items) {
-              const { _id, ...rest } = item;
-              const idKey = rest.id ? String(rest.id) : null;
-              if (idKey && seenIds.has(idKey)) continue;
-              if (idKey) seenIds.add(idKey);
-              cleanDocs.push(rest);
-            }
+          if (!items || items.length === 0) {
+            return;
+          }
 
-            // ATOMIC SAFE WRITE:
-            // Use bulkWrite replaceOne/upsert so documents are NEVER deleted before being written!
-            const docsWithId = cleanDocs.filter(d => d.id !== undefined && d.id !== null);
-            if (docsWithId.length > 0) {
-              const bulkOps = docsWithId.map(doc => ({
-                replaceOne: {
-                  filter: { id: doc.id },
-                  replacement: doc,
-                  upsert: true
-                }
-              }));
-              await col.bulkWrite(bulkOps, { ordered: false });
+          const seenIds = new Set();
+          const cleanDocs = [];
+          for (const item of items) {
+            const { _id, ...rest } = item;
+            const idKey = rest.id !== undefined && rest.id !== null ? String(rest.id) : (_id ? String(_id) : null);
+            if (idKey && seenIds.has(idKey)) continue;
+            if (idKey) seenIds.add(idKey);
+            cleanDocs.push({ ...rest, id: rest.id ?? idKey });
+          }
 
-              // Delete ONLY documents whose IDs are no longer in the array
-              const currentIds = docsWithId.map(d => d.id);
-              await col.deleteMany({ id: { $nin: currentIds } });
-            } else {
-              await col.deleteMany({});
-              await col.insertMany(cleanDocs);
+          const bulkOps = cleanDocs.map(doc => ({
+            replaceOne: {
+              filter: {
+                $or: [
+                  { id: doc.id },
+                  ...(typeof doc.id === "string" && !isNaN(Number(doc.id)) ? [{ id: Number(doc.id) }] : []),
+                  ...(typeof doc.id === "number" ? [{ id: String(doc.id) }] : []),
+                  ...(doc._id ? [{ _id: doc._id }] : [])
+                ]
+              },
+              replacement: doc,
+              upsert: true
             }
-          } else {
-            await col.deleteMany({});
+          }));
+
+          if (bulkOps.length > 0) {
+            await col.bulkWrite(bulkOps, { ordered: false });
           }
         } catch (e) {
           console.error(`[MongoDB] Error writing collection ${name}:`, e.message);

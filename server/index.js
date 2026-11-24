@@ -1494,32 +1494,46 @@ app.post("/api/admin/products", adminAuth, async (req, res) => {
   res.json(p);
 });
 app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
-  const id = Number(req.params.id);
+  const rawId = req.params.id;
+  const numId = Number(rawId);
+  const targetId = !isNaN(numId) ? numId : rawId;
   const col = (await db.connect()).collection("products");
-  const existing = await col.findOne({ id });
+  const filter = !isNaN(numId)
+    ? { $or: [{ id: numId }, { id: rawId }, { _id: rawId }] }
+    : { $or: [{ id: rawId }, { _id: rawId }] };
+  const existing = await col.findOne(filter);
   if (!existing) return res.status(404).json({ message: "Product not found" });
   const name = typeof req.body?.name !== "undefined" ? String(req.body.name || "").trim() : existing.name;
   if (!name) return res.status(400).json({ message: "Product name is required." });
-  const duplicate = await col.findOne({ id: { $ne: id }, name: { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } });
+  const duplicate = await col.findOne({
+    $and: [
+      { $nor: [{ id: targetId }, { id: rawId }, { _id: rawId }] },
+      { name: { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } }
+    ]
+  });
   if (duplicate) {
     return res.status(409).json({ message: `A product with the name "${name}" already exists. Product names must be unique.` });
   }
   const { _id, ...cleanUpdate } = req.body;
-  const updated = { ...existing, ...cleanUpdate, id, name };
+  const updated = { ...existing, ...cleanUpdate, id: existing.id || targetId, name };
   delete updated._id;
-  await col.replaceOne({ id }, updated);
+  await col.replaceOne(filter, updated);
   delete db.cacheTimestamps["products"];
   if (Array.isArray(db.data.products)) {
-    const idx = db.data.products.findIndex(x => x.id === id);
+    const idx = db.data.products.findIndex(x => String(x.id) === String(rawId) || String(x._id) === String(rawId));
     if (idx >= 0) db.data.products[idx] = updated;
   }
   res.json(updated);
 });
 app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
-  const id = Number(req.params.id);
+  const rawId = req.params.id;
+  const numId = Number(rawId);
   const col = (await db.connect()).collection("products");
-  await col.deleteOne({ id });
-  db.data.products = (db.data.products || []).filter(x => x.id !== id);
+  const filter = !isNaN(numId)
+    ? { $or: [{ id: numId }, { id: rawId }, { _id: rawId }] }
+    : { $or: [{ id: rawId }, { _id: rawId }] };
+  await col.deleteOne(filter);
+  db.data.products = (db.data.products || []).filter(x => String(x.id) !== String(rawId) && String(x._id) !== String(rawId));
   delete db.cacheTimestamps["products"];
   res.json({ ok: true });
 });
