@@ -204,18 +204,32 @@ class MongoDatabase {
       }
     });
 
-    if (!target || target === "settings" || (Array.isArray(target) && target.includes("settings"))) {
+    const shouldWriteSettings = target === "settings" || (Array.isArray(target) && target.includes("settings"));
+    if (shouldWriteSettings) {
       delete this.cacheTimestamps["settings"];
       if (this.data.settings) {
         tasks.push((async () => {
           try {
             const col = db.collection("settings");
             const { _id, ...cleanSettings } = this.data.settings;
-            await col.updateOne(
-              { _id: "store_settings" },
-              { $set: cleanSettings },
-              { upsert: true }
-            );
+            delete cleanSettings._id;
+            try {
+              await col.updateOne(
+                { _id: "store_settings" },
+                { $set: cleanSettings },
+                { upsert: true }
+              );
+            } catch (err) {
+              if (err.code === 11000 || (err.message && err.message.includes("E11000"))) {
+                // If concurrent upsert collision occurs, update the existing document
+                await col.updateOne(
+                  { _id: "store_settings" },
+                  { $set: cleanSettings }
+                );
+              } else {
+                throw err;
+              }
+            }
           } catch (e) {
             console.error("[MongoDB] Error writing settings:", e.message);
           }
