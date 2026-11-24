@@ -396,9 +396,9 @@ function Home() {
   const [activeTab, setActiveTab] = useState("all");
 
   const collections = [
-    { title: "T-Shirts", link: "/shop?category=Oversized", img: "/categories/tshirts.jpg" },
-    { title: "Polos", link: "/shop?category=Polos", img: "/categories/polos.jpg" },
-    { title: "Customize Tees", link: "/shop?category=Oversized", img: "/categories/customize.jpg" }
+    { title: "T-Shirts", link: "/shop?category=Oversized", img: "/categories/tshirts.jpg?v=2" },
+    { title: "Polos", link: "/shop?category=Polos", img: "/categories/polos.jpg?v=2" },
+    { title: "Customize Tees", link: "/shop?category=Oversized", img: "/categories/customize.jpg?v=2" }
   ];
 
   const filteredProducts = useMemo(() => {
