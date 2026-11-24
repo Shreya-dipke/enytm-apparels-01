@@ -395,17 +395,10 @@ function Home() {
   const products = useProducts();
   const [activeTab, setActiveTab] = useState("all");
 
-  const categoryImages = {
-    Oversized: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-    Polos: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
-    Hoodies: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-    Lowers: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=1200&q=85"
-  };
-
   const collections = [
-    { title: "T-Shirts", link: "/shop?category=Oversized", img: categoryImages.Oversized },
-    { title: "Polos", link: "/shop?category=Polos", img: categoryImages.Polos },
-    { title: "Customize Tees", link: "/shop?category=Oversized", img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=85", icon: <Pencil size={13} /> }
+    { title: "T-Shirts", link: "/shop?category=Oversized", img: "/categories/tshirts.jpg" },
+    { title: "Polos", link: "/shop?category=Polos", img: "/categories/polos.jpg" },
+    { title: "Customize Tees", link: "/shop?category=Oversized", img: "/categories/customize.jpg" }
   ];
 
   const filteredProducts = useMemo(() => {
@@ -424,10 +417,15 @@ function Home() {
           muted
           loop
           playsInline
-          poster="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2200&q=90"
+          poster="/hero-mobile.jpg"
         >
           <source src="/enytm-hero.mp4" type="video/mp4" />
         </video>
+        <img
+          src="/hero-mobile.jpg"
+          alt="ENYTM Drop 001"
+          className="hero-mobile-img"
+        />
         <div className="hero-overlay" />
         <div className="hero-edition">
           <span className="hero-edition-dot" /> ENYTM / THE BLACK LABEL <span>EST. 2026</span>
@@ -472,20 +470,13 @@ function Home() {
               key={c.title}
               to={c.link}
               className="category-tile category-tile-v2"
+              aria-label={c.title}
             >
               <img
                 src={c.img}
                 alt={c.title}
                 loading="lazy"
               />
-              <div className="cat-tile-overlay" />
-              <div className="cat-tile-body">
-                <div className="cat-tile-label-row">
-                  {c.icon && <span className="cat-tile-icon" style={{ display: "inline-flex", marginRight: 4 }}>{c.icon}</span>}
-                  <span className="cat-tile-label">{c.title}</span>
-                  <ArrowRight size={14} className="cat-tile-arrow" style={{ marginLeft: "auto" }} />
-                </div>
-              </div>
             </Link>
           ))}
         </div>
