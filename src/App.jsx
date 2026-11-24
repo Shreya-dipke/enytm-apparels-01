@@ -53,18 +53,15 @@ import "./index.css";
 let globalProductsCache = (() => {
   try {
     const saved = localStorage.getItem("enytm_products_cache");
-    if (!saved) return null;
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+    return saved ? JSON.parse(saved) : null;
   } catch (e) {
     return null;
   }
 })();
 
 function useProducts() {
-  const [p, setP] = useState(() => (Array.isArray(globalProductsCache) && globalProductsCache.length > 0 ? globalProductsCache : []));
-  const [loading, setLoading] = useState(() => !(Array.isArray(globalProductsCache) && globalProductsCache.length > 0));
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(() => Boolean(Array.isArray(globalProductsCache) && globalProductsCache.length > 0));
+  const [p, setP] = useState(globalProductsCache || []);
+  const [loading, setLoading] = useState(!globalProductsCache);
 
   useEffect(() => {
     let active = true;
@@ -82,31 +79,23 @@ function useProducts() {
             list.push(item);
           }
         }
-        if (list.length > 0) {
-          globalProductsCache = list;
-          try {
-            localStorage.setItem("enytm_products_cache", JSON.stringify(list));
-          } catch (e) {}
-        }
+        globalProductsCache = list;
+        try {
+          localStorage.setItem("enytm_products_cache", JSON.stringify(list));
+        } catch (e) {}
         if (active) {
           setP(list);
           setLoading(false);
-          setHasLoadedOnce(true);
         }
       })
-      .catch((err) => {
-        console.error("Products fetch error:", err);
-        if (active) {
-          setLoading(false);
-          setHasLoadedOnce(true);
-        }
+      .catch(() => {
+        if (active) setLoading(false);
       });
     return () => { active = false; };
   }, []);
 
   const result = Array.isArray(p) ? [...p] : [];
   result.loading = loading;
-  result.hasLoadedOnce = hasLoadedOnce;
   return result;
 }
 
@@ -413,10 +402,19 @@ function Home() {
   ];
 
   const filteredProducts = useMemo(() => {
-    if (activeTab === "new") return products.filter(p => p.badge === "NEW" || p.id === 1 || p.id === 7);
-    if (activeTab === "bestsellers") return products.filter(p => p.badge === "BESTSELLER" || p.badge === "SIGNATURE" || p.id === 2 || p.id === 3);
-    if (activeTab === "heavyweight") return products.filter(p => (p.fabric && p.fabric.includes("French Terry")) || p.category === "Lowers" || p.category === "Hoodies");
-    return products;
+    let list = products;
+    if (activeTab === "new") list = products.filter(p => p.badge === "NEW" || p.id === 1 || p.id === 7);
+    else if (activeTab === "bestsellers") list = products.filter(p => p.badge === "BESTSELLER" || p.badge === "SIGNATURE" || p.id === 2 || p.id === 3);
+    else if (activeTab === "heavyweight") list = products.filter(p => (p.fabric && p.fabric.includes("French Terry")) || p.category === "Lowers" || p.category === "Hoodies");
+
+    if (!list || !list.length) return [];
+    // Shuffle and pick 4 random products each time
+    const shuffled = [...list];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 4);
   }, [products, activeTab]);
 
   return (
@@ -428,15 +426,10 @@ function Home() {
           muted
           loop
           playsInline
-          poster="/hero-mobile.jpg"
+          poster="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2200&q=90"
         >
           <source src="/enytm-hero.mp4" type="video/mp4" />
         </video>
-        <img
-          src="/hero-mobile.jpg"
-          alt="ENYTM Drop 001"
-          className="hero-mobile-img"
-        />
         <div className="hero-overlay" />
         <div className="hero-edition">
           <span className="hero-edition-dot" /> ENYTM / THE BLACK LABEL <span>EST. 2026</span>
@@ -519,39 +512,14 @@ function Home() {
 
         {filteredProducts.length > 0 ? (
           <div className="product-grid">
-            {filteredProducts.slice(0, 8).map(p => (
+            {filteredProducts.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        ) : (!products?.hasLoadedOnce || products?.loading) ? (
+        ) : products?.loading ? (
           <div className="product-grid">
             {[1, 2, 3, 4].map(n => (
-              <div
-                key={n}
-                className="product-card skeleton-card"
-                style={{
-                  background: "linear-gradient(180deg, #121212 0%, #0a0a0a 100%)",
-                  border: "1px solid #1f1d1a",
-                  borderRadius: "2px",
-                  overflow: "hidden",
-                  minHeight: "440px",
-                  display: "flex",
-                  flexDirection: "column"
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    aspectRatio: "3 / 4",
-                    background: "#161616",
-                    animation: "pulse 1.5s infinite ease-in-out"
-                  }}
-                />
-                <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ width: "65%", height: "14px", background: "#222", borderRadius: "2px" }} />
-                  <div style={{ width: "35%", height: "12px", background: "#1c1c1c", borderRadius: "2px" }} />
-                </div>
-              </div>
+              <div key={n} style={{ background: "#111", minHeight: "380px", borderRadius: "2px", opacity: 0.6 }} />
             ))}
           </div>
         ) : (
@@ -849,9 +817,9 @@ function Shop() {
         <div className="product-grid shop-grid shop-grid-v2">
           {shown.map(p => <ProductCard key={p.id} product={p} />)}
         </div>
-      ) : (!products?.hasLoadedOnce || products?.loading) ? (
+      ) : products?.loading ? (
         <div className="product-grid shop-grid shop-grid-v2">
-          {[1, 2, 3, 4, 5, 6].map(n => (
+          {[1, 2, 3].map(n => (
             <div
               key={n}
               className="product-card"
