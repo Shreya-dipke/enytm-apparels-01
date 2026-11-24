@@ -1,5 +1,5 @@
 import dns from "dns";
-try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
+try { dns.setDefaultResultOrder("ipv4first"); } catch (e) { }
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -87,11 +87,6 @@ if (!Array.isArray(db.data.walletTopups)) db.data.walletTopups = [];
 if (!Array.isArray(db.data.products)) db.data.products = [];
 if (db.data.settings && !db.data.settings.shippingFreeAbove && db.data.settings.shippingFreeAbove !== 0) {
   db.data.settings = { ...db.data.settings, shippingFreeAbove: 0, shippingCharge: 0 };
-}
-try {
-  await db.write();
-} catch (e) {
-  console.warn("[MongoDB] Initial write deferred:", e.message);
 }
 
 const app = express();
@@ -351,7 +346,7 @@ async function notifyOrder(order, type) {
     } catch (e) { console.error(`[ENYTM WHATSAPP ${type}]`, e.message); }
   }
   order.updatedAt = Date.now();
-  await db.write();
+  await db.write("orders");
 }
 async function notifyOrderStatus(order) {
   const user = db.data.users.find(u => String(u.id) === String(order.userId));
@@ -464,7 +459,7 @@ app.get("/api/products", async (req, res) => {
   } catch (e) {
     console.error("[MongoDB] Products read error:", e.message);
   }
-  res.setHeader("Cache-Control", "public, max-age=15, s-maxage=60, stale-while-revalidate=300");
+  res.setHeader("Cache-Control", "public, max-age=1, s-maxage=5, stale-while-revalidate=59");
   res.json(db.data.products || []);
 });
 app.get("/api/settings", async (req, res) => {
@@ -1259,7 +1254,7 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
   order.paymentIds ||= [];
   order.paymentIds.push({ id: razorpay_payment_id, stage, amount: amountPaid, capturedAt: Date.now() });
   order.updatedAt = Date.now();
-  await db.write();
+  await db.write("orders");
   if (stage === "advance" || stage === "full") await notifyOrder(order, "placed");
   res.json({ ok: true, order });
 });
@@ -1279,18 +1274,18 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
   order.balanceAmount = balanceAmount;
   order.paymentStage = "balance";
   order.updatedAt = Date.now();
-  await db.write();
+  await db.write("orders");
   res.json({ orderId: order.id, razorpayOrderId: rpOrder.id, amount: Math.round(balanceAmount * 100), currency: "INR", keyId: process.env.RAZORPAY_KEY_ID, balanceAmount });
 });
 
 app.get("/api/orders/my", auth, async (req, res) => {
-  try { await db.read("orders"); } catch (e) {}
+  try { await db.read("orders"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a, b) => b.createdAt - a.createdAt));
 });
 // GET SINGLE CUSTOMER ORDER
 app.get("/api/orders/:id", auth, async (req, res) => {
-  try { await db.read("orders"); } catch (e) {}
+  try { await db.read("orders"); } catch (e) { }
   const order = db.data.orders.find(
     o => String(o.id) === String(req.params.id) &&
       String(o.userId) === String(req.user.id)
@@ -1430,7 +1425,7 @@ app.post("/api/admin/login", async (req, res) => {
 app.get("/api/admin/dashboard", adminAuth, async (req, res) => {
   try {
     await db.read(["orders", "users", "products"]);
-  } catch (e) {}
+  } catch (e) { }
   const revenue = db.data.orders.filter(o => o.paymentStatus === "paid").reduce((s, o) => s + o.total, 0);
   const customers = db.data.users.filter(u => u.role !== "admin").length;
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -1441,17 +1436,17 @@ app.get("/api/admin/dashboard", adminAuth, async (req, res) => {
   });
 });
 app.get("/api/admin/orders", adminAuth, async (req, res) => {
-  try { await db.read("orders"); } catch (e) {}
+  try { await db.read("orders"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json(db.data.orders.sort((a, b) => b.createdAt - a.createdAt));
 });
 app.get("/api/admin/customers", adminAuth, async (req, res) => {
-  try { await db.read("users"); } catch (e) {}
+  try { await db.read("users"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json(db.data.users.filter(u => u.role !== "admin").map(publicUser).sort((a, b) => b.createdAt - a.createdAt));
 });
 app.get("/api/admin/products", adminAuth, async (req, res) => {
-  try { await db.read("products"); } catch (e) {}
+  try { await db.read("products"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json(db.data.products || []);
 });
@@ -1577,14 +1572,14 @@ app.post("/api/admin/coupons", adminAuth, async (req, res) => {
   const index = db.data.coupons.findIndex(c => c.id === coupon.id);
   if (index >= 0) db.data.coupons[index] = { ...db.data.coupons[index], ...coupon };
   else db.data.coupons.push(coupon);
-  await db.write(); res.json(coupon);
+  await db.write("coupons"); res.json(coupon);
 });
 app.delete("/api/admin/coupons/:id", adminAuth, async (req, res) => {
   db.data.coupons = (db.data.coupons || []).filter(c => c.id !== req.params.id);
-  await db.write(); res.json({ ok: true });
+  await db.write("coupons"); res.json({ ok: true });
 });
 app.get("/api/admin/settings", adminAuth, (req, res) => res.json(db.data.settings));
-app.put("/api/admin/settings", adminAuth, async (req, res) => { db.data.settings = { ...db.data.settings, ...req.body }; await db.write(); res.json(db.data.settings); });
+app.put("/api/admin/settings", adminAuth, async (req, res) => { db.data.settings = { ...db.data.settings, ...req.body }; await db.write("settings"); res.json(db.data.settings); });
 app.get("/api/admin/integrations", adminAuth, (req, res) => res.json({
   email: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
   whatsapp: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
@@ -1620,7 +1615,7 @@ app.put("/api/admin/orders/:id/status", adminAuth, async (req, res) => {
     };
   }
   order.updatedAt = Date.now();
-  await db.write();
+  await db.write("orders");
   if (previousStatus !== status) {
     try { await notifyOrderStatus(order); } catch (e) { console.error("[ENYTM STATUS NOTIFICATION]", e.message); }
   }
