@@ -462,9 +462,7 @@ app.get("/api/products", async (req, res) => {
   } catch (e) {
     console.error("[MongoDB] Products read error:", e.message);
   }
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
+  res.setHeader("Cache-Control", "public, max-age=1, s-maxage=5, stale-while-revalidate=59");
   res.json(db.data.products || []);
 });
 app.get("/api/settings", async (req, res) => {
@@ -473,7 +471,7 @@ app.get("/api/settings", async (req, res) => {
   } catch (e) {
     console.error("[MongoDB] Settings read error:", e.message);
   }
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Cache-Control", "public, max-age=1, s-maxage=10, stale-while-revalidate=59");
   res.json(db.data.settings || {});
 });
 

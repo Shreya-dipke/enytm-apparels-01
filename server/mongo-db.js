@@ -1,8 +1,10 @@
 import dns from "dns";
-// Set reliable DNS servers to prevent SRV lookup failures on all operating systems
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch (e) {}
+// Only override DNS on Windows where Node has known querySrv DNS issues
+if (process.platform === "win32") {
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch (e) {}
+}
 
 import { MongoClient } from "mongodb";
 
@@ -26,6 +28,8 @@ class MongoDatabase {
     this.db = null;
     this.isConnecting = false;
     this.connectPromise = null;
+    this.cacheTimestamps = {};
+    this.CACHE_TTL = 3000; // 3 seconds in-memory TTL for rapid parallel queries
     this.data = {
       users: [],
       products: [],
@@ -54,8 +58,11 @@ class MongoDatabase {
     this.connectPromise = (async () => {
       try {
         this.client = new MongoClient(MONGODB_URI, {
-          serverSelectionTimeoutMS: 10000,
-          maxPoolSize: 10
+          serverSelectionTimeoutMS: 5000,
+          connectTimeoutMS: 5000,
+          maxPoolSize: 20,
+          minPoolSize: 2,
+          maxIdleTimeMS: 60000
         });
         await this.client.connect();
         this.db = this.client.db("enytm");
@@ -72,34 +79,52 @@ class MongoDatabase {
     return this.connectPromise;
   }
 
-  async read(target = null) {
-    const db = await this.connect();
+  async read(target = null, force = false) {
+    const now = Date.now();
     const cols = target
       ? (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n))
       : COLLECTIONS;
 
-    for (const name of cols) {
+    const needsRead = force || cols.some(n => !this.cacheTimestamps[n] || (now - this.cacheTimestamps[n] > this.CACHE_TTL));
+
+    if (!needsRead && (target !== "settings" && (!Array.isArray(target) || !target.includes("settings")) || (this.cacheTimestamps["settings"] && now - this.cacheTimestamps["settings"] <= this.CACHE_TTL))) {
+      return this.data;
+    }
+
+    const db = await this.connect();
+
+    const tasks = cols.map(async (name) => {
+      if (!force && this.cacheTimestamps[name] && (now - this.cacheTimestamps[name] <= this.CACHE_TTL)) {
+        return;
+      }
       try {
         const docs = await db.collection(name).find({}).toArray();
         this.data[name] = docs.map(({ _id, ...rest }) => rest);
+        this.cacheTimestamps[name] = now;
       } catch (e) {
         console.error(`[MongoDB] Error reading collection ${name}:`, e.message);
         if (!Array.isArray(this.data[name])) this.data[name] = [];
       }
-    }
+    });
 
     if (!target || target === "settings" || (Array.isArray(target) && target.includes("settings"))) {
-      try {
-        const settingsDoc = await db.collection("settings").findOne({ _id: "store_settings" });
-        if (settingsDoc) {
-          const { _id, ...rest } = settingsDoc;
-          this.data.settings = rest;
-        }
-      } catch (e) {
-        console.error("[MongoDB] Error reading settings:", e.message);
+      if (force || !this.cacheTimestamps["settings"] || (now - this.cacheTimestamps["settings"] > this.CACHE_TTL)) {
+        tasks.push((async () => {
+          try {
+            const settingsDoc = await db.collection("settings").findOne({ _id: "store_settings" });
+            if (settingsDoc) {
+              const { _id, ...rest } = settingsDoc;
+              this.data.settings = rest;
+            }
+            this.cacheTimestamps["settings"] = now;
+          } catch (e) {
+            console.error("[MongoDB] Error reading settings:", e.message);
+          }
+        })());
       }
     }
 
+    await Promise.all(tasks);
     return this.data;
   }
 
@@ -109,7 +134,8 @@ class MongoDatabase {
       ? (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n))
       : COLLECTIONS;
 
-    for (const name of cols) {
+    const tasks = cols.map(async (name) => {
+      delete this.cacheTimestamps[name];
       if (Array.isArray(this.data[name])) {
         try {
           const col = db.collection(name);
@@ -125,20 +151,25 @@ class MongoDatabase {
           console.error(`[MongoDB] Error writing collection ${name}:`, e.message);
         }
       }
-    }
+    });
 
     if (!target || target === "settings" || (Array.isArray(target) && target.includes("settings"))) {
+      delete this.cacheTimestamps["settings"];
       if (this.data.settings) {
-        try {
-          const col = db.collection("settings");
-          await col.deleteMany({});
-          const { _id, ...cleanSettings } = this.data.settings;
-          await col.insertOne({ _id: "store_settings", ...cleanSettings });
-        } catch (e) {
-          console.error("[MongoDB] Error writing settings:", e.message);
-        }
+        tasks.push((async () => {
+          try {
+            const col = db.collection("settings");
+            await col.deleteMany({});
+            const { _id, ...cleanSettings } = this.data.settings;
+            await col.insertOne({ _id: "store_settings", ...cleanSettings });
+          } catch (e) {
+            console.error("[MongoDB] Error writing settings:", e.message);
+          }
+        })());
       }
     }
+
+    await Promise.all(tasks);
   }
 }
 
