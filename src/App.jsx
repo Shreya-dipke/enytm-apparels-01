@@ -44,7 +44,6 @@ import {
 } from "lucide-react";
 import { useCart } from "./context/CartContext";
 import { api } from "./api";
-import { fallbackProducts } from "./data/products";
 import "./index.css";
 
 function useProducts() {
