@@ -1,4 +1,7 @@
 import dns from "dns";
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch (e) {}
 // Only override DNS on Windows where Node has known querySrv DNS issues
 if (process.platform === "win32") {
   try {
@@ -141,11 +144,18 @@ class MongoDatabase {
           const col = db.collection(name);
           await col.deleteMany({});
           if (this.data[name].length > 0) {
-            const cleanDocs = this.data[name].map(item => {
+            const seenIds = new Set();
+            const cleanDocs = [];
+            for (const item of this.data[name]) {
               const { _id, ...rest } = item;
-              return rest;
-            });
-            await col.insertMany(cleanDocs);
+              const idKey = rest.id ? String(rest.id) : null;
+              if (idKey && seenIds.has(idKey)) continue;
+              if (idKey) seenIds.add(idKey);
+              cleanDocs.push(rest);
+            }
+            if (cleanDocs.length > 0) {
+              await col.insertMany(cleanDocs);
+            }
           }
         } catch (e) {
           console.error(`[MongoDB] Error writing collection ${name}:`, e.message);
