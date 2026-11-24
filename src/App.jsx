@@ -48,19 +48,23 @@ import { fallbackProducts } from "./data/products";
 import "./index.css";
 
 function useProducts() {
-  const [p, setP] = useState(fallbackProducts);
+  const [p, setP] = useState([]);
   useEffect(() => {
     api("/products")
       .then(data => {
-        if (Array.isArray(data) && data.length) {
+        if (Array.isArray(data)) {
           setP(data);
-        } else if (data && Array.isArray(data.products) && data.products.length) {
+        } else if (data && Array.isArray(data.products)) {
           setP(data.products);
+        } else {
+          setP([]);
         }
       })
-      .catch(() => { });
+      .catch(() => {
+        setP([]);
+      });
   }, []);
-  return Array.isArray(p) && p.length ? p : fallbackProducts;
+  return Array.isArray(p) ? p : [];
 }
 
 export function normalizeImageUrl(url) {
@@ -462,11 +466,19 @@ function Home() {
           </div>
         </div>
 
-        <div className="product-grid">
-          {filteredProducts.slice(0, 8).map(p => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {filteredProducts.length > 0 ? (
+          <div className="product-grid">
+            {filteredProducts.slice(0, 8).map(p => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "#888", border: "1px dashed #262626", background: "#0a0a0a", margin: "20px 0" }}>
+            <p className="eyebrow" style={{ color: "#c8b69a" }}>COLLECTION</p>
+            <h3 style={{ color: "#fff", fontSize: "18px", letterSpacing: ".1em", margin: "10px 0 6px" }}>NO PRODUCTS CURRENTLY LISTED</h3>
+            <p style={{ fontSize: "12px", color: "#777", margin: 0 }}>Add products from the Admin Panel to display them here.</p>
+          </div>
+        )}
 
         <div className="arrivals-footnote">
           <span>DESIGNED FOR YOUR EVERYDAY</span>
@@ -750,8 +762,8 @@ function ProductPage() {
   const location = useLocation();
   const nav = useNavigate();
   const rawId = params?.id ?? location.pathname.split("/").filter(Boolean).pop();
-  const productList = Array.isArray(products) && products.length ? products : fallbackProducts;
-  const product = productList.find(p => String(p.id) === String(rawId)) || productList[0] || fallbackProducts[0];
+  const productList = Array.isArray(products) ? products : [];
+  const product = productList.find(p => String(p.id) === String(rawId));
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [size, setSize] = useState("M");
   const [qty, setQty] = useState(1);
@@ -2130,7 +2142,7 @@ function ProductPage() {
           return (
           <div key={i.key} className="checkout-item-card">
             <div className="checkout-item-img-wrap">
-              <img src={normalizeImageUrl(i.image) || fallbackProducts[0]?.image} alt={i.name} />
+              <img src={normalizeImageUrl(i.image)} alt={i.name} />
             </div>
             <div className="checkout-item-details">
               <div className="checkout-item-row-top">
