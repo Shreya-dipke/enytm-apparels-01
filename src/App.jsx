@@ -40,7 +40,8 @@ import {
   ExternalLink,
   ShieldAlert,
   Check,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ShoppingCart
 } from "lucide-react";
 import { useCart } from "./context/CartContext";
 import { api } from "./api";
@@ -246,32 +247,96 @@ function ProductCard({ product }) {
   const isComingSoon = Boolean(product.comingSoon || product.category === "Hoodies" || product.category === "Sweatshirts" || product.category === "Lowers");
   const stock = Math.max(0, Number(product.stock || 0));
   const outOfStock = !isComingSoon && stock <= 0;
-  const add = () => { if (outOfStock || isComingSoon) return; addToCart(product, "M"); setAdded(true); setTimeout(() => setAdded(false), 1800) };
+  const add = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (outOfStock || isComingSoon) return;
+    addToCart(product, "M");
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
   const hasDiscount = !isComingSoon && Number(product.oldPrice) > Number(product.price);
-  return <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}><div className="product-image">{isComingSoon ? <span className="product-stock-badge coming-soon">COMING SOON</span> : outOfStock ? <span className="product-stock-badge out">OUT OF STOCK</span> : stock < 6 ? <span className="product-stock-badge low">LOW STOCK</span> : null}{product.badge && !outOfStock && !isComingSoon && <span className="product-badge">{product.badge}</span>}<button className={`heart ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}><Heart fill={liked ? "currentColor" : "none"} /></button><Link to={`/product/${product.id}`}>
-    <img
-      src={normalizeImageUrl(product.image) || ""}
-      alt={product.name}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      onError={(e) => {
-        const img = e.currentTarget;
+  const discountPct = hasDiscount ? Math.round(((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice)) * 100) : 0;
 
-        // Prevent repeated fallback attempts.
-        if (img.dataset.fallbackApplied === "true") return;
-        img.dataset.fallbackApplied = "true";
+  return (
+    <article className={`product-card ${isComingSoon ? "product-coming-soon" : ""}`}>
+      <div className="product-image">
+        {product.badge && !outOfStock && !isComingSoon ? (
+          <span className="product-badge">{product.badge}</span>
+        ) : !isComingSoon ? (
+          <span className="product-badge">NEW</span>
+        ) : isComingSoon ? (
+          <span className="product-stock-badge coming-soon">COMING SOON</span>
+        ) : null}
 
-        const fallbackImages = {
-          1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-          3: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
-        };
+        <button
+          type="button"
+          className={`heart ${liked ? "liked" : ""}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product.id);
+          }}
+          aria-label="Wishlist"
+        >
+          <Heart size={16} fill={liked ? "currentColor" : "none"} />
+        </button>
 
-        img.src =
-          fallbackImages[product.id] ||
-          "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
-      }}
-    />
-  </Link>{!isComingSoon && <button className="quick-add" onClick={add} disabled={outOfStock}>{outOfStock ? "OUT OF STOCK" : added ? <>ADDED TO BAG <CheckCircle size={15} /></> : <>QUICK ADD <Plus size={15} /></>}</button>}{added && <div className="added-toast"><CheckCircle size={16} /><span><b>Added to bag</b><small>{product.name}</small></span><Link to="/cart">VIEW BAG</Link></div>}</div><div className="product-info"><div><Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link><p>{product.fabric}</p></div><div className="product-card-prices" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, flexWrap: "wrap", whiteSpace: "nowrap" }}><strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>{hasDiscount && <del style={{ color: "#a7a19a", fontSize: "0.9em", fontWeight: 400 }}>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}{hasDiscount && <span style={{ fontSize: "10px", letterSpacing: ".04em", color: "#c8b69a", fontWeight: 700 }}>{Math.round((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice) * 100)}% OFF</span>}</div></div></article>
+        <Link to={`/product/${product.id}`} className="product-card-img-link">
+          <img
+            src={normalizeImageUrl(product.image) || ""}
+            alt={product.name}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fallbackApplied === "true") return;
+              img.dataset.fallbackApplied = "true";
+              const fallbackImages = {
+                1: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+                3: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+              };
+              img.src =
+                fallbackImages[product.id] ||
+                "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=80";
+            }}
+          />
+        </Link>
+      </div>
+
+      <div className="product-info">
+        <Link to={`/product/${product.id}`} className="product-card-title-link">
+          <h3>{product.name}</h3>
+        </Link>
+
+        <div className="product-card-pricing-row">
+          <div className="product-card-prices">
+            <strong>₹{Number(product.price).toLocaleString("en-IN")}</strong>
+            {hasDiscount && <del>₹{Number(product.oldPrice).toLocaleString("en-IN")}</del>}
+          </div>
+          {hasDiscount && (
+            <span className="product-discount-pill">
+              {discountPct}% OFF
+            </span>
+          )}
+        </div>
+
+        {!isComingSoon && (
+          <button
+            type="button"
+            className={`card-add-to-cart-btn ${added ? "added" : ""}`}
+            onClick={add}
+            disabled={outOfStock}
+          >
+            <ShoppingCart size={15} />
+            <span>{outOfStock ? "Out of Stock" : added ? "Added to Cart ✓" : "Add to Cart"}</span>
+          </button>
+        )}
+      </div>
+    </article>
+  );
 }
 function PrelaunchHome() {
   return <main className="enytm-prelaunch-home">
@@ -363,24 +428,22 @@ function Home() {
           <span className="hero-edition-dot" /> ENYTM / THE BLACK LABEL <span>EST. 2026</span>
         </div>
         <div className="hero-content hero-content-v2">
-          <p className="eyebrow hero-kicker">DROP 001 &nbsp;/&nbsp; EVERYDAY, ELEVATED</p>
-          <div className="hero-tagline-badge">
-            <span>“MORE THAN A MOMENT.”</span>
-          </div>
+          <p className="eyebrow hero-kicker">DROP 001 &nbsp;/&nbsp; THE BLACK LABEL</p>
+          <div style={{ width: "32px", height: "2px", background: "#cbb89a", margin: "10px 0 16px" }} />
           <h1>
             YOUR<br />
             EVERYDAY.<br />
             <em>REDEFINED.</em>
           </h1>
           <p className="hero-subline">
-            Quiet confidence. Considered details. Heavyweight fabrics made to live in.
+            Quiet confidence. Considered details.<br />Heavyweight fabrics made to live in.
           </p>
           <div className="hero-cta-group">
-            <Link className="btn primary hero-cta hero-cta-primary" to="/shop">
-              SHOP NOW <ArrowRight size={18} />
+            <Link className="btn primary hero-cta hero-cta-primary" to="/shop" style={{ borderRadius: "999px" }}>
+              Shop Now <ArrowRight size={17} />
             </Link>
-            <a className="btn outline hero-cta hero-cta-secondary" href="#collections">
-              EXPLORE COLLECTIONS
+            <a className="btn outline hero-cta hero-cta-secondary" href="#collections" style={{ borderRadius: "999px" }}>
+              <Play size={13} style={{ fill: "currentColor", marginRight: 4 }} /> Watch Film
             </a>
           </div>
           <span className="hero-caption">MORE THAN A MOMENT · DESIGNED TO STAY.</span>
@@ -736,7 +799,21 @@ function Shop() {
       <div className="shop-simple-title-row">
         <div>
           <span className="shop-simple-eyebrow">COLLECTION</span>
-          <h1 className="shop-simple-title">{categoryTitle}</h1>
+          <h1 className="shop-simple-title">
+            {categoryTitle === "OVERSIZED TEES" ? (
+              <>OVERSIZED <span style={{ color: "#cbb89a" }}>TEES</span></>
+            ) : categoryTitle === "PREMIUM POLOS" ? (
+              <>PREMIUM <span style={{ color: "#cbb89a" }}>POLOS</span></>
+            ) : (
+              <>SHOP <span style={{ color: "#cbb89a" }}>ALL</span></>
+            )}
+          </h1>
+          <p className="shop-simple-subtitle" style={{ fontSize: "12px", color: "#a5a199", margin: "6px 0 10px", letterSpacing: "0.03em" }}>
+            {categoryKey(category) === "oversized" ? "Relaxed Fits. Premium Comfort. Everyday Essential." :
+             categoryKey(category) === "polos" ? "Textured Organic Piqué. Elevated Minimal Branding." :
+             "Considered Silhouettes. Heavyweight Fabrics Built to Last."}
+          </p>
+          <div style={{ width: "32px", height: "2px", background: "#cbb89a", marginBottom: "14px" }} />
         </div>
         <span className="shop-simple-count">
           {products?.loading && !shown.length ? "" : `${shown.length} ${shown.length === 1 ? "STYLE" : "STYLES"}`}
