@@ -464,7 +464,7 @@ app.get("/api/products", async (req, res) => {
   } catch (e) {
     console.error("[MongoDB] Products read error:", e.message);
   }
-  res.setHeader("Cache-Control", "public, max-age=1, s-maxage=5, stale-while-revalidate=59");
+  res.setHeader("Cache-Control", "public, max-age=15, s-maxage=60, stale-while-revalidate=300");
   res.json(db.data.products || []);
 });
 app.get("/api/settings", async (req, res) => {

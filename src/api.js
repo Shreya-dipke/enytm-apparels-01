@@ -22,8 +22,10 @@ export async function api(path, options = {}) {
   }
 
   const endpoint = `${API_BASE}/api${path.startsWith("/") ? path : `/${path}`}`;
+  const method = (options.method || "GET").toUpperCase();
+  const defaultCache = method === "GET" ? "default" : "no-store";
   const response = await fetch(endpoint, {
-    cache: "no-store",
+    cache: options.cache || defaultCache,
     ...options,
     headers,
   });

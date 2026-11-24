@@ -53,15 +53,18 @@ import "./index.css";
 let globalProductsCache = (() => {
   try {
     const saved = localStorage.getItem("enytm_products_cache");
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
   } catch (e) {
     return null;
   }
 })();
 
 function useProducts() {
-  const [p, setP] = useState(globalProductsCache || []);
-  const [loading, setLoading] = useState(!globalProductsCache);
+  const [p, setP] = useState(() => (Array.isArray(globalProductsCache) && globalProductsCache.length > 0 ? globalProductsCache : []));
+  const [loading, setLoading] = useState(() => !(Array.isArray(globalProductsCache) && globalProductsCache.length > 0));
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(() => Boolean(Array.isArray(globalProductsCache) && globalProductsCache.length > 0));
 
   useEffect(() => {
     let active = true;
@@ -79,23 +82,31 @@ function useProducts() {
             list.push(item);
           }
         }
-        globalProductsCache = list;
-        try {
-          localStorage.setItem("enytm_products_cache", JSON.stringify(list));
-        } catch (e) {}
+        if (list.length > 0) {
+          globalProductsCache = list;
+          try {
+            localStorage.setItem("enytm_products_cache", JSON.stringify(list));
+          } catch (e) {}
+        }
         if (active) {
           setP(list);
           setLoading(false);
+          setHasLoadedOnce(true);
         }
       })
-      .catch(() => {
-        if (active) setLoading(false);
+      .catch((err) => {
+        console.error("Products fetch error:", err);
+        if (active) {
+          setLoading(false);
+          setHasLoadedOnce(true);
+        }
       });
     return () => { active = false; };
   }, []);
 
   const result = Array.isArray(p) ? [...p] : [];
   result.loading = loading;
+  result.hasLoadedOnce = hasLoadedOnce;
   return result;
 }
 
@@ -512,10 +523,35 @@ function Home() {
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        ) : products?.loading ? (
+        ) : (!products?.hasLoadedOnce || products?.loading) ? (
           <div className="product-grid">
             {[1, 2, 3, 4].map(n => (
-              <div key={n} style={{ background: "#111", minHeight: "380px", borderRadius: "2px", opacity: 0.6 }} />
+              <div
+                key={n}
+                className="product-card skeleton-card"
+                style={{
+                  background: "linear-gradient(180deg, #121212 0%, #0a0a0a 100%)",
+                  border: "1px solid #1f1d1a",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                  minHeight: "440px",
+                  display: "flex",
+                  flexDirection: "column"
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    aspectRatio: "3 / 4",
+                    background: "#161616",
+                    animation: "pulse 1.5s infinite ease-in-out"
+                  }}
+                />
+                <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ width: "65%", height: "14px", background: "#222", borderRadius: "2px" }} />
+                  <div style={{ width: "35%", height: "12px", background: "#1c1c1c", borderRadius: "2px" }} />
+                </div>
+              </div>
             ))}
           </div>
         ) : (
@@ -813,9 +849,9 @@ function Shop() {
         <div className="product-grid shop-grid shop-grid-v2">
           {shown.map(p => <ProductCard key={p.id} product={p} />)}
         </div>
-      ) : products?.loading ? (
+      ) : (!products?.hasLoadedOnce || products?.loading) ? (
         <div className="product-grid shop-grid shop-grid-v2">
-          {[1, 2, 3].map(n => (
+          {[1, 2, 3, 4, 5, 6].map(n => (
             <div
               key={n}
               className="product-card"

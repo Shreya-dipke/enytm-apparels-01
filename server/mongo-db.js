@@ -32,7 +32,7 @@ class MongoDatabase {
     this.isConnecting = false;
     this.connectPromise = null;
     this.cacheTimestamps = {};
-    this.CACHE_TTL = 3000; // 3 seconds in-memory TTL for rapid parallel queries
+    this.CACHE_TTL = 60000; // 60 seconds in-memory TTL for rapid parallel queries and instant response
     this.data = {
       users: [],
       products: [],
