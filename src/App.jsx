@@ -1197,42 +1197,26 @@ function ProductPage() {
                 </div>
               ) : (
                 <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
-                  {safeGallery.map((item, idx) => {
-                    if (item.type === "video") return null;
-                    const isCurrent = idx === active;
-                    return (
-                      <img
-                        key={`${item.src}-${idx}`}
-                        src={item.src || fallbackImg}
-                        alt={`${product.name} - View ${idx + 1}`}
-                        referrerPolicy="no-referrer"
-                        loading="eager"
-                        style={{
-                          display: isCurrent ? "block" : "none",
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                          width: "auto",
-                          height: "auto",
-                          objectFit: "contain",
-                          objectPosition: "center center",
-                          margin: "auto"
-                        }}
-                        onError={(e) => {
-                          const src = e.currentTarget.src;
-                          if (src.includes("googleusercontent.com/d/")) {
-                            const id = src.split("/d/")[1]?.split("=")[0];
-                            if (id && !e.currentTarget.dataset.retried) {
-                              e.currentTarget.dataset.retried = "1";
-                              e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
-                              return;
-                            }
-                          }
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = fallbackImg;
-                        }}
-                      />
-                    );
-                  })}
+                  <img
+                    key={activeMedia?.src || active}
+                    src={activeMedia?.src || fallbackImg}
+                    alt={`${product.name} - View ${active + 1}`}
+                    referrerPolicy="no-referrer"
+                    loading="eager"
+                    onError={(e) => {
+                      const src = e.currentTarget.src;
+                      if (src.includes("googleusercontent.com/d/")) {
+                        const id = src.split("/d/")[1]?.split("=")[0];
+                        if (id && !e.currentTarget.dataset.retried) {
+                          e.currentTarget.dataset.retried = "1";
+                          e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+                          return;
+                        }
+                      }
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = fallbackImg;
+                    }}
+                  />
                 </div>
               )}
 

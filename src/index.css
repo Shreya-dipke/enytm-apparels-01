@@ -14158,26 +14158,24 @@ a.btn.outline {
   position: relative !important;
   width: 100% !important;
   height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 8px 8px 36px 8px !important;
+  padding: 0 0 36px 0 !important;
   box-sizing: border-box !important;
 }
 
 .modern-slider-media .product-zoom-container img,
 .modern-slider-media img,
 .modern-slider-media video {
+  width: 100% !important;
+  height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  width: auto !important;
-  height: auto !important;
   object-fit: contain !important;
   object-position: center center !important;
   display: block !important;
-  margin: auto !important;
+  margin: 0 auto !important;
   background: transparent !important;
   transition: opacity 0.2s ease !important;
   animation: none !important;
@@ -14394,26 +14392,24 @@ a.btn.outline {
   .modern-slider-media .product-zoom-container {
     width: 100% !important;
     height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 8px 8px 40px 8px !important;
+    padding: 0 0 40px 0 !important;
     box-sizing: border-box !important;
   }
 
   .modern-slider-media .product-zoom-container img,
   .modern-slider-media img,
   .modern-slider-media video {
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
-    width: auto !important;
-    height: auto !important;
     object-fit: contain !important;
     object-position: center center !important;
     background: transparent !important;
-    margin: auto !important;
+    margin: 0 auto !important;
   }
 
   .slider-arrow {
