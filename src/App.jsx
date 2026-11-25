@@ -5071,97 +5071,100 @@ function Footer() {
           </div>
         </div>
 
-        {/* CUSTOMER CARE */}
-        <div className="footer-nav-group">
-          <h4 className="footer-nav-title">CUSTOMER CARE</h4>
-          <div className="footer-nav-list">
-            <Link to="/track" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <Package size={18} />
-                <span>Track Your Order</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+        {/* NAV CONTAINER (GRID ON LAPTOP) */}
+        <div className="footer-nav-container">
+          {/* CUSTOMER CARE */}
+          <div className="footer-nav-group">
+            <h4 className="footer-nav-title">CUSTOMER CARE</h4>
+            <div className="footer-nav-list">
+              <Link to="/track" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <Package size={18} />
+                  <span>Track Your Order</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <Link to="/size-guide" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="8" cy="14" r="5" />
-                  <circle cx="8" cy="14" r="1.5" />
-                  <path d="M8 9h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8" />
-                  <line x1="12" y1="9" x2="12" y2="12" />
-                  <line x1="15" y1="9" x2="15" y2="13" />
-                  <line x1="18" y1="9" x2="18" y2="12" />
-                </svg>
-                <span>Garment Size Guide</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/size-guide" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="8" cy="14" r="5" />
+                    <circle cx="8" cy="14" r="1.5" />
+                    <path d="M8 9h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8" />
+                    <line x1="12" y1="9" x2="12" y2="12" />
+                    <line x1="15" y1="9" x2="15" y2="13" />
+                    <line x1="18" y1="9" x2="18" y2="12" />
+                  </svg>
+                  <span>Garment Size Guide</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <Link to="/collection#faq" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <HelpCircle size={18} />
-                <span>Frequently Asked Questions</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/collection#faq" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <HelpCircle size={18} />
+                  <span>Frequently Asked Questions</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <a href={whatsappLink} target="_blank" rel="noreferrer" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                  <path d="M9.5 9a.5.5 0 0 0-.5.5c0 2 1.5 4 3.5 4.5.3.1.6 0 .8-.2l.8-.8c.2-.2.2-.5 0-.7l-1.2-1.2a.5.5 0 0 0-.7 0l-.3.3c-.1.1-.3.1-.4 0a4 4 0 0 1-1.2-1.2c-.1-.1-.1-.3 0-.4l.3-.3a.5.5 0 0 0 0-.7L9.8 9.2a.5.5 0 0 0-.3-.2z" />
-                </svg>
-                <span>WhatsApp Support</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </a>
+              <a href={whatsappLink} target="_blank" rel="noreferrer" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    <path d="M9.5 9a.5.5 0 0 0-.5.5c0 2 1.5 4 3.5 4.5.3.1.6 0 .8-.2l.8-.8c.2-.2.2-.5 0-.7l-1.2-1.2a.5.5 0 0 0-.7 0l-.3.3c-.1.1-.3.1-.4 0a4 4 0 0 1-1.2-1.2c-.1-.1-.1-.3 0-.4l.3-.3a.5.5 0 0 0 0-.7L9.8 9.2a.5.5 0 0 0-.3-.2z" />
+                  </svg>
+                  <span>WhatsApp Support</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </a>
 
-            <Link to="/about" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <Info size={18} />
-                <span>About ENYTM</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/about" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <Info size={18} />
+                  <span>About ENYTM</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* POLICIES */}
-        <div className="footer-nav-group">
-          <h4 className="footer-nav-title">POLICIES</h4>
-          <div className="footer-nav-list">
-            <Link to="/privacy-policy" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <LockKeyhole size={18} />
-                <span>Privacy Policy</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+          {/* POLICIES */}
+          <div className="footer-nav-group">
+            <h4 className="footer-nav-title">POLICIES</h4>
+            <div className="footer-nav-list">
+              <Link to="/privacy-policy" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <LockKeyhole size={18} />
+                  <span>Privacy Policy</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <Link to="/shipping-policy" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <Truck size={18} />
-                <span>Shipping & Delivery</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/shipping-policy" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <Truck size={18} />
+                  <span>Shipping & Delivery</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <Link to="/refund-policy" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <RotateCcw size={18} />
-                <span>Returns & Refunds</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/refund-policy" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <RotateCcw size={18} />
+                  <span>Returns & Refunds</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
 
-            <Link to="/terms" className="footer-nav-row">
-              <div className="footer-nav-row-left">
-                <FileText size={18} />
-                <span>Terms & Conditions</span>
-              </div>
-              <ChevronRight size={15} className="footer-nav-chevron" />
-            </Link>
+              <Link to="/terms" className="footer-nav-row">
+                <div className="footer-nav-row-left">
+                  <FileText size={18} />
+                  <span>Terms & Conditions</span>
+                </div>
+                <ChevronRight size={15} className="footer-nav-chevron" />
+              </Link>
+            </div>
           </div>
         </div>
 
