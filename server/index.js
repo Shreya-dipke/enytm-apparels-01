@@ -73,11 +73,10 @@ const uploadVideoFile = multer({
   },
 });
 
-try {
-  await db.read();
-} catch (e) {
+// Non-blocking initial warm-up read so Express can open port 5173 instantly
+db.read().catch(e => {
   console.warn("[MongoDB] Initial read deferred:", e.message);
-}
+});
 if (!db.data) db.data = { users: [], products: [], orders: [], carts: [], wishlists: [], coupons: [], settings: {} };
 if (!Array.isArray(db.data.pendingOtps)) db.data.pendingOtps = [];
 if (!Array.isArray(db.data.passwordResetOtps)) db.data.passwordResetOtps = [];
