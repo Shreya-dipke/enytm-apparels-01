@@ -1407,9 +1407,6 @@ function ProductPage() {
           <div className="option">
             <div className="option-head">
               <span>SELECT SIZE</span>
-              <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
-                SIZE GUIDE ↗
-              </button>
             </div>
             <div className="sizes">
               {sizes.map((s) => {
@@ -1656,56 +1653,6 @@ function ProductPage() {
             ))}
           </div>
         </section>
-      )}
-
-      {/* SIZE GUIDE MODAL */}
-      {showSizeGuide && (
-        <div className="modal-backdrop" onClick={() => setShowSizeGuide(false)}>
-          <div className="modal-dialog size-guide-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <p className="eyebrow">ENYTM APPARELS</p>
-                <h3>GARMENT SIZE GUIDE</h3>
-              </div>
-              <button className="modal-close-btn" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <p className="size-guide-note">Measurements are in <b>inches</b> (garment laid flat). For chest, measure armpit to armpit and double the number.</p>
-              <div className="size-table-wrap">
-                <table className="size-table">
-                  <thead>
-                    <tr>
-                      <th>SIZE</th>
-                      <th>CHEST (IN)</th>
-                      <th>LENGTH (IN)</th>
-                      <th>SHOULDER (IN)</th>
-                      <th>SLEEVE (IN)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td><b>S</b></td><td>42</td><td>28.5</td><td>20.5</td><td>8.5</td></tr>
-                    <tr><td><b>M</b></td><td>44</td><td>29.5</td><td>21.5</td><td>9.0</td></tr>
-                    <tr><td><b>L</b></td><td>46</td><td>30.5</td><td>22.5</td><td>9.5</td></tr>
-                    <tr><td><b>XL</b></td><td>48</td><td>31.5</td><td>23.5</td><td>10.0</td></tr>
-                    <tr><td><b>XXL</b></td><td>50</td><td>32.5</td><td>24.5</td><td>10.5</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="size-guide-tips">
-                <div className="tip-box">
-                  <strong>OVERSIZED FIT:</strong>
-                  <p>Designed with generous width and dropped shoulders. If you prefer a standard/regular fit, select one size smaller than your usual size.</p>
-                </div>
-                <div className="tip-box">
-                  <strong>NEED SIZING ASSISTANCE?</strong>
-                  <p>Chat directly with our team on <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp</a> for personal sizing advice.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* LIGHTBOX MODAL */}
