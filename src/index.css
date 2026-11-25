@@ -12251,17 +12251,29 @@ a.btn.outline {
 }
 
 /* --- CHECKOUT IN-PAGE QUANTITY CONTROLS & MOBILE ORDER SUMMARY --- */
+.checkout-summary-items-list,
+.mobile-order-items-list {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
 .checkout-item-card {
-  display: grid;
-  grid-template-columns: 58px 1fr;
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid #222;
-  align-items: start;
+  display: grid !important;
+  grid-template-columns: 58px 1fr !important;
+  gap: 14px !important;
+  padding: 14px 0 !important;
+  border-bottom: 1px solid #222 !important;
+  align-items: start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .checkout-item-card:last-child {
-  border-bottom: none;
+  border-bottom: none !important;
 }
 
 .checkout-item-img-wrap {
