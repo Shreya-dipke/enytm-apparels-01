@@ -2427,21 +2427,24 @@ function Checkout() {
               method: "POST",
               body: JSON.stringify({ ...response, orderId: data.orderId })
             });
-            if (verifyRes?.order) {
-              // Pre-cache confirmed order in sessionStorage so OrderSuccess renders with ZERO loading delay
+            if (verifyRes?.ok && verifyRes?.order) {
+              // Pre-cache confirmed order in sessionStorage
               sessionStorage.setItem(`enytm-order-cache-${data.orderId}`, JSON.stringify(verifyRes.order));
+              try { checkoutItems.forEach(i => removeFromCart(i.key)); } catch (e) { }
+              window.scrollTo(0, 0);
+              nav(`/order-success/${data.orderId}`, { replace: true });
+            } else {
+              throw new Error("Payment verification failed on server.");
             }
           } catch (err) {
             console.error("[Checkout verify error]", err);
+            // If verification failed, cancel draft order and DO NOT navigate to success page
+            api("/checkout/cancel-pending", {
+              method: "POST",
+              body: JSON.stringify({ orderId: data.orderId, reason: err.message || "Payment verification failed" })
+            }).catch(() => { });
+            setError("Payment could not be verified. Order was not placed.");
           }
-
-          try {
-            checkoutItems.forEach(i => removeFromCart(i.key));
-          } catch (e) { }
-
-          // Immediately navigate to Order Done page at the top of the page
-          window.scrollTo(0, 0);
-          nav(`/order-success/${data.orderId}`, { replace: true });
         }
       });
       rzp.on("payment.failed", (r) => {
@@ -3069,6 +3072,39 @@ function OrderSuccess() {
         <h1>ORDER NOT FOUND</h1>
         <p className="muted" style={{ margin: "10px 0 20px" }}>{error || "We could not find the requested order."}</p>
         <Link className="btn primary" to="/orders">VIEW ALL ORDERS</Link>
+      </main>
+    );
+  }
+
+  // If order status is failed or payment was never completed, DO NOT show success tick
+  const isFailedOrder = order.status === "failed" || order.paymentStatus === "failed" || (order.status === "payment_pending" && (!order.advancePaid || Number(order.advancePaid) <= 0));
+  if (isFailedOrder) {
+    return (
+      <main className="order-success-page order-failed-page">
+        <div className="order-success-hero order-failed-hero">
+          <div className="ecommerce-failed-animation-wrap">
+            <X size={44} className="order-failed-cross-icon" strokeWidth={2.5} />
+          </div>
+          <p className="eyebrow" style={{ color: "#ef4444" }}>PAYMENT NOT COMPLETED</p>
+          <h1 className="order-success-title" style={{ color: "#ef4444" }}>ORDER NOT PLACED</h1>
+          <p className="order-success-subtitle">
+            {order.failureReason || "This order could not be placed because payment was not completed or failed. Any money debited will be refunded automatically by your bank."}
+          </p>
+
+          <div className="order-success-receipt-badge" style={{ borderColor: "#ef4444" }}>
+            <span>ATTEMPT REF</span>
+            <strong>{order.receipt || order.id}</strong>
+          </div>
+        </div>
+
+        <div className="order-success-actions" style={{ maxWidth: 400, margin: "30px auto 0" }}>
+          <Link to="/checkout" className="btn primary full order-success-btn">
+            TRY CHECKOUT AGAIN
+          </Link>
+          <Link to="/shop" className="btn outline full order-success-btn">
+            RETURN TO SHOP
+          </Link>
+        </div>
       </main>
     );
   }
@@ -4071,11 +4107,11 @@ function Account() {
                   role="link"
                   tabIndex={0}
                   aria-label={`Open order ${order.receipt || order.id}`}
-                  onClick={() => nav(`/order-success/${order.id}`)}
+                  onClick={() => nav(order.status === "failed" ? `/order/${order.id}` : `/order-success/${order.id}`)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      nav(`/order-success/${order.id}`);
+                      nav(order.status === "failed" ? `/order/${order.id}` : `/order-success/${order.id}`);
                     }
                   }}
                 >
@@ -4124,7 +4160,7 @@ function Account() {
                   </strong>
 
                   <Link
-                    to={`/order-success/${order.id}`}
+                    to={order.status === "failed" ? `/order/${order.id}` : `/order-success/${order.id}`}
                     aria-label="View order"
                   >
                     <ArrowRight size={16} />
