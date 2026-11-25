@@ -993,31 +993,55 @@ app.delete("/api/auth/addresses/:id", auth, async (req, res) => {
 });
 
 app.get("/api/cart", auth, async (req, res) => {
-  try { await db.read(["carts"]); } catch(e) {}
-  const record = (db.data.carts || []).find(c => String(c.userId) === String(req.user.id));
-  res.json({ items: record?.items || [] });
+  try {
+    try { await db.read(["carts"]); } catch(e) {}
+    const list = Array.isArray(db.data?.carts) ? db.data.carts : [];
+    const record = list.find(c => c && String(c.userId) === String(req.user?.id));
+    res.json({ items: Array.isArray(record?.items) ? record.items : [] });
+  } catch (err) {
+    console.error("[Cart GET Error]:", err);
+    res.json({ items: [] });
+  }
 });
 
 app.post("/api/cart/sync", auth, async (req, res) => {
-  const existing = (db.data.carts || []).find(c => String(c.userId) === String(req.user.id));
-  const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
-  if (existing) Object.assign(existing, record); else db.data.carts.push(record);
-  await db.write();
-  res.json({ ok: true });
+  try {
+    if (!Array.isArray(db.data.carts)) db.data.carts = [];
+    const existing = db.data.carts.find(c => c && String(c.userId) === String(req.user?.id));
+    const record = { userId: req.user.id, items: Array.isArray(req.body.items) ? req.body.items : [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
+    if (existing) Object.assign(existing, record); else db.data.carts.push(record);
+    await db.write();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[Cart Sync Error]:", err);
+    res.json({ ok: false });
+  }
 });
 
 app.get("/api/wishlist", auth, async (req, res) => {
-  try { await db.read(["wishlists"]); } catch(e) {}
-  const record = (db.data.wishlists || []).find(c => String(c.userId) === String(req.user.id));
-  res.json({ items: record?.items || [] });
+  try {
+    try { await db.read(["wishlists"]); } catch(e) {}
+    const list = Array.isArray(db.data?.wishlists) ? db.data.wishlists : [];
+    const record = list.find(c => c && String(c.userId) === String(req.user?.id));
+    res.json({ items: Array.isArray(record?.items) ? record.items : [] });
+  } catch (err) {
+    console.error("[Wishlist GET Error]:", err);
+    res.json({ items: [] });
+  }
 });
 
 app.post("/api/wishlist/sync", auth, async (req, res) => {
-  const existing = (db.data.wishlists || []).find(c => String(c.userId) === String(req.user.id));
-  const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
-  if (existing) Object.assign(existing, record); else db.data.wishlists.push(record);
-  await db.write();
-  res.json({ ok: true });
+  try {
+    if (!Array.isArray(db.data.wishlists)) db.data.wishlists = [];
+    const existing = db.data.wishlists.find(c => c && String(c.userId) === String(req.user?.id));
+    const record = { userId: req.user.id, items: Array.isArray(req.body.items) ? req.body.items : [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
+    if (existing) Object.assign(existing, record); else db.data.wishlists.push(record);
+    await db.write();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[Wishlist Sync Error]:", err);
+    res.json({ ok: false });
+  }
 });
 
 

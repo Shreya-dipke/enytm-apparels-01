@@ -94,7 +94,13 @@ class MongoDatabase {
       return this.data;
     }
 
-    const db = await this.connect();
+    let db;
+    try {
+      db = await this.connect();
+    } catch (e) {
+      console.warn("[MongoDB] Read skipped, returning cached data:", e.message);
+      return this.data;
+    }
 
     const tasks = cols.map(async (name) => {
       if (!force && this.cacheTimestamps[name] && (now - this.cacheTimestamps[name] <= this.CACHE_TTL)) {
@@ -141,7 +147,13 @@ class MongoDatabase {
 
   async write(target = null) {
     if (!target) return;
-    const db = await this.connect();
+    let db;
+    try {
+      db = await this.connect();
+    } catch (e) {
+      console.warn("[MongoDB] Write skipped, connection unavailable:", e.message);
+      return;
+    }
     const cols = (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n));
 
     const tasks = cols.map(async (name) => {
