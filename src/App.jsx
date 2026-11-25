@@ -2378,6 +2378,8 @@ function Checkout() {
     setError("");
   };
 
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+
   const pay = async (e) => {
     e.preventDefault();
     setError("");
@@ -2416,6 +2418,11 @@ function Checkout() {
         },
         handler: async (response) => {
           paymentCompleted = true;
+          setPaymentProcessing(true);
+          try {
+            rzp.close();
+          } catch (e) { }
+
           try {
             await api("/checkout/verify", {
               method: "POST",
@@ -2424,11 +2431,13 @@ function Checkout() {
           } catch (err) {
             console.error("[Checkout verify error]", err);
           }
+
           try {
             checkoutItems.forEach(i => removeFromCart(i.key));
           } catch (e) { }
-          // Force direct navigation so the page definitively transitions to order-success
-          window.location.href = `/order-success/${data.orderId}`;
+
+          // Immediately navigate to Order Done page with the confirmed order
+          nav(`/order-success/${data.orderId}`, { replace: true });
         }
       });
       rzp.on("payment.failed", (r) => {
@@ -2444,6 +2453,17 @@ function Checkout() {
       setError(err.message || "Could not start payment.");
     }
   };
+
+  if (paymentProcessing) {
+    return (
+      <main className="empty order-redirect-loading" aria-live="polite">
+        <div className="order-success-spinner" />
+        <p className="eyebrow" style={{ color: "#10b981" }}>PAYMENT RECEIVED</p>
+        <h1>CONFIRMING YOUR ORDER...</h1>
+        <p className="muted">Redirecting you to your order confirmation receipt.</p>
+      </main>
+    );
+  }
 
   if (loading)
     return (
@@ -3029,13 +3049,16 @@ function OrderSuccess() {
   return (
     <main className="order-success-page">
       <div className="order-success-hero">
-        <div className="order-success-icon-wrap">
-          <CheckCircle size={56} className="order-success-check-icon" />
+        <div className="ecommerce-check-animation-wrap">
+          <svg className="ecommerce-checkmark-svg" viewBox="0 0 52 52">
+            <circle className="ecommerce-checkmark-circle" cx="26" cy="26" r="24" fill="none" />
+            <path className="ecommerce-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+          </svg>
         </div>
         <p className="eyebrow order-success-eyebrow">ORDER PLACED SUCCESSFULLY</p>
         <h1 className="order-success-title">THANK YOU FOR YOUR ORDER</h1>
         <p className="order-success-subtitle">
-          Your payment has been successfully verified and your order is confirmed. A confirmation message has been queued for dispatch.
+          Your order has been placed and payment confirmed. An order confirmation SMS and email have been sent to you.
         </p>
 
         <div className="order-success-receipt-badge">
