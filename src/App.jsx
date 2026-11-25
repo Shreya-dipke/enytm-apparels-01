@@ -3978,7 +3978,7 @@ function Account() {
 
         <div className="account-hero-model-wrap">
           <img
-            src="/account-hero-model.jpg"
+            src="/account-hero-model.png"
             alt="ENYTM Apparel"
             className="account-hero-model-img"
           />
@@ -5064,7 +5064,7 @@ function Footer() {
 
           <div className="footer-hero-model-wrap">
             <img
-              src="/footer-model.jpg"
+              src="/footer-model.png"
               alt="ENYTM Streetwear"
               className="footer-hero-model-img"
             />
