@@ -16198,3 +16198,203 @@ a.btn.outline {
   padding: 0 !important;
   max-width: 100% !important;
 }
+
+
+/* ========================================================
+   ENYTM LUXURY MODERN FOOTER (REDESIGN)
+   ======================================================== */
+.enytm-luxury-footer {
+  background: #000000 !important;
+  color: #dcdcdc !important;
+  padding: 20px 0 0 !important;
+  border-top: 1px solid #181818 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.footer-hero-section {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  min-height: 230px !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  padding: 16px 20px 24px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.footer-hero-copy {
+  position: relative !important;
+  z-index: 2 !important;
+  max-width: 58% !important;
+}
+
+.footer-hero-copy .footer-logo {
+  display: inline-block !important;
+  margin-bottom: 8px !important;
+}
+
+.footer-hero-tagline {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em !important;
+  color: #dfcfb7 !important;
+  margin: 6px 0 10px !important;
+  text-transform: uppercase !important;
+}
+
+.footer-hero-line {
+  width: 44px !important;
+  height: 1.5px !important;
+  background: #c8b69a !important;
+  margin: 0 0 14px !important;
+  border-radius: 2px !important;
+}
+
+.footer-hero-desc {
+  font-size: 11px !important;
+  line-height: 1.55 !important;
+  color: #8e8a83 !important;
+  margin: 0 0 20px !important;
+  max-width: 250px !important;
+}
+
+.footer-hero-shop-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: #d4b886 !important;
+  color: #0c0c0c !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 9px 18px !important;
+  border-radius: 9999px !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(212, 184, 134, 0.25) !important;
+  transition: transform 0.2s ease, background 0.2s ease !important;
+}
+
+.footer-hero-shop-btn:hover {
+  background: #e2cb9f !important;
+  transform: translateY(-1px) !important;
+}
+
+.footer-hero-model-wrap {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 48% !important;
+  max-width: 240px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  mask-image: linear-gradient(to right, transparent 0%, black 28%) !important;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28%) !important;
+}
+
+.footer-hero-model-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+.footer-nav-group {
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  padding: 24px 20px 0 !important;
+  box-sizing: border-box !important;
+}
+
+.footer-nav-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em !important;
+  color: #dfcfb7 !important;
+  margin: 0 0 10px !important;
+  text-transform: uppercase !important;
+}
+
+.footer-nav-list {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.footer-nav-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 4px !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  text-decoration: none !important;
+  color: #d6d3cd !important;
+  transition: all 0.2s ease !important;
+}
+
+.footer-nav-row:hover {
+  color: #ffffff !important;
+  padding-left: 6px !important;
+  border-bottom-color: #333333 !important;
+}
+
+.footer-nav-row-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.footer-nav-row-left svg {
+  color: #dfcfb7 !important;
+  flex-shrink: 0 !important;
+}
+
+.footer-nav-chevron {
+  color: #666666 !important;
+  transition: transform 0.2s ease, color 0.2s ease !important;
+}
+
+.footer-nav-row:hover .footer-nav-chevron {
+  color: #dfcfb7 !important;
+  transform: translateX(3px) !important;
+}
+
+.footer-luxury-bottom {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  padding: 40px 20px 75px !important;
+  text-align: center !important;
+  border-top: 1px solid #161616 !important;
+  margin-top: 36px !important;
+}
+
+.footer-pill-domain {
+  display: inline-block !important;
+  padding: 8px 26px !important;
+  border: 1px solid #282828 !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  color: #888888 !important;
+  background: #111111 !important;
+}
+
+.footer-luxury-copy {
+  font-size: 9.5px !important;
+  letter-spacing: 0.15em !important;
+  color: #555555 !important;
+  text-transform: uppercase !important;
+}
