@@ -688,7 +688,7 @@ app.post("/api/auth/register/verify-otp", async (req, res) => {
   db.data.pendingOtps = db.data.pendingOtps.filter(
     x => x.id !== challengeId
   );
-  await db.write();
+  await db.write(["users", "pendingOtps"]);
 
   return res.json({
     token: signUser(user),
@@ -876,7 +876,7 @@ app.post("/api/auth/google", async (req, res) => {
       db.data.users.push(user);
     }
 
-    await db.write();
+    await db.write(["users"]);
     res.json({
       token: signUser(user),
       user: publicUser(user),

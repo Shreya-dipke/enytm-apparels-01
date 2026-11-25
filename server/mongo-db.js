@@ -146,7 +146,10 @@ class MongoDatabase {
   }
 
   async write(target = null) {
-    if (!target) return;
+    const cols = target
+      ? (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n))
+      : COLLECTIONS;
+
     let db;
     try {
       db = await this.connect();
@@ -154,7 +157,6 @@ class MongoDatabase {
       console.warn("[MongoDB] Write skipped, connection unavailable:", e.message);
       return;
     }
-    const cols = (Array.isArray(target) ? target : [target]).filter(n => COLLECTIONS.includes(n));
 
     const tasks = cols.map(async (name) => {
       delete this.cacheTimestamps[name];
@@ -201,7 +203,7 @@ class MongoDatabase {
       }
     });
 
-    const shouldWriteSettings = target === "settings" || (Array.isArray(target) && target.includes("settings"));
+    const shouldWriteSettings = !target || target === "settings" || (Array.isArray(target) && target.includes("settings"));
     if (shouldWriteSettings) {
       delete this.cacheTimestamps["settings"];
       if (this.data.settings) {
