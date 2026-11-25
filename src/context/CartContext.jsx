@@ -6,7 +6,7 @@ export function CartProvider({children}) {
   const [cart,setCart] = useState(()=>{
     try {
       const v = JSON.parse(localStorage.getItem("enytm-cart") || "[]");
-      return Array.isArray(v) ? v : [];
+      return Array.isArray(v) ? v.map(i => ({ ...i, selected: i.selected !== false })) : [];
     } catch {
       return [];
     }
@@ -28,7 +28,9 @@ export function CartProvider({children}) {
   const addToCart=(product,size="M")=>setCart(items=>{
     const list = Array.isArray(items) ? items : [];
     const key=`${product?.id}-${size}`, old=list.find(i=>i.key===key);
-    return old?list.map(i=>i.key===key?{...i,qty:i.qty+1}:i):[...list,{...product,size,qty:1,key}];
+    return old
+      ? list.map(i=>i.key===key?{...i,qty:i.qty+1,selected:true}:i)
+      : [...list,{...product,size,qty:1,key,selected:true}];
   });
   const updateQty=(key,qty)=>setCart(items=>{
     const list = Array.isArray(items) ? items : [];
@@ -44,6 +46,14 @@ export function CartProvider({children}) {
       return list.filter(i=>i.key!==key).map(i=>i.key===newKey ? {...i, qty: i.qty + target.qty} : i);
     }
     return list.map(i=>i.key===key ? {...i, size: newSize, key: newKey} : i);
+  });
+  const toggleSelectItem=(key)=>setCart(items=>{
+    const list = Array.isArray(items) ? items : [];
+    return list.map(i=>i.key===key ? {...i, selected: i.selected === false ? true : false} : i);
+  });
+  const selectAll=(select = true)=>setCart(items=>{
+    const list = Array.isArray(items) ? items : [];
+    return list.map(i=>({...i, selected: !!select}));
   });
   const removeFromCart=key=>setCart(items=>{
     const list = Array.isArray(items) ? items : [];
@@ -61,9 +71,35 @@ export function CartProvider({children}) {
   const clearCart=()=>setCart([]);
   const safeCart = Array.isArray(cart) ? cart : [];
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+  const selectedItems = useMemo(() => safeCart.filter(i => i.selected !== false), [safeCart]);
   const cartCount=safeCart.reduce((s,i)=>s+(Number(i.qty)||0),0);
+  const selectedCount=selectedItems.reduce((s,i)=>s+(Number(i.qty)||0),0);
   const subtotal=safeCart.reduce((s,i)=>s+((Number(i.price)||0)*(Number(i.qty)||0)),0);
+  const selectedSubtotal=selectedItems.reduce((s,i)=>s+((Number(i.price)||0)*(Number(i.qty)||0)),0);
   const shipping=0;
-  return <CartContext.Provider value={{cart:safeCart,wishlist:safeWishlist,addToCart,updateQty,updateSize,removeFromCart,addToWishlist,toggleWishlist,clearCart,cartCount,subtotal,shipping,total:subtotal+shipping}}>{children}</CartContext.Provider>
+  return (
+    <CartContext.Provider value={{
+      cart: safeCart,
+      wishlist: safeWishlist,
+      selectedItems,
+      addToCart,
+      updateQty,
+      updateSize,
+      toggleSelectItem,
+      selectAll,
+      removeFromCart,
+      addToWishlist,
+      toggleWishlist,
+      clearCart,
+      cartCount,
+      selectedCount,
+      subtotal,
+      selectedSubtotal,
+      shipping,
+      total: subtotal + shipping
+    }}>
+      {children}
+    </CartContext.Provider>
+  );
 }
 export const useCart=()=>useContext(CartContext);

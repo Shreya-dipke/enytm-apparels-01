@@ -2131,7 +2131,7 @@ function AddressLookupFields({ form, setForm, setError, compact = false }) {
 }
 
 function Checkout() {
-  const { cart, subtotal, shipping, total, clearCart, updateQty, updateSize, removeFromCart, addToWishlist } = useCart();
+  const { cart, updateQty, updateSize, removeFromCart, addToWishlist } = useCart();
   const products = useProducts();
   const nav = useNavigate();
   const [user, setUser] = useState(null);
@@ -2144,6 +2144,35 @@ function Checkout() {
   const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [oosMovedItems, setOosMovedItems] = useState([]);
+
+  // Selected items from cart for checkout
+  const checkoutItems = useMemo(() => {
+    const sel = cart.filter(i => i.selected !== false);
+    return sel.length > 0 ? sel : cart;
+  }, [cart]);
+  const checkoutSubtotal = useMemo(() => {
+    return checkoutItems.reduce((s, i) => s + ((Number(i.price) || 0) * (Number(i.qty) || 0)), 0);
+  }, [checkoutItems]);
+  const totalQty = checkoutItems.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
+  const buy2Discount = (!appliedCoupon && qtyDiscountPct > 0) ? Math.round(checkoutSubtotal * qtyDiscountPct) : 0;
+  const isFreeShipping = true;
+  const shippingFee = 0;
+  const couponDiscountVal = Number(appliedCoupon?.discount || 0);
+  const basePayable = Math.max(0, checkoutSubtotal - buy2Discount - couponDiscountVal + shippingFee);
+
+  // Online payment gets instant extra 5% discount (no advance needed, full payment)
+  const isOnline = paymentMethod === "online";
+  const onlineDiscount = Math.round(basePayable * 0.05);
+  const onlinePayable = Math.max(0, basePayable - onlineDiscount);
+
+  // Cash on Delivery (COD) requires 30% advance online today to confirm booking
+  const advanceDue = Math.ceil(basePayable * 0.30);
+  const balanceDue = basePayable - advanceDue;
+
+  // Active payment calculations based on chosen payment method
+  const payableToday = isOnline ? onlinePayable : advanceDue;
+  const finalPayable = isOnline ? onlinePayable : basePayable;
 
   useEffect(() => {
     if (!products || !products.length || !cart.length) return;
@@ -2187,27 +2216,6 @@ function Checkout() {
     }
   }, [error]);
 
-  const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-  const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
-  const buy2Discount = (!appliedCoupon && qtyDiscountPct > 0) ? Math.round(subtotal * qtyDiscountPct) : 0;
-  const isFreeShipping = true;
-  const shippingFee = 0;
-  const couponDiscountVal = Number(appliedCoupon?.discount || 0);
-  const basePayable = Math.max(0, subtotal - buy2Discount - couponDiscountVal + shippingFee);
-
-  // Online payment gets instant extra 5% discount (no advance needed, full payment)
-  const isOnline = paymentMethod === "online";
-  const onlineDiscount = Math.round(basePayable * 0.05);
-  const onlinePayable = Math.max(0, basePayable - onlineDiscount);
-
-  // Cash on Delivery (COD) requires 30% advance online today to confirm booking
-  const advanceDue = Math.ceil(basePayable * 0.30);
-  const balanceDue = basePayable - advanceDue;
-
-  // Active payment calculations based on chosen payment method
-  const payableToday = isOnline ? onlinePayable : advanceDue;
-  const finalPayable = isOnline ? onlinePayable : basePayable;
-
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -2246,7 +2254,7 @@ function Checkout() {
     try {
       const result = await api("/coupons/validate", {
         method: "POST",
-        body: JSON.stringify({ code: couponCode, items: cart })
+        body: JSON.stringify({ code: couponCode, items: checkoutItems })
       });
       setAppliedCoupon(result);
       setCouponCode(result.code);
@@ -2272,7 +2280,7 @@ function Checkout() {
       const data = await api("/checkout/order", {
         method: "POST",
         body: JSON.stringify({
-          items: cart,
+          items: checkoutItems,
           shippingAddress: form,
           couponCode: appliedCoupon?.code || "",
           paymentMethod
@@ -2296,7 +2304,7 @@ function Checkout() {
             method: "POST",
             body: JSON.stringify({ ...response, orderId: data.orderId })
           });
-          clearCart();
+          checkoutItems.forEach(i => removeFromCart(i.key));
           nav(`/order-success/${data.orderId}`);
         }
       });
@@ -2477,12 +2485,12 @@ function Checkout() {
           {showMobileSummary && (
             <div className="mobile-order-summary-drawer">
               <div className="mobile-order-items-list">
-                {cart.map(renderCheckoutItem)}
+                {checkoutItems.map(renderCheckoutItem)}
               </div>
               <div className="mobile-summary-subtotals">
                 <div>
-                  <span>Subtotal ({totalQty} items)</span>
-                  <b>₹{subtotal.toLocaleString("en-IN")}</b>
+                  <span>Subtotal ({totalQty} item{totalQty === 1 ? "" : "s"})</span>
+                  <b>₹{checkoutSubtotal.toLocaleString("en-IN")}</b>
                 </div>
                 {buy2Discount > 0 && (
                   <div className="promo-line">
@@ -2728,12 +2736,12 @@ function Checkout() {
             <Link to="/cart" className="summary-edit-cart-link">FULL BAG →</Link>
           </div>
           <div className="checkout-summary-items-list">
-            {cart.map(renderCheckoutItem)}
+            {checkoutItems.map(renderCheckoutItem)}
           </div>
           <hr />
           <div>
             <span>Subtotal</span>
-            <b>₹{subtotal.toLocaleString("en-IN")}</b>
+            <b>₹{checkoutSubtotal.toLocaleString("en-IN")}</b>
           </div>
           {buy2Discount > 0 && (
             <div className="promo-line">
@@ -2875,7 +2883,17 @@ function OrderSuccess() {
 }
 
 function Cart() {
-  const { cart, updateQty, updateSize, removeFromCart, addToWishlist, subtotal } = useCart();
+  const {
+    cart,
+    selectedItems,
+    toggleSelectItem,
+    selectAll,
+    selectedSubtotal,
+    updateQty,
+    updateSize,
+    removeFromCart,
+    addToWishlist
+  } = useCart();
   const products = useProducts();
   const nav = useNavigate();
   const [oosMovedItems, setOosMovedItems] = useState([]);
@@ -2916,14 +2934,15 @@ function Cart() {
     }
   }, [products, cart]);
 
-  const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const totalQty = selectedItems.reduce((s, i) => s + (Number(i.qty) || 0), 0);
   const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
-  const buy2Discount = Math.round(subtotal * qtyDiscountPct);
+  const buy2Discount = Math.round(selectedSubtotal * qtyDiscountPct);
   const isFreeShipping = true;
   const shippingFee = 0;
-  const finalPayable = Math.max(0, subtotal - buy2Discount);
+  const finalPayable = Math.max(0, selectedSubtotal - buy2Discount);
   const neededForFree = 0;
   const progressPct = 100;
+  const allSelected = cart.length > 0 && selectedItems.length === cart.length;
 
   return (
     <main className="cart-page">
@@ -2984,12 +3003,53 @@ function Cart() {
               </div>
             )}
 
+            {/* SELECT ALL ITEMS BAR */}
+            <div className="cart-select-all-bar">
+              <label className="cart-checkbox-label">
+                <input
+                  type="checkbox"
+                  className="cart-native-checkbox"
+                  checked={allSelected}
+                  onChange={(e) => selectAll(e.target.checked)}
+                />
+                <span className={`cart-custom-checkbox ${allSelected ? "checked" : ""}`}>
+                  {allSelected && <Check size={12} strokeWidth={3} />}
+                </span>
+                <span className="cart-select-all-text">
+                  SELECT ALL ({selectedItems.length}/{cart.length} ITEMS SELECTED)
+                </span>
+              </label>
+              {!allSelected && (
+                <button
+                  type="button"
+                  className="cart-select-all-btn"
+                  onClick={() => selectAll(true)}
+                >
+                  SELECT ALL
+                </button>
+              )}
+            </div>
+
             <div className="cart-items">
               {cart.map((i) => {
                 const prod = products?.find(p => String(p.id) === String(i.id));
                 const availableSizes = prod?.sizes && prod.sizes.length ? prod.sizes : ["S", "M", "L", "XL", "XXL"];
+                const isItemSelected = i.selected !== false;
                 return (
-                  <div className="cart-item" key={i.key}>
+                  <div className={`cart-item ${!isItemSelected ? "unselected" : ""}`} key={i.key}>
+                    <div className="cart-item-select-col">
+                      <label className="cart-item-select-wrap" title={isItemSelected ? "Deselect item from checkout" : "Select item for checkout"}>
+                        <input
+                          type="checkbox"
+                          className="cart-native-checkbox"
+                          checked={isItemSelected}
+                          onChange={() => toggleSelectItem(i.key)}
+                        />
+                        <span className={`cart-custom-checkbox ${isItemSelected ? "checked" : ""}`}>
+                          {isItemSelected && <Check size={12} strokeWidth={3} />}
+                        </span>
+                      </label>
+                    </div>
                     <img src={normalizeImageUrl(i.image)} alt={i.name} />
                     <div className="cart-item-info">
                       <div>
@@ -3026,8 +3086,8 @@ function Cart() {
           <aside className="summary">
             <h2>ORDER SUMMARY</h2>
             <div>
-              <span>Subtotal ({totalQty} item{totalQty === 1 ? "" : "s"})</span>
-              <b>₹{subtotal.toLocaleString("en-IN")}</b>
+              <span>Subtotal ({totalQty} selected piece{totalQty === 1 ? "" : "s"})</span>
+              <b>₹{selectedSubtotal.toLocaleString("en-IN")}</b>
             </div>
             {buy2Discount > 0 && (
               <div className="promo-line">
@@ -3049,15 +3109,17 @@ function Cart() {
               <b className="cart-final-amount">₹{finalPayable.toLocaleString("en-IN")}</b>
             </div>
             <button
-              className="btn primary full"
+              className={`btn primary full ${totalQty === 0 ? "btn-disabled-selection" : ""}`}
+              disabled={totalQty === 0}
               onClick={() => {
+                if (totalQty === 0) return;
                 if (!localStorage.getItem("enytm-token")) {
                   sessionStorage.setItem("enytm-after-login", "/checkout");
                   nav("/login");
                 } else nav("/checkout");
               }}
             >
-              PROCEED TO CHECKOUT <ArrowRight />
+              {totalQty === 0 ? "SELECT ITEMS TO CHECKOUT" : `PROCEED TO CHECKOUT (${totalQty})`} <ArrowRight />
             </button>
             <div className="cart-trust-badges">
               <span><ShieldCheck size={14} /> 100% Encrypted Payment</span>
