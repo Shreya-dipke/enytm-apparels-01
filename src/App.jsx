@@ -2411,7 +2411,9 @@ function Checkout() {
               sizeStock={productObj?.sizeStock || {}}
               onSelect={(newSize) => updateSize(i.key, newSize)}
             />
-            <span className="checkout-item-rate">₹{Number(i.price).toLocaleString("en-IN")} each</span>
+            {Number(i.qty) > 1 && (
+              <span className="checkout-item-rate">₹{Number(i.price).toLocaleString("en-IN")} each</span>
+            )}
             {isOverStock ? (
               <span className="checkout-stock-pill out">Exceeds available stock</span>
             ) : isLowStock ? (

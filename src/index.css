@@ -12437,6 +12437,10 @@ a.btn.outline {
     display: block;
     order: 0;
   }
+  .checkout-layout aside.summary,
+  .checkout-layout .summary {
+    display: none !important;
+  }
 }
 
 .mobile-order-summary-bar {
@@ -13654,6 +13658,11 @@ a.btn.outline {
     width: 100% !important;
     padding: 20px 16px !important;
     box-sizing: border-box !important;
+  }
+
+  .checkout-layout aside.summary,
+  .checkout-layout .summary {
+    display: none !important;
   }
 
   .form-grid {
