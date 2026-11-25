@@ -105,20 +105,31 @@ function publicUser(u) {
   return safe;
 }
 
-function findUserById(id) {
-  if (!id) return null;
-  const str = String(id);
-  return (db.data.users || []).find(u => String(u.id) === str || String(u._id) === str) || null;
+function findUserById(id, email = null) {
+  const str = id ? String(id).trim() : null;
+  const em = email ? String(email).trim().toLowerCase() : null;
+  if (!str && !em) return null;
+  return (db.data?.users || []).find(u =>
+    (str && (String(u.id) === str || String(u._id) === str)) ||
+    (em && String(u.email || "").trim().toLowerCase() === em)
+  ) || null;
 }
 
 function signUser(user) {
-  return jwt.sign({ id: user.id, email: user.email, role: user.role || "customer" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "7d" });
+  const userId = user.id || user._id;
+  return jwt.sign(
+    { id: userId, _id: userId, email: user.email, role: user.role || "customer" },
+    process.env.JWT_SECRET || "dev-secret",
+    { expiresIn: "7d" }
+  );
 }
 
 function auth(req, res, next) {
-  const token = (req.headers.authorization || "").replace("Bearer ", "");
+  const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
+  if (!token) return res.status(401).json({ message: "Please login to continue." });
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET || "dev-secret");
+    if (!req.user.id && req.user._id) req.user.id = req.user._id;
     next();
   } catch {
     return res.status(401).json({ message: "Please login to continue." });
@@ -879,13 +890,13 @@ app.post("/api/auth/google", async (req, res) => {
 
 app.get("/api/auth/me", auth, async (req, res) => {
   try { await db.read(["users"]); } catch(e) {}
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(401).json({ message: "User not found or session expired." });
   res.json(publicUser(user));
 });
 
 app.put("/api/auth/profile", auth, async (req, res) => {
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(404).json({ message: "User not found." });
   const { name, phone, whatsappOptIn, emailOptIn, address } = req.body;
   if (name !== undefined) user.name = name;
@@ -899,7 +910,7 @@ app.put("/api/auth/profile", auth, async (req, res) => {
 
 app.get("/api/auth/addresses", auth, async (req, res) => {
   try { await db.read(["users"]); } catch(e) {}
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(401).json({ message: "User not found." });
   user.addresses ||= [];
   if (!user.addresses.length && user.address) {
@@ -920,7 +931,7 @@ app.get("/api/auth/addresses", auth, async (req, res) => {
 });
 
 app.post("/api/auth/addresses", auth, async (req, res) => {
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const newAddr = {
@@ -945,7 +956,7 @@ app.post("/api/auth/addresses", auth, async (req, res) => {
 });
 
 app.put("/api/auth/addresses/:id", auth, async (req, res) => {
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const addr = user.addresses.find(a => a.id === req.params.id);
@@ -969,7 +980,7 @@ app.put("/api/auth/addresses/:id", auth, async (req, res) => {
 });
 
 app.post("/api/auth/addresses/:id/default", auth, async (req, res) => {
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const exists = user.addresses.some(a => a.id === req.params.id);
@@ -981,7 +992,7 @@ app.post("/api/auth/addresses/:id/default", auth, async (req, res) => {
 });
 
 app.delete("/api/auth/addresses/:id", auth, async (req, res) => {
-  const user = findUserById(req.user.id);
+  const user = findUserById(req.user.id, req.user.email);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses = (user.addresses || []).filter(a => a.id !== req.params.id);
   if (user.defaultAddressId === req.params.id) {
