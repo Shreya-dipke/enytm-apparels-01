@@ -2394,6 +2394,7 @@ function Checkout() {
       if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection.");
       const digits = String(form.phone || "").replace(/\D/g, "").slice(-10);
       if (digits.length !== 10) throw new Error("Please enter a valid 10-digit mobile number.");
+      let paymentCompleted = false;
       const rzp = new window.Razorpay({
         key: data.keyId,
         amount: data.amount,
@@ -2405,6 +2406,7 @@ function Checkout() {
         theme: { color: "#111111" },
         modal: {
           ondismiss: () => {
+            if (paymentCompleted) return;
             api("/checkout/cancel-pending", {
               method: "POST",
               body: JSON.stringify({ orderId: data.orderId, reason: "Payment window closed by user" })
@@ -2413,15 +2415,24 @@ function Checkout() {
           }
         },
         handler: async (response) => {
-          await api("/checkout/verify", {
-            method: "POST",
-            body: JSON.stringify({ ...response, orderId: data.orderId })
-          });
-          checkoutItems.forEach(i => removeFromCart(i.key));
-          nav(`/order-success/${data.orderId}`);
+          paymentCompleted = true;
+          try {
+            await api("/checkout/verify", {
+              method: "POST",
+              body: JSON.stringify({ ...response, orderId: data.orderId })
+            });
+          } catch (err) {
+            console.error("[Checkout verify error]", err);
+          }
+          try {
+            checkoutItems.forEach(i => removeFromCart(i.key));
+          } catch (e) { }
+          // Force direct navigation so the page definitively transitions to order-success
+          window.location.href = `/order-success/${data.orderId}`;
         }
       });
       rzp.on("payment.failed", (r) => {
+        if (paymentCompleted) return;
         api("/checkout/cancel-pending", {
           method: "POST",
           body: JSON.stringify({ orderId: data.orderId, reason: r.error?.description || "Payment failed" })
