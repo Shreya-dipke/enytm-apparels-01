@@ -17338,3 +17338,77 @@ a.btn.outline {
     padding-bottom: 90px !important;
   }
 }
+
+
+/* Inline Size Guide dropdown directly below size buttons */
+.pdp-inline-size-guide {
+  margin-top: 14px;
+  background: #111110;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: pdpFadeSlide 0.25s ease-out;
+}
+
+@keyframes pdpFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pdp-inline-size-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.pdp-inline-size-guide-header span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #ebd8be;
+  text-transform: uppercase;
+}
+
+.pdp-inline-size-guide-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.pdp-inline-size-guide-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pdp-inline-size-guide-img-wrap {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+
+.pdp-inline-size-guide-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}

@@ -1344,9 +1344,9 @@ function ProductPage() {
               <button
                 type="button"
                 className="pdp-size-guide-link"
-                onClick={() => setShowSizeGuide(true)}
+                onClick={() => setShowSizeGuide(prev => !prev)}
               >
-                Size Guide <ArrowUpRight size={14} />
+                Size Guide {showSizeGuide ? "✕" : <ArrowUpRight size={14} />}
               </button>
             </div>
 
@@ -1375,6 +1375,30 @@ function ProductPage() {
                 );
               })}
             </div>
+
+            {/* INLINE SIZE GUIDE DIRECTLY BELOW SIZES */}
+            {showSizeGuide && (
+              <div className="pdp-inline-size-guide">
+                <div className="pdp-inline-size-guide-header">
+                  <span>SIZE GUIDE · BOXY FIT OVERSIZED</span>
+                  <button
+                    type="button"
+                    className="pdp-inline-size-guide-close"
+                    onClick={() => setShowSizeGuide(false)}
+                    aria-label="Close size guide"
+                  >
+                    <X size={15} /> CLOSE
+                  </button>
+                </div>
+                <div className="pdp-inline-size-guide-img-wrap">
+                  <img
+                    src="/enytm-size-guide.jpg"
+                    alt="ENYTM Boxy Fit Oversized Size Chart"
+                    className="pdp-inline-size-guide-img"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ACTION BAR (QUANTITY + ADD TO BAG + BUY NOW) */}
@@ -1559,19 +1583,6 @@ function ProductPage() {
         </section>
       )}
 
-      {/* SIZE GUIDE IMAGE MODAL */}
-      {showSizeGuide && (
-        <div className="modal-backdrop size-guide-image-backdrop" onClick={() => setShowSizeGuide(false)}>
-          <div className="size-guide-image-dialog" onClick={e => e.stopPropagation()}>
-            <button className="size-guide-image-close" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
-              <X size={22} />
-            </button>
-            <div className="size-guide-image-wrap">
-              <img src="/enytm-size-guide.jpg" alt="ENYTM Boxy Fit Oversized Size Chart" className="size-guide-chart-img" />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* LIGHTBOX MODAL */}
       {zoomImage && (
