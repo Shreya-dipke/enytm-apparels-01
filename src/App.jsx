@@ -2784,27 +2784,7 @@ function Checkout() {
 
           {error && <div className="error">{error}</div>}
 
-          {isOnline ? (
-            <div className="preorder-payment-note full-payment-selected-note">
-              <div className="preorder-badge-title">
-                <Sparkles size={14} /> <b>ONLINE PREPAID PERK · EXTRA 5% OFF UNLOCKED</b>
-              </div>
-              <p>
-                You selected <b>Online Payment</b>. Pay 100% in full today and receive an <b>exclusive extra 5% discount (₹{onlineDiscount.toLocaleString("en-IN")})</b>. No advance split or cash payment needed at delivery.
-              </p>
-              <p className="preorder-cancel-rule">
-                Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, custom manufacturing begins.
-              </p>
-              <div className="preorder-split-row">
-                <span>Amount payable today (100% with 5% off)</span>
-                <strong>₹{onlinePayable.toLocaleString("en-IN")}</strong>
-              </div>
-              <div className="preorder-split-row">
-                <span>Balance due on delivery</span>
-                <strong style={{ color: "#4ade80" }}>₹0 (Fully Settled Online)</strong>
-              </div>
-            </div>
-          ) : (
+          {!isOnline && (
             <div className="preorder-payment-note">
               <div className="preorder-badge-title">
                 <Sparkles size={14} /> <b>PARTIAL PAYMENT TERMS · 30% ADVANCE</b>
