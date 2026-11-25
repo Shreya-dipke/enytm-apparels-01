@@ -1375,16 +1375,6 @@ function ProductPage() {
                 );
               })}
             </div>
-
-            {/* MODEL & FIT INFO SPEC ROW */}
-            <div className="pdp-spec-row">
-              <Shirt size={14} className="pdp-shirt-icon" />
-              <span>Oversized Fit</span>
-              <span className="pdp-spec-pipe">|</span>
-              <span>Relaxed & Comfortable</span>
-              <span className="pdp-spec-pipe">|</span>
-              <span>Model is 5'11" wearing L</span>
-            </div>
           </div>
 
           {/* ACTION BAR (QUANTITY + ADD TO BAG + BUY NOW) */}
