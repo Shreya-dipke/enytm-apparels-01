@@ -48,7 +48,10 @@ import {
   List,
   Headphones,
   Mail,
-  Phone
+  Phone,
+  Banknote,
+  Layers,
+  CreditCard
 } from "lucide-react";
 import { useCart } from "./context/useCart";
 import { api } from "./api";
@@ -5036,6 +5039,147 @@ function SizeGuidePage() {
   );
 }
 
+function FaqPage() {
+  const [openId, setOpenId] = useState(null);
+  const navigate = useNavigate();
+
+  const toggle = (id) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
+
+  const faqs = [
+    {
+      id: 1,
+      icon: <ShoppingBag size={18} />,
+      q: "How do I place an order on ENYTM™?",
+      a: "Browse our collection, select your preferred product, choose your size and colour, and add it to your cart. Proceed to checkout, enter your delivery details, select your payment method and confirm your order."
+    },
+    {
+      id: 2,
+      icon: <Truck size={18} />,
+      q: "What are your delivery timelines?",
+      a: "Orders are processed after successful confirmation. Delivery timelines depend on your location and courier partner. You will receive tracking details once your order is dispatched."
+    },
+    {
+      id: 3,
+      icon: <Banknote size={18} />,
+      q: "Do you offer Cash on Delivery (COD)?",
+      a: "Yes! Cash on Delivery is available for eligible delivery locations. A nominal additional COD charge of ₹49 applies to COD orders."
+    },
+    {
+      id: 4,
+      icon: <CreditCard size={18} />,
+      q: "Which payment methods are accepted?",
+      a: "We aim to make checkout simple and secure. You can pay using available online payment options, including UPI, debit cards and credit cards. Cash on Delivery is also available where enabled."
+    },
+    {
+      id: 5,
+      icon: <RotateCcw size={18} />,
+      q: "What is your return and exchange policy?",
+      a: "If you receive a damaged, defective or incorrect product, please contact our support team with your order details and product photographs. Returns and exchanges are subject to our official Return & Refund Policy."
+    },
+    {
+      id: 6,
+      icon: <MapPin size={18} />,
+      q: "How can I track my order?",
+      a: "Visit the “Track Your Order” section under Customer Care. Enter your order details to check the latest shipment status."
+    },
+    {
+      id: 7,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="14" r="5" />
+          <circle cx="8" cy="14" r="1.5" />
+          <path d="M8 9h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8" />
+          <line x1="12" y1="9" x2="12" y2="12" />
+          <line x1="15" y1="9" x2="15" y2="13" />
+          <line x1="18" y1="9" x2="18" y2="12" />
+        </svg>
+      ),
+      q: "What is the garment size and fit?",
+      a: "Our collection features carefully designed fits, including oversized, boxy-fit and regular-fit styles. Please refer to the individual product description and Size Guide before placing your order."
+    },
+    {
+      id: 8,
+      icon: <Layers size={18} />,
+      q: "What fabrics do you use?",
+      a: "We focus on premium-quality fabrics, including heavyweight cotton, French Terry, Pima Cotton and Airtex Cotton. Fabric composition and GSM details are mentioned on individual product pages."
+    },
+    {
+      id: 9,
+      icon: <Pencil size={18} />,
+      q: "Can I customize my T-shirt?",
+      a: "Yes! ENYTM™ offers customization on selected products. Look for the Customize option on eligible product pages to explore personalization possibilities."
+    },
+    {
+      id: 10,
+      icon: <Headphones size={18} />,
+      q: "How can I contact customer support?",
+      a: (
+        <div>
+          <p>We’re here to help!</p>
+          <ul style={{ margin: "8px 0 12px 18px", padding: 0, lineHeight: 1.7 }}>
+            <li><strong>WhatsApp:</strong> Use the floating WhatsApp icon on our website.</li>
+            <li><strong>Raise a Complaint:</strong> Visit the Customer Care section in your account.</li>
+            <li><strong>Email:</strong> Use the contact email listed on our website.</li>
+          </ul>
+          <p>Please share your order ID when contacting us for faster assistance.</p>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <main className="faq-page">
+      <div className="faq-container">
+        <div className="faq-header">
+          <button type="button" onClick={() => navigate(-1)} className="faq-back-link">
+            <ChevronLeft size={16} /> BACK
+          </button>
+          <h1 className="faq-title">Frequently Asked Questions</h1>
+          <p className="faq-subtitle">
+            Find quick answers to the most common questions about orders, products, shipping, returns and more.
+          </p>
+          <p className="faq-kicker">Everything you need to know before shopping with ENYTM™.</p>
+        </div>
+
+        <div className="faq-accordion-list">
+          {faqs.map((item) => {
+            const isOpen = openId === item.id;
+            return (
+              <div key={item.id} className={`faq-card ${isOpen ? "open" : ""}`}>
+                <button
+                  type="button"
+                  className="faq-question-btn"
+                  onClick={() => toggle(item.id)}
+                  aria-expanded={isOpen}
+                >
+                  <div className="faq-question-left">
+                    <span className="faq-icon-wrap">{item.icon}</span>
+                    <span className="faq-question-text">{item.q}</span>
+                  </div>
+                  <ChevronDown size={16} className={`faq-chevron ${isOpen ? "rotated" : ""}`} />
+                </button>
+                {isOpen && (
+                  <div className="faq-answer-body">
+                    {typeof item.a === "string" ? <p>{item.a}</p> : item.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="faq-bottom-banner">
+          <div className="faq-bottom-line" />
+          <p className="faq-bottom-tagline">MORE THAN A MOMENT.</p>
+          <p className="faq-bottom-desc">ENYTM™ – Architectural Streetwear. Built to Stand Out.</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function Footer() {
   const whatsappLink = "https://wa.me/message/5KFLGKP4XCG7C1";
   return (
@@ -5102,7 +5246,7 @@ function Footer() {
                 <ChevronRight size={15} className="footer-nav-chevron" />
               </Link>
 
-              <Link to="/collection#faq" className="footer-nav-row">
+              <Link to="/faq" className="footer-nav-row">
                 <div className="footer-nav-row-left">
                   <HelpCircle size={18} />
                   <span>Frequently Asked Questions</span>
@@ -6472,6 +6616,7 @@ function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/track" element={<TrackOrderPage />} />
           <Route path="/size-guide" element={<SizeGuidePage />} />
+          <Route path="/faq" element={<FaqPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Home />} />
         </Routes>
