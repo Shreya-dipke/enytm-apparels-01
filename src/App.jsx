@@ -47,7 +47,7 @@ import {
   LayoutGrid,
   List
 } from "lucide-react";
-import { useCart } from "./context/CartContext";
+import { useCart } from "./context/useCart";
 import { api } from "./api";
 import "./index.css";
 
