@@ -2959,26 +2959,197 @@ function OrderDetails() {
 }
 
 function OrderSuccess() {
-  // Keep the checkout success URL compatible with existing payment redirects,
-  // but send customers to the full order-details screen where order actions are
-  // connected to the existing authenticated backend endpoints.
   const location = useLocation();
   const nav = useNavigate();
   const id = location.pathname.split("/").pop();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (!localStorage.getItem("enytm-token")) {
-      sessionStorage.setItem("enytm-after-login", `/order/${id}`);
+      sessionStorage.setItem("enytm-after-login", `/order-success/${id}`);
       nav("/login", { replace: true });
       return;
     }
-    nav(`/order/${id}`, { replace: true });
+    let isMounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await api(`/orders/${id}`);
+        if (isMounted) setOrder(data);
+      } catch (err) {
+        if (isMounted) setError(err.message || "Could not fetch order details.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => { isMounted = false; };
   }, [id, nav]);
 
+  if (loading) {
+    return (
+      <main className="empty order-redirect-loading" aria-live="polite">
+        <div className="order-success-spinner" />
+        <p className="eyebrow">ORDER CONFIRMED</p>
+        <h1>FINALIZING YOUR ORDER...</h1>
+        <p className="muted">Retrieving your order summary and delivery details.</p>
+      </main>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <main className="empty">
+        <p className="eyebrow">ENYTM APPARELS</p>
+        <h1>ORDER NOT FOUND</h1>
+        <p className="muted" style={{ margin: "10px 0 20px" }}>{error || "We could not find the requested order."}</p>
+        <Link className="btn primary" to="/orders">VIEW ALL ORDERS</Link>
+      </main>
+    );
+  }
+
+  const isCOD = order.paymentMethod === "cod";
+  const advancePaid = Number(order.advancePaid || 0);
+  const total = Number(order.total || 0);
+  const balanceRemaining = Math.max(0, total - advancePaid - Number(order.balancePaid || 0));
+
   return (
-    <main className="empty order-redirect-loading" aria-live="polite">
-      <p className="eyebrow">ENYTM ORDER</p>
-      <h1>OPENING ORDER DETAILS...</h1>
+    <main className="order-success-page">
+      <div className="order-success-hero">
+        <div className="order-success-icon-wrap">
+          <CheckCircle size={56} className="order-success-check-icon" />
+        </div>
+        <p className="eyebrow order-success-eyebrow">ORDER PLACED SUCCESSFULLY</p>
+        <h1 className="order-success-title">THANK YOU FOR YOUR ORDER</h1>
+        <p className="order-success-subtitle">
+          Your payment has been successfully verified and your order is confirmed. A confirmation message has been queued for dispatch.
+        </p>
+
+        <div className="order-success-receipt-badge">
+          <span>ORDER ID</span>
+          <strong>{order.receipt || order.id}</strong>
+        </div>
+      </div>
+
+      <div className="order-success-card-grid">
+        {/* Left Column: Summary & Items */}
+        <div className="order-success-main-col">
+          <div className="order-success-box">
+            <div className="order-success-box-head">
+              <h3>ITEMS IN YOUR ORDER ({order.items?.length || 0})</h3>
+            </div>
+            <div className="order-success-items-list">
+              {(order.items || []).map((item, idx) => (
+                <div className="order-success-item-row" key={`${item.productId}-${idx}`}>
+                  <img src={item.image} alt={item.name} className="order-success-item-img" />
+                  <div className="order-success-item-info">
+                    <h4>{item.name}</h4>
+                    <p className="order-success-item-meta">
+                      Size: <b>{item.size || "Standard"}</b> · Qty: <b>{item.qty}</b>
+                    </p>
+                    <span className="order-success-item-price">
+                      ₹{Number(item.price || 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <strong className="order-success-item-total">
+                    ₹{(Number(item.price || 0) * Number(item.qty || 1)).toLocaleString("en-IN")}
+                  </strong>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="order-success-box">
+            <div className="order-success-box-head">
+              <h3>SHIPPING & DELIVERY</h3>
+            </div>
+            <div className="order-success-shipping-info">
+              <div className="order-success-address">
+                <MapPin size={20} className="order-success-icon" />
+                <div>
+                  <strong>{order.customer?.name}</strong>
+                  <p>{order.customer?.address}</p>
+                  <p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p>
+                  <p className="muted">Contact: {order.customer?.phone}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Payment & Next Actions */}
+        <div className="order-success-side-col">
+          <div className="order-success-box payment-summary-box">
+            <div className="order-success-box-head">
+              <h3>PAYMENT SUMMARY</h3>
+            </div>
+            <div className="order-success-calc-list">
+              <div className="order-success-calc-row">
+                <span>Subtotal</span>
+                <b>₹{Number(order.subtotal || 0).toLocaleString("en-IN")}</b>
+              </div>
+              {Number(order.buy2Discount || 0) > 0 && (
+                <div className="order-success-calc-row discount-row">
+                  <span>Promotional Discount</span>
+                  <b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b>
+                </div>
+              )}
+              {Number(order.discount || 0) > 0 && !order.buy2Discount && (
+                <div className="order-success-calc-row discount-row">
+                  <span>Coupon Discount ({order.couponCode})</span>
+                  <b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b>
+                </div>
+              )}
+              {Number(order.fullPaymentDiscount || 0) > 0 && (
+                <div className="order-success-calc-row discount-row">
+                  <span>Prepaid Discount (5% Off)</span>
+                  <b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b>
+                </div>
+              )}
+              <div className="order-success-calc-row">
+                <span>Shipping</span>
+                <b style={{ color: "#4ade80" }}>FREE</b>
+              </div>
+              <hr className="order-success-divider" />
+              <div className="order-success-calc-row grand-total-row">
+                <span>Total Amount</span>
+                <b className="order-grand-amount">₹{total.toLocaleString("en-IN")}</b>
+              </div>
+
+              {isCOD ? (
+                <div className="order-success-split-status">
+                  <div className="split-badge advance-badge">
+                    <span>30% Advance Paid Online:</span>
+                    <strong>₹{advancePaid.toLocaleString("en-IN")}</strong>
+                  </div>
+                  <div className="split-badge balance-badge">
+                    <span>Remaining 70% Due After Dispatch:</span>
+                    <strong>₹{balanceRemaining.toLocaleString("en-IN")}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div className="order-success-split-status">
+                  <div className="split-badge full-badge">
+                    <span>Paid Online:</span>
+                    <strong>₹{advancePaid || total} (100% Settled)</strong>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="order-success-actions">
+              <Link to={`/order/${order.id}`} className="btn primary full order-success-btn">
+                TRACK & MANAGE ORDER <ArrowRight size={16} />
+              </Link>
+              <Link to="/shop" className="btn outline full order-success-btn">
+                CONTINUE SHOPPING
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
