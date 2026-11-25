@@ -17412,3 +17412,88 @@ a.btn.outline {
   display: block;
   border-radius: 8px;
 }
+
+
+/* PDP Share Button & Toast */
+.pdp-card-share {
+  position: absolute;
+  top: 66px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(18, 18, 18, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+
+.pdp-card-share:hover {
+  transform: scale(1.08);
+  background: rgba(28, 28, 28, 0.85);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.pdp-card-share.copied {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.pdp-kicker-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
+  width: 100% !important;
+}
+
+.pdp-share-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #dfdbd2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdp-share-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.pdp-share-pill.copied {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.pdp-share-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #142217;
+  border: 1px solid #22c55e;
+  color: #86efac;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  width: fit-content;
+  animation: pdpFadeSlide 0.2s ease;
+}

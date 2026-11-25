@@ -1243,6 +1243,20 @@ function ProductPage() {
                 <Heart size={20} fill={liked ? "#e11d48" : "none"} color={liked ? "#e11d48" : "#ffffff"} />
               </button>
 
+              {/* FLOATING SHARE BUTTON (TOP RIGHT, BELOW WISHLIST) */}
+              <button
+                type="button"
+                className={`pdp-card-share ${copiedLink ? "copied" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare();
+                }}
+                aria-label="Share product"
+                title={copiedLink ? "Link copied!" : "Share product"}
+              >
+                {copiedLink ? <Check size={18} /> : <Share2 size={18} />}
+              </button>
+
               {/* CAROUSEL ARROWS */}
               {safeGallery.length > 1 && (
                 <>
@@ -1297,7 +1311,23 @@ function ProductPage() {
         <section className="product-details pdp-details-v4">
           <div className="pdp-kicker-row">
             <span className="pdp-kicker">{categoryLabel} / ENYTM APPARELS</span>
+            <button
+              type="button"
+              className={`pdp-share-pill ${copiedLink ? "copied" : ""}`}
+              onClick={handleShare}
+              aria-label="Share product"
+              title={copiedLink ? "Link copied!" : "Share product link"}
+            >
+              {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
+              <span>{copiedLink ? "COPIED" : "SHARE"}</span>
+            </button>
           </div>
+
+          {copiedLink && (
+            <div className="pdp-share-toast" role="status">
+              <Check size={14} /> Link copied to clipboard!
+            </div>
+          )}
 
           <h1 className="pdp-title">{product.name}</h1>
 
