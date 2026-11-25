@@ -2470,14 +2470,14 @@ function Checkout() {
             aria-expanded={showMobileSummary}
           >
             <div className="mobile-summary-bar-left">
-              <ShoppingBag size={17} />
+              <ShoppingBag size={16} style={{ color: "#cbb89a", flexShrink: 0 }} />
               <span>
-                {showMobileSummary ? "Hide order items" : "Review & adjust items"} ({totalQty} {totalQty === 1 ? "piece" : "pieces"})
+                {showMobileSummary ? "Hide order items" : "Order Summary"} ({totalQty} {totalQty === 1 ? "item" : "items"})
               </span>
-              <ChevronDown size={16} className={`summary-arrow ${showMobileSummary ? "open" : ""}`} />
+              <ChevronDown size={14} className={`summary-arrow ${showMobileSummary ? "open" : ""}`} style={{ color: "#cbb89a", flexShrink: 0 }} />
             </div>
             <div className="mobile-summary-bar-right">
-              <small>{isOnline ? "PAY ONLINE (5% OFF)" : "COD ADVANCE (30%)"}</small>
+              <small>{isOnline ? "5% OFF PREPAID" : "30% COD ADVANCE"}</small>
               <strong>₹{payableToday.toLocaleString("en-IN")}</strong>
             </div>
           </button>
