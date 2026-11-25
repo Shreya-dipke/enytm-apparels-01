@@ -16,9 +16,8 @@ export function CartProvider({children}) {
 
   const [cart, setCart] = useState(() => {
     try {
-      if (!localStorage.getItem("enytm-token")) return [];
       const uid = getActiveUserId();
-      const raw = localStorage.getItem(`enytm-cart-${uid}`) || localStorage.getItem("enytm-cart") || "[]";
+      const raw = (uid && uid !== "anon" ? localStorage.getItem(`enytm-cart-${uid}`) : null) || localStorage.getItem("enytm-cart") || "[]";
       const v = JSON.parse(raw);
       return Array.isArray(v) ? v.map(i => ({ ...i, selected: i.selected !== false })) : [];
     } catch {
@@ -28,9 +27,8 @@ export function CartProvider({children}) {
 
   const [wishlist, setWishlist] = useState(() => {
     try {
-      if (!localStorage.getItem("enytm-token")) return [];
       const uid = getActiveUserId();
-      const raw = localStorage.getItem(`enytm-wishlist-${uid}`) || localStorage.getItem("enytm-wishlist") || "[]";
+      const raw = (uid && uid !== "anon" ? localStorage.getItem(`enytm-wishlist-${uid}`) : null) || localStorage.getItem("enytm-wishlist") || "[]";
       const v = JSON.parse(raw);
       return Array.isArray(v) ? v : [];
     } catch {
@@ -66,10 +64,11 @@ export function CartProvider({children}) {
   const loadUserData = useCallback(async () => {
     const token = localStorage.getItem("enytm-token");
     if (!token) {
-      setCart([]);
-      setWishlist([]);
-      localStorage.removeItem("enytm-cart");
-      localStorage.removeItem("enytm-wishlist");
+      // Guest mode: retain guest local storage items
+      const guestCart = JSON.parse(localStorage.getItem("enytm-cart") || "[]");
+      if (Array.isArray(guestCart)) setCart(guestCart.map(i => ({ ...i, selected: i.selected !== false })));
+      const guestWish = JSON.parse(localStorage.getItem("enytm-wishlist") || "[]");
+      if (Array.isArray(guestWish)) setWishlist(guestWish);
       initialLoadDone.current = true;
       return;
     }
@@ -136,26 +135,26 @@ export function CartProvider({children}) {
 
   useEffect(() => {
     if (!initialLoadDone.current) return;
+    const uid = getActiveUserId();
+    localStorage.setItem("enytm-cart", JSON.stringify(cart));
+    if (uid && uid !== "anon") {
+      localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(cart));
+    }
     const token = localStorage.getItem("enytm-token");
     if (token) {
-      const uid = getActiveUserId();
-      localStorage.setItem("enytm-cart", JSON.stringify(cart));
-      if (uid && uid !== "anon") {
-        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(cart));
-      }
       api("/cart/sync", { method: "POST", body: JSON.stringify({ items: cart }) }).catch(() => {});
     }
   }, [cart]);
 
   useEffect(() => {
     if (!initialLoadDone.current) return;
+    const uid = getActiveUserId();
+    localStorage.setItem("enytm-wishlist", JSON.stringify(wishlist));
+    if (uid && uid !== "anon") {
+      localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(wishlist));
+    }
     const token = localStorage.getItem("enytm-token");
     if (token) {
-      const uid = getActiveUserId();
-      localStorage.setItem("enytm-wishlist", JSON.stringify(wishlist));
-      if (uid && uid !== "anon") {
-        localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(wishlist));
-      }
       api("/wishlist/sync", { method: "POST", body: JSON.stringify({ items: wishlist }) }).catch(() => {});
     }
   }, [wishlist]);
