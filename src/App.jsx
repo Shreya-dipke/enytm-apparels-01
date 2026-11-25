@@ -1407,6 +1407,9 @@ function ProductPage() {
           <div className="option">
             <div className="option-head">
               <span>SELECT SIZE</span>
+              <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
+                SIZE GUIDE ↗
+              </button>
             </div>
             <div className="sizes">
               {sizes.map((s) => {
@@ -1653,6 +1656,20 @@ function ProductPage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* SIZE GUIDE IMAGE MODAL */}
+      {showSizeGuide && (
+        <div className="modal-backdrop size-guide-image-backdrop" onClick={() => setShowSizeGuide(false)}>
+          <div className="size-guide-image-dialog" onClick={e => e.stopPropagation()}>
+            <button className="size-guide-image-close" onClick={() => setShowSizeGuide(false)} aria-label="Close size guide">
+              <X size={22} />
+            </button>
+            <div className="size-guide-image-wrap">
+              <img src="/enytm-size-guide.jpg" alt="ENYTM Boxy Fit Oversized Size Chart" className="size-guide-chart-img" />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* LIGHTBOX MODAL */}

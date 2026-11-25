@@ -3774,6 +3774,95 @@ footer {
   }
 }
 
+/* ---------------- SIZE GUIDE IMAGE POPUP ---------------- */
+.size-guide-modal-trigger {
+  background: transparent;
+  border: none;
+  color: #c8b69a;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+
+.size-guide-modal-trigger:hover {
+  opacity: 0.75;
+}
+
+.size-guide-image-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+.size-guide-image-dialog {
+  position: relative;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  background: #111;
+  border: 1px solid #2b2b2b;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  animation: scaleUpSize 0.25s ease-out;
+}
+
+@keyframes scaleUpSize {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.size-guide-image-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.size-guide-image-close:hover {
+  background: #000;
+  border-color: #fff;
+  transform: scale(1.08);
+}
+
+.size-guide-image-wrap {
+  width: 100%;
+  max-height: 85vh;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.size-guide-chart-img {
+  width: 100%;
+  height: auto;
+  max-height: 85vh;
+  object-fit: contain;
+  display: block;
+}
+
 /* ---------------- ECOMMERCE ANIMATED CHECKMARK ---------------- */
 .ecommerce-check-animation-wrap {
   width: 90px;
