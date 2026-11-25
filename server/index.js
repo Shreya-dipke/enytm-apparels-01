@@ -1021,7 +1021,7 @@ app.post("/api/cart/sync", auth, async (req, res) => {
     const existing = db.data.carts.find(c => c && String(c.userId) === String(req.user?.id));
     const record = { userId: req.user.id, items: Array.isArray(req.body.items) ? req.body.items : [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
     if (existing) Object.assign(existing, record); else db.data.carts.push(record);
-    await db.write();
+    await db.write("carts");
     res.json({ ok: true });
   } catch (err) {
     console.error("[Cart Sync Error]:", err);
@@ -1047,7 +1047,7 @@ app.post("/api/wishlist/sync", auth, async (req, res) => {
     const existing = db.data.wishlists.find(c => c && String(c.userId) === String(req.user?.id));
     const record = { userId: req.user.id, items: Array.isArray(req.body.items) ? req.body.items : [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
     if (existing) Object.assign(existing, record); else db.data.wishlists.push(record);
-    await db.write();
+    await db.write("wishlists");
     res.json({ ok: true });
   } catch (err) {
     console.error("[Wishlist Sync Error]:", err);
