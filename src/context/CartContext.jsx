@@ -38,11 +38,35 @@ export function CartProvider({children}) {
     }
   });
 
+  const removeFromCart = (key) => {
+    setCart(items => {
+      const list = Array.isArray(items) ? items : [];
+      const updated = list.filter(i => i.key !== key);
+      const uid = getActiveUserId();
+      try {
+        localStorage.setItem("enytm-cart", JSON.stringify(updated));
+        if (uid && uid !== "anon") {
+          localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+          if (updated.length === 0) sessionStorage.setItem(`enytm-cart-cleared-${uid}`, "true");
+        }
+      } catch (e) {}
+
+      const token = localStorage.getItem("enytm-token");
+      if (token) {
+        api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+      }
+      return updated;
+    });
+  };
+
   const clearCart = useCallback(() => {
     const uid = getActiveUserId();
     setCart([]);
     localStorage.removeItem("enytm-cart");
-    if (uid && uid !== "anon") localStorage.removeItem(`enytm-cart-${uid}`);
+    if (uid && uid !== "anon") {
+      localStorage.removeItem(`enytm-cart-${uid}`);
+      sessionStorage.setItem(`enytm-cart-cleared-${uid}`, "true");
+    }
     const token = localStorage.getItem("enytm-token");
     if (token) {
       api("/cart/sync", { method: "POST", body: JSON.stringify({ items: [] }) }).catch(() => {});
@@ -97,11 +121,23 @@ export function CartProvider({children}) {
     try {
       const [cRes, wRes] = await Promise.allSettled([api("/cart"), api("/wishlist")]);
       if (cRes.status === "fulfilled" && Array.isArray(cRes.value?.items)) {
-        // If server returns cart items, sync exactly with server (respects server removals and empty cart)
         const serverItems = cRes.value.items.map(i => ({ ...i, selected: i.selected !== false }));
-        setCart(serverItems);
-        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(serverItems));
-        localStorage.setItem("enytm-cart", JSON.stringify(serverItems));
+        // The server cart is the true persistent state for a logged-in user.
+        // If the user removed an item, the server already received /cart/sync with that item deleted.
+        // If the server cart is empty on first login, we seed it with guest local items.
+        let finalCart;
+        if (serverItems.length > 0) {
+          finalCart = serverItems;
+        } else if (localItems.length > 0 && !sessionStorage.getItem(`enytm-cart-cleared-${uid}`)) {
+          finalCart = localItems;
+          api("/cart/sync", { method: "POST", body: JSON.stringify({ items: localItems }) }).catch(() => {});
+        } else {
+          finalCart = [];
+        }
+
+        setCart(finalCart);
+        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(finalCart));
+        localStorage.setItem("enytm-cart", JSON.stringify(finalCart));
       }
       if (wRes.status === "fulfilled" && Array.isArray(wRes.value?.items)) {
         const serverWish = wRes.value.items;
@@ -233,19 +269,6 @@ export function CartProvider({children}) {
       const uid = getActiveUserId();
       localStorage.setItem("enytm-cart", JSON.stringify(updated));
       if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
-    } catch (e) {}
-    return updated;
-  });
-
-  const removeFromCart = key => setCart(items => {
-    const list = Array.isArray(items) ? items : [];
-    const updated = list.filter(i => i.key !== key);
-    try {
-      const uid = getActiveUserId();
-      localStorage.setItem("enytm-cart", JSON.stringify(updated));
-      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
-      const token = localStorage.getItem("enytm-token");
-      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
     } catch (e) {}
     return updated;
   });
