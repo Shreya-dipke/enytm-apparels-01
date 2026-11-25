@@ -16524,7 +16524,16 @@ a.btn.outline {
 
 @media (max-width: 768px) {
   .footer-hero-section {
-    padding: 20px 16px 20px !important;
+    padding: 24px 16px 20px !important;
+  }
+
+  .footer-hero-bg-img {
+    object-position: right center !important;
+    transform: translateX(45px) !important;
+  }
+
+  .footer-hero-copy {
+    max-width: 250px !important;
   }
 
   .footer-nav-container {
