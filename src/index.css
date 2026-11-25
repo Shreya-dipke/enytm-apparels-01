@@ -1991,7 +1991,12 @@ footer {
 .order-status.paid,
 .order-status.captured,
 .order-status.confirmed {
-  color: #ddd
+  color: #10b981
+}
+
+.order-status.failed,
+.order-status.cancelled {
+  color: #ef4444 !important;
 }
 
 .order-row>strong {

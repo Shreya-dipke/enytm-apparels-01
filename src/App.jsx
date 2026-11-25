@@ -2403,7 +2403,15 @@ function Checkout() {
         order_id: data.razorpayOrderId,
         prefill: { name: form.name, email: user?.email, contact: digits },
         theme: { color: "#111111" },
-        modal: { ondismiss: () => { } },
+        modal: {
+          ondismiss: () => {
+            api("/checkout/cancel-pending", {
+              method: "POST",
+              body: JSON.stringify({ orderId: data.orderId, reason: "Payment window closed by user" })
+            }).catch(() => { });
+            setError("Payment cancelled. Order was not placed.");
+          }
+        },
         handler: async (response) => {
           await api("/checkout/verify", {
             method: "POST",
@@ -2413,7 +2421,13 @@ function Checkout() {
           nav(`/order-success/${data.orderId}`);
         }
       });
-      rzp.on("payment.failed", (r) => setError(r.error?.description || "Payment failed. Please try again."));
+      rzp.on("payment.failed", (r) => {
+        api("/checkout/cancel-pending", {
+          method: "POST",
+          body: JSON.stringify({ orderId: data.orderId, reason: r.error?.description || "Payment failed" })
+        }).catch(() => { });
+        setError(r.error?.description || "Payment failed. Order was not placed.");
+      });
       rzp.open();
     } catch (err) {
       setError(err.message || "Could not start payment.");
@@ -3858,12 +3872,11 @@ function Account() {
                   </div>
 
                   <span
-                    className={`order-status ${order.paymentStatus
-                      }`}
+                    className={`order-status ${order.status === "failed" ? "failed" : order.paymentStatus}`}
                   >
-                    {String(
-                      order.status || ""
-                    ).replaceAll("_", " ")}
+                    {order.status === "failed"
+                      ? "ORDER FAILED"
+                      : String(order.status || "").replaceAll("_", " ")}
                   </span>
 
                   <strong>

@@ -1314,6 +1314,24 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
   res.json({ ok: true, order });
 });
 
+app.post("/api/checkout/cancel-pending", auth, async (req, res) => {
+  const { orderId, reason } = req.body || {};
+  if (!orderId) return res.status(400).json({ message: "orderId is required" });
+  try { await db.read("orders"); } catch (e) { }
+  const order = (db.data.orders || []).find(o => (o.id === orderId || o.razorpayOrderId === orderId) && o.userId === req.user.id);
+  if (!order) return res.status(404).json({ message: "Order not found." });
+  // If order was already paid, do not mark as failed
+  if (order.status === "confirmed" || order.paymentStatus === "paid" || (order.advancePaid && order.advancePaid > 0)) {
+    return res.json({ ok: true, status: order.status });
+  }
+  order.status = "failed";
+  order.paymentStatus = "failed";
+  order.failureReason = reason || "Payment cancelled or failed";
+  order.updatedAt = Date.now();
+  await db.write("orders");
+  res.json({ ok: true, status: "failed" });
+});
+
 app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
   const order = db.data.orders.find(o => o.id === req.params.id && o.userId === req.user.id);
   if (!order) return res.status(404).json({ message: "Order not found." });
@@ -1336,7 +1354,17 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
 app.get("/api/orders/my", auth, async (req, res) => {
   try { await db.read("orders"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  res.json(db.data.orders.filter(o => o.userId === req.user.id).sort((a, b) => b.createdAt - a.createdAt));
+  // Exclude unconfirmed payment_pending draft attempts where customer never paid
+  const userOrders = (db.data.orders || [])
+    .filter(o => o.userId === req.user.id)
+    .filter(o => {
+      if (o.status === "payment_pending" && (!o.advancePaid || Number(o.advancePaid) <= 0)) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+  res.json(userOrders);
 });
 // GET SINGLE CUSTOMER ORDER
 app.get("/api/orders/:id", auth, async (req, res) => {
