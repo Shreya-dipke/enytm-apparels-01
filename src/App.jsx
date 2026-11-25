@@ -3962,6 +3962,15 @@ function Account() {
 
       {/* HERO */}
       <section className="account-hero-modern">
+        <div className="account-hero-bg-wrap" aria-hidden="true">
+          <img
+            src="/account-wide-banner.jpg"
+            alt="ENYTM Apparel"
+            className="account-hero-bg-img"
+          />
+          <div className="account-hero-gradient-overlay" />
+        </div>
+
         <div className="account-hero-copy">
           <h1 className="account-hero-title">
             YOUR<br />
@@ -3974,14 +3983,6 @@ function Account() {
           <Link to="/shop" className="account-hero-shop-btn">
             <ShoppingBag size={15} /> SHOP NOW →
           </Link>
-        </div>
-
-        <div className="account-hero-model-wrap">
-          <img
-            src="/account-hero-model.png"
-            alt="ENYTM Apparel"
-            className="account-hero-model-img"
-          />
         </div>
       </section>
 
