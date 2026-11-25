@@ -392,7 +392,7 @@ function PrelaunchHome() {
       @media(prefers-reduced-motion:reduce){.prelaunch-explore{transition:none}}
     `}</style>
     <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br />PUNE, INDIA · EST. 2026</span></header>
-    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br />CLOTHING.<br /><em>A<br />FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18} /></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br /><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Partial Payment</b> (pay a 30% advance online today to confirm booking, and pay the remaining 70% before dispatch).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15} /></Link></div></div></section>
+    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br />CLOTHING.<br /><em>A<br />FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18} /></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section>
   </main>
 }
 function LaunchCountdown() {
@@ -570,66 +570,6 @@ function Home() {
         <Link to="/shop" className="quote-shop-link">
           FIND YOUR PIECE <ArrowRight size={15} />
         </Link>
-      </section>
-
-      <section className="home-faq" id="faq">
-        <div className="home-faq-heading">
-          <p className="eyebrow">05 / GOOD TO KNOW</p>
-          <p className="eyebrow">03 / GOOD TO KNOW</p>
-          <h2>
-            The useful<br />
-            <em>details.</em>
-          </h2>
-          <p>Everything you need to know before making ENYTM part of your everyday.</p>
-        </div>
-        <div className="home-faq-list">
-          <details>
-            <summary>
-              What is the tee made from?<span aria-hidden="true">＋</span>
-            </summary>
-            <p>
-              Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition (from 240 GSM combed cotton to 380 GSM French Terry).
-            </p>
-          </details>
-          <details>
-            <summary>
-              What offers are currently active?<span aria-hidden="true">＋</span>
-            </summary>
-            <p>
-              We offer <b>Extra 5% off on online payments</b> via Razorpay, <b>Buy 2 Get 10% off & Buy 3 Get 15% off</b> automatically applied in your bag, and <b>Free Shipping on all orders</b> across India.
-            </p>
-          </details>
-          <details>
-            <summary>
-              How does pre-order production work?<span aria-hidden="true">＋</span>
-            </summary>
-            <p>
-              Pre-orders require 100% advance payment. Production takes approximately 2.5 weeks to complete, followed by 7–10 days for courier delivery once dispatched. Cancellation with full refund is available within 24 hours of payment.
-            </p>
-          </details>
-          <details>
-            <summary>
-              How do I report a damaged or incorrect item?<span aria-hidden="true">＋</span>
-            </summary>
-            <p>
-              If you receive an item that is damaged, defective, or different from what you ordered, please contact ENYTM APPARELS within 24 hours of delivery. Please include your order number and clear photographs of the issue so we can assist you promptly.
-            </p>
-          </details>
-          <details>
-            <summary>
-              How should I care for my ENYTM garments?<span aria-hidden="true">＋</span>
-            </summary>
-            <p>
-              Wash cold inside-out with like colours, avoid harsh bleaching agents, do not iron directly on graphics, and flat dry or hang in shade to preserve GSM density and drape.
-            </p>
-          </details>
-          <div className="home-faq-footer">
-            <span>STILL CURIOUS?</span>
-            <Link to="/about">
-              GET TO KNOW US <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
       </section>
     </main>
   );
