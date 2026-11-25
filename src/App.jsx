@@ -2956,7 +2956,19 @@ function OrderDetails() {
   const status = String(order?.status || "payment_pending");
   const shipped = ["shipped", "out_for_delivery", "delivered"].includes(status);
   const cancelled = status === "cancelled";
-  const statusIndex = { payment_pending: 0, confirmed: 1, packed: 2, shipped: 3, out_for_delivery: 4, delivered: 5, cancelled: 0 }[status] ?? 0;
+  // The steps array has 5 steps: 0: confirmed, 1: packed, 2: shipped, 3: out_for_delivery, 4: delivered
+  // Only advance to step 1 (PACKED) when admin explicitly updates order status to 'packed'!
+  const statusIndex = {
+    payment_pending: -1,
+    failed: -1,
+    confirmed: 0,
+    processing: 0,
+    packed: 1,
+    shipped: 2,
+    out_for_delivery: 3,
+    delivered: 4,
+    cancelled: -1
+  }[status] ?? -1;
   const statusLabel = status === "payment_pending" ? "PAYMENT PENDING" : status.replace(/_/g, " ").toUpperCase();
   const deliveryDate = order?.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate) : null;
   const formatDate = d => d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
