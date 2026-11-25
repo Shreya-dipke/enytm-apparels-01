@@ -155,39 +155,101 @@ export function CartProvider({children}) {
     }
   }, [wishlist]);
 
-  const addToCart=(product,size="M")=>setCart(items=>{
+  const addToCart = (product, size = "M") => {
+    setCart(items => {
+      const list = Array.isArray(items) ? items : [];
+      const prodId = product?.id ?? product?._id;
+      const key = `${prodId}-${size}`;
+      const old = list.find(i => i.key === key);
+      const updated = old
+        ? list.map(i => i.key === key ? { ...i, qty: i.qty + 1, selected: true } : i)
+        : [...list, { ...product, id: prodId, size, qty: 1, key, selected: true }];
+
+      // Immediately write to local storage so page reload never loses the newly added item
+      try {
+        const uid = getActiveUserId();
+        localStorage.setItem("enytm-cart", JSON.stringify(updated));
+        if (uid && uid !== "anon") {
+          localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+        }
+        const token = localStorage.getItem("enytm-token");
+        if (token) {
+          api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+        }
+      } catch (e) {}
+
+      return updated;
+    });
+  };
+
+  const updateQty = (key, qty) => setCart(items => {
     const list = Array.isArray(items) ? items : [];
-    const key=`${product?.id}-${size}`, old=list.find(i=>i.key===key);
-    return old
-      ? list.map(i=>i.key===key?{...i,qty:i.qty+1,selected:true}:i)
-      : [...list,{...product,size,qty:1,key,selected:true}];
+    const updated = qty < 1 ? list.filter(i => i.key !== key) : list.map(i => i.key === key ? { ...i, qty } : i);
+    try {
+      const uid = getActiveUserId();
+      localStorage.setItem("enytm-cart", JSON.stringify(updated));
+      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+      const token = localStorage.getItem("enytm-token");
+      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+    } catch (e) {}
+    return updated;
   });
-  const updateQty=(key,qty)=>setCart(items=>{
+
+  const updateSize = (key, newSize) => setCart(items => {
     const list = Array.isArray(items) ? items : [];
-    return qty<1?list.filter(i=>i.key!==key):list.map(i=>i.key===key?{...i,qty}:i);
-  });
-  const updateSize=(key,newSize)=>setCart(items=>{
-    const list = Array.isArray(items) ? items : [];
-    const target = list.find(i=>i.key===key);
+    const target = list.find(i => i.key === key);
     if (!target || !newSize || target.size === newSize) return list;
     const newKey = `${target.id}-${newSize}`;
-    const existing = list.find(i=>i.key===newKey);
+    const existing = list.find(i => i.key === newKey);
+    let updated;
     if (existing) {
-      return list.filter(i=>i.key!==key).map(i=>i.key===newKey ? {...i, qty: i.qty + target.qty} : i);
+      updated = list.filter(i => i.key !== key).map(i => i.key === newKey ? { ...i, qty: i.qty + target.qty } : i);
+    } else {
+      updated = list.map(i => i.key === key ? { ...i, size: newSize, key: newKey } : i);
     }
-    return list.map(i=>i.key===key ? {...i, size: newSize, key: newKey} : i);
+    try {
+      const uid = getActiveUserId();
+      localStorage.setItem("enytm-cart", JSON.stringify(updated));
+      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+      const token = localStorage.getItem("enytm-token");
+      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+    } catch (e) {}
+    return updated;
   });
-  const toggleSelectItem=(key)=>setCart(items=>{
+
+  const toggleSelectItem = (key) => setCart(items => {
     const list = Array.isArray(items) ? items : [];
-    return list.map(i=>i.key===key ? {...i, selected: i.selected === false ? true : false} : i);
+    const updated = list.map(i => i.key === key ? { ...i, selected: i.selected === false ? true : false } : i);
+    try {
+      const uid = getActiveUserId();
+      localStorage.setItem("enytm-cart", JSON.stringify(updated));
+      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+    } catch (e) {}
+    return updated;
   });
-  const selectAll=(select = true)=>setCart(items=>{
+
+  const selectAll = (select = true) => setCart(items => {
     const list = Array.isArray(items) ? items : [];
-    return list.map(i=>({...i, selected: !!select}));
+    const updated = list.map(i => ({ ...i, selected: !!select }));
+    try {
+      const uid = getActiveUserId();
+      localStorage.setItem("enytm-cart", JSON.stringify(updated));
+      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+    } catch (e) {}
+    return updated;
   });
-  const removeFromCart=key=>setCart(items=>{
+
+  const removeFromCart = key => setCart(items => {
     const list = Array.isArray(items) ? items : [];
-    return list.filter(i=>i.key!==key);
+    const updated = list.filter(i => i.key !== key);
+    try {
+      const uid = getActiveUserId();
+      localStorage.setItem("enytm-cart", JSON.stringify(updated));
+      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+      const token = localStorage.getItem("enytm-token");
+      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+    } catch (e) {}
+    return updated;
   });
   const addToWishlist=id=>setWishlist(w=>{
     const list = Array.isArray(w) ? w : [];

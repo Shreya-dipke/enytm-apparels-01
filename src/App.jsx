@@ -2269,12 +2269,15 @@ function Checkout() {
   const finalPayable = isOnline ? onlinePayable : basePayable;
 
   useEffect(() => {
-    if (!products || !products.length || !cart.length) return;
+    if (!products || !Array.isArray(products) || products.length === 0 || !cart || cart.length === 0) return;
 
     const moved = [];
     cart.forEach(item => {
-      const prod = products.find(p => String(p.id) === String(item.id));
-      const isProductOOS = !prod || Number(prod.stock || 0) <= 0;
+      const prod = products.find(p => String(p.id) === String(item.id) || (p._id && String(p._id) === String(item.id)));
+      // If product is not found in catalog, do not remove it (it might be loading or in pre-cache)
+      if (!prod) return;
+
+      const isProductOOS = Number(prod.stock || 0) <= 0;
       const isSizeOOS = Boolean(
         prod?.sizeStock &&
         typeof prod.sizeStock[item.size] !== "undefined" &&
@@ -3061,6 +3064,86 @@ function OrderDetails() {
     );
   }
 
+
+  if (isFailed) {
+    return (
+      <main className="order-detail-page">
+        <div className="order-detail-top">
+          <div>
+            <p className="eyebrow" style={{ color: "#ef4444" }}>ENYTM / PAYMENT FAILED</p>
+            <h1>{order.receipt || order.id}</h1>
+            <p className="muted">Attempted on {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</p>
+          </div>
+          <Link className="text-link" to="/orders">← MY ORDERS</Link>
+        </div>
+        <section className="order-status-card" style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)" }}>
+          <div className="order-status-head" style={{ borderBottom: "none", paddingBottom: 0 }}>
+            <div>
+              <span className="order-status-big" style={{ color: "#ef4444" }}>PAYMENT FAILED · ORDER NOT PLACED</span>
+              <h2 style={{ color: "#aaa", fontSize: 14, marginTop: 8 }}>
+                {order.failureReason || "Payment for this checkout attempt was not completed or failed. No order was placed."}
+              </h2>
+            </div>
+          </div>
+        </section>
+
+        <div className="order-detail-grid">
+          <section className="order-detail-main">
+            <div className="order-panel">
+              <div className="panel-head">
+                <h2>ITEMS ATTEMPTED</h2>
+                <span>{order.items?.length || 0} ITEM{order.items?.length === 1 ? "" : "S"}</span>
+              </div>
+              {(order.items || []).map((item, idx) => (
+                <article className="order-item-detail" key={`${item.productId}-${idx}`}>
+                  <img src={item.image} alt={item.name} />
+                  <div className="order-item-copy">
+                    <h3>{item.name}</h3>
+                    <p>Size: <b>{item.size || "—"}</b> · Qty: <b>{item.qty}</b></p>
+                    <p className="muted">₹{Number(item.price).toLocaleString("en-IN")} each</p>
+                  </div>
+                  <strong>₹{(Number(item.price) * Number(item.qty)).toLocaleString("en-IN")}</strong>
+                </article>
+              ))}
+            </div>
+
+            <div className="order-panel">
+              <div className="panel-head">
+                <h2>DELIVERY ADDRESS PROVIDED</h2>
+                <MapPin size={18} />
+              </div>
+              <div className="delivery-address">
+                <b>{order.customer?.name}</b>
+                <p>{order.customer?.address}</p>
+                <p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p>
+                <p>{order.customer?.phone}</p>
+              </div>
+            </div>
+          </section>
+
+          <aside className="order-detail-side">
+            <div className="order-panel price-panel">
+              <div className="panel-head"><h2>PRICE DETAILS</h2></div>
+              <div><span>Item total</span><b>₹{Number(order.subtotal || 0).toLocaleString("en-IN")}</b></div>
+              <div><span>Shipping</span><b>{Number(order.shipping || 0) ? `₹${Number(order.shipping).toLocaleString("en-IN")}` : "FREE"}</b></div>
+              {Number(order.buy2Discount || 0) > 0 && <div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}
+              {Number(order.discount || 0) > 0 && !order.buy2Discount && <div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}
+              {Number(order.fullPaymentDiscount || 0) > 0 && <div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}
+              <hr />
+              <div className="grand"><span>ATTEMPT TOTAL</span><b>₹{Number(order.total || 0).toLocaleString("en-IN")}</b></div>
+              <p className="payment-meta" style={{ color: "#ef4444" }}>Payment: FAILED · NO CHARGE COLLECTED</p>
+            </div>
+
+            <div className="order-actions-panel">
+              <Link to="/checkout" className="btn primary full">RETRY CHECKOUT</Link>
+              <Link to="/shop" className="btn outline full">CONTINUE SHOPPING</Link>
+            </div>
+          </aside>
+        </div>
+      </main>
+    );
+  }
+
   const steps = [
     ["confirmed", "ORDER CONFIRMED", "We received your order."],
     ["packed", "PACKED", "Your order is being prepared."],
@@ -3355,12 +3438,15 @@ function Cart() {
   const [oosMovedItems, setOosMovedItems] = useState([]);
 
   useEffect(() => {
-    if (!products || !products.length || !cart.length) return;
+    if (!products || !Array.isArray(products) || products.length === 0 || !cart || cart.length === 0) return;
 
     const moved = [];
     cart.forEach(item => {
-      const prod = products.find(p => String(p.id) === String(item.id));
-      const isProductOOS = !prod || Number(prod.stock || 0) <= 0;
+      const prod = products.find(p => String(p.id) === String(item.id) || (p._id && String(p._id) === String(item.id)));
+      // If product is not found in catalog, do not remove it (it might be loading or in pre-cache)
+      if (!prod) return;
+
+      const isProductOOS = Number(prod.stock || 0) <= 0;
       const isSizeOOS = Boolean(
         prod?.sizeStock &&
         typeof prod.sizeStock[item.size] !== "undefined" &&
