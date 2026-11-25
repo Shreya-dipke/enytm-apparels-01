@@ -1,21 +1,37 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { api } from "../api";
 const CartContext = createContext();
 
+function getActiveUserId() {
+  try {
+    const u = JSON.parse(localStorage.getItem("enytm-user") || "null");
+    return u?.id || u?._id || "anon";
+  } catch {
+    return "anon";
+  }
+}
+
 export function CartProvider({children}) {
-  const [cart,setCart] = useState(()=>{
+  const initialLoadDone = useRef(false);
+
+  const [cart, setCart] = useState(() => {
     try {
       if (!localStorage.getItem("enytm-token")) return [];
-      const v = JSON.parse(localStorage.getItem("enytm-cart") || "[]");
+      const uid = getActiveUserId();
+      const raw = localStorage.getItem(`enytm-cart-${uid}`) || localStorage.getItem("enytm-cart") || "[]";
+      const v = JSON.parse(raw);
       return Array.isArray(v) ? v.map(i => ({ ...i, selected: i.selected !== false })) : [];
     } catch {
       return [];
     }
   });
-  const [wishlist,setWishlist] = useState(()=>{
+
+  const [wishlist, setWishlist] = useState(() => {
     try {
       if (!localStorage.getItem("enytm-token")) return [];
-      const v = JSON.parse(localStorage.getItem("enytm-wishlist") || "[]");
+      const uid = getActiveUserId();
+      const raw = localStorage.getItem(`enytm-wishlist-${uid}`) || localStorage.getItem("enytm-wishlist") || "[]";
+      const v = JSON.parse(raw);
       return Array.isArray(v) ? v : [];
     } catch {
       return [];
@@ -23,13 +39,17 @@ export function CartProvider({children}) {
   });
 
   const clearCart = useCallback(() => {
+    const uid = getActiveUserId();
     setCart([]);
     localStorage.removeItem("enytm-cart");
+    if (uid && uid !== "anon") localStorage.removeItem(`enytm-cart-${uid}`);
   }, []);
 
   const clearWishlist = useCallback(() => {
+    const uid = getActiveUserId();
     setWishlist([]);
     localStorage.removeItem("enytm-wishlist");
+    if (uid && uid !== "anon") localStorage.removeItem(`enytm-wishlist-${uid}`);
   }, []);
 
   const logoutUser = useCallback(() => {
@@ -39,6 +59,7 @@ export function CartProvider({children}) {
     localStorage.removeItem("enytm-wishlist");
     setCart([]);
     setWishlist([]);
+    initialLoadDone.current = false;
     window.dispatchEvent(new Event("enytm:auth_change"));
   }, []);
 
@@ -49,20 +70,59 @@ export function CartProvider({children}) {
       setWishlist([]);
       localStorage.removeItem("enytm-cart");
       localStorage.removeItem("enytm-wishlist");
+      initialLoadDone.current = true;
       return;
     }
+
+    const uid = getActiveUserId();
+    // 1. Immediately restore from per-user local cache if available
+    try {
+      const localCart = JSON.parse(localStorage.getItem(`enytm-cart-${uid}`) || "[]");
+      if (Array.isArray(localCart) && localCart.length > 0) {
+        setCart(localCart.map(i => ({ ...i, selected: i.selected !== false })));
+      }
+      const localWish = JSON.parse(localStorage.getItem(`enytm-wishlist-${uid}`) || "[]");
+      if (Array.isArray(localWish) && localWish.length > 0) {
+        setWishlist(localWish);
+      }
+    } catch {}
+
+    // 2. Fetch fresh cart & wishlist from backend API
     try {
       const [cRes, wRes] = await Promise.allSettled([api("/cart"), api("/wishlist")]);
       if (cRes.status === "fulfilled" && Array.isArray(cRes.value?.items)) {
-        setCart(cRes.value.items.map(i => ({ ...i, selected: i.selected !== false })));
+        if (cRes.value.items.length > 0) {
+          const items = cRes.value.items.map(i => ({ ...i, selected: i.selected !== false }));
+          setCart(items);
+          localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(items));
+          localStorage.setItem("enytm-cart", JSON.stringify(items));
+        } else {
+          // If server cart is empty but we have local cart for this user, sync local to server
+          const localCart = JSON.parse(localStorage.getItem(`enytm-cart-${uid}`) || "[]");
+          if (Array.isArray(localCart) && localCart.length > 0) {
+            api("/cart/sync", { method: "POST", body: JSON.stringify({ items: localCart }) }).catch(() => {});
+          }
+        }
       }
       if (wRes.status === "fulfilled" && Array.isArray(wRes.value?.items)) {
-        setWishlist(wRes.value.items);
+        if (wRes.value.items.length > 0) {
+          setWishlist(wRes.value.items);
+          localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(wRes.value.items));
+          localStorage.setItem("enytm-wishlist", JSON.stringify(wRes.value.items));
+        } else {
+          const localWish = JSON.parse(localStorage.getItem(`enytm-wishlist-${uid}`) || "[]");
+          if (Array.isArray(localWish) && localWish.length > 0) {
+            api("/wishlist/sync", { method: "POST", body: JSON.stringify({ items: localWish }) }).catch(() => {});
+          }
+        }
       }
-    } catch {}
+    } catch {} finally {
+      initialLoadDone.current = true;
+    }
   }, []);
 
   useEffect(() => {
+    loadUserData();
     const onAuthChange = () => {
       loadUserData();
     };
@@ -75,15 +135,27 @@ export function CartProvider({children}) {
   }, [loadUserData]);
 
   useEffect(() => {
-    if (localStorage.getItem("enytm-token")) {
+    if (!initialLoadDone.current) return;
+    const token = localStorage.getItem("enytm-token");
+    if (token) {
+      const uid = getActiveUserId();
       localStorage.setItem("enytm-cart", JSON.stringify(cart));
+      if (uid && uid !== "anon") {
+        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(cart));
+      }
       api("/cart/sync", { method: "POST", body: JSON.stringify({ items: cart }) }).catch(() => {});
     }
   }, [cart]);
 
   useEffect(() => {
-    if (localStorage.getItem("enytm-token")) {
+    if (!initialLoadDone.current) return;
+    const token = localStorage.getItem("enytm-token");
+    if (token) {
+      const uid = getActiveUserId();
       localStorage.setItem("enytm-wishlist", JSON.stringify(wishlist));
+      if (uid && uid !== "anon") {
+        localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(wishlist));
+      }
       api("/wishlist/sync", { method: "POST", body: JSON.stringify({ items: wishlist }) }).catch(() => {});
     }
   }, [wishlist]);

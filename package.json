@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n API,WEB -c blue,green \"node server/index.js\" \"vite --host 0.0.0.0 --port 5174\"",
+    "dev": "concurrently -k -n API,WEB -c blue,green \"node --watch server/index.js\" \"vite --host 0.0.0.0 --port 5174\"",
     "build": "vite build",
     "start": "node server/index.js",
     "preview": "vite preview"
