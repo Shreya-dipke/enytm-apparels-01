@@ -14155,21 +14155,30 @@ a.btn.outline {
 }
 
 .modern-slider-media .product-zoom-container {
+  position: relative !important;
   width: 100% !important;
   height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: 8px 8px 36px 8px !important;
+  box-sizing: border-box !important;
 }
 
+.modern-slider-media .product-zoom-container img,
 .modern-slider-media img,
 .modern-slider-media video {
-  width: 100% !important;
-  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
   object-fit: contain !important;
   object-position: center center !important;
   display: block !important;
-  background: #0d0d0d !important;
+  margin: auto !important;
+  background: transparent !important;
   transition: opacity 0.2s ease !important;
   animation: none !important;
 }
@@ -14374,8 +14383,8 @@ a.btn.outline {
     border-right: 0 !important;
     border-top: 0 !important;
     max-width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    min-height: 380px !important;
+    aspect-ratio: 3 / 4 !important;
+    min-height: 450px !important;
     background: #0d0d0d !important;
     display: flex !important;
     align-items: center !important;
@@ -14385,18 +14394,26 @@ a.btn.outline {
   .modern-slider-media .product-zoom-container {
     width: 100% !important;
     height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    padding: 8px 8px 40px 8px !important;
+    box-sizing: border-box !important;
   }
 
+  .modern-slider-media .product-zoom-container img,
   .modern-slider-media img,
   .modern-slider-media video {
-    width: 100% !important;
-    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
     object-fit: contain !important;
     object-position: center center !important;
-    background: #0d0d0d !important;
+    background: transparent !important;
+    margin: auto !important;
   }
 
   .slider-arrow {

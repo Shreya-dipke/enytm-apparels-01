@@ -1209,10 +1209,13 @@ function ProductPage() {
                         loading="eager"
                         style={{
                           display: isCurrent ? "block" : "none",
-                          width: "100%",
-                          height: "100%",
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          width: "auto",
+                          height: "auto",
                           objectFit: "contain",
-                          objectPosition: "center center"
+                          objectPosition: "center center",
+                          margin: "auto"
                         }}
                         onError={(e) => {
                           const src = e.currentTarget.src;
