@@ -20,6 +20,7 @@ import {
   RotateCcw,
   User,
   Package,
+  Share2,
   LogOut,
   LockKeyhole,
   CheckCircle,
@@ -939,6 +940,43 @@ function ProductPage() {
   const [videoBlocked, setVideoBlocked] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [zoomImage, setZoomImage] = useState(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: product?.name ? `${product.name} | ENYTM APPARELS` : "ENYTM APPARELS",
+      text: `Check out ${product?.name || "this"} on ENYTM APPARELS:`,
+      url: url,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+      }
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2400);
+    } catch {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2400);
+    }
+  };
 
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const liked = product ? safeWishlist.includes(product.id) : false;
@@ -1224,6 +1262,16 @@ function ProductPage() {
 
               <button
                 type="button"
+                className={`slider-share-badge ${copiedLink ? "copied" : ""}`}
+                onClick={handleShare}
+                aria-label="Share product"
+                title={copiedLink ? "Link copied!" : "Share product link"}
+              >
+                {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
+              </button>
+
+              <button
+                type="button"
                 className="slider-zoom-badge"
                 onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}
                 aria-label="Zoom image"
@@ -1265,11 +1313,35 @@ function ProductPage() {
         <section className="product-details">
           <div className="product-detail-top">
             <p className="eyebrow">{categoryLabel} / ENYTM APPARELS</p>
-            <button className={`detail-wish ${liked ? "liked" : ""}`} onClick={() => toggleWishlist(product.id)}>
-              <Heart size={19} fill={liked ? "currentColor" : "none"} />
-              <span>{liked ? "SAVED" : "SAVE"}</span>
-            </button>
+            <div className="product-detail-actions">
+              <button
+                type="button"
+                className={`detail-action-btn detail-share ${copiedLink ? "copied" : ""}`}
+                onClick={handleShare}
+                aria-label="Share product link"
+                title={copiedLink ? "Link Copied!" : "Share Link"}
+              >
+                {copiedLink ? <Check size={18} /> : <Share2 size={18} />}
+                <span>{copiedLink ? "COPIED" : "SHARE"}</span>
+              </button>
+              <button
+                type="button"
+                className={`detail-action-btn detail-wish ${liked ? "liked" : ""}`}
+                onClick={() => toggleWishlist(product.id)}
+                aria-label="Wishlist"
+                title={liked ? "Saved to Wishlist" : "Save to Wishlist"}
+              >
+                <Heart size={18} fill={liked ? "currentColor" : "none"} />
+                <span>{liked ? "SAVED" : "SAVE"}</span>
+              </button>
+            </div>
           </div>
+
+          {copiedLink && (
+            <div className="share-toast" role="status">
+              <Check size={14} /> Link copied to clipboard!
+            </div>
+          )}
 
           <h1>{product.name}</h1>
 

@@ -2251,22 +2251,41 @@ footer {
   margin: 0
 }
 
-.detail-wish {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid #333;
-  color: #aaa;
-  padding: 10px 13px;
-  font-size: 8px;
-  letter-spacing: .15em
+.product-detail-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.detail-wish,
+.detail-share {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  background: transparent !important;
+  border: 1px solid #333 !important;
+  color: #aaa !important;
+  padding: 8px 12px !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: .12em !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border-radius: 4px !important;
+  line-height: 1 !important;
 }
 
 .detail-wish:hover,
-.detail-wish.liked {
-  border-color: #fff;
-  color: #fff
+.detail-wish.liked,
+.detail-share:hover {
+  border-color: #fff !important;
+  color: #fff !important;
+}
+
+.detail-share.copied {
+  border-color: #14958f !important;
+  color: #14958f !important;
 }
 
 .product-details h1 {
@@ -2599,11 +2618,13 @@ footer {
     font-size: 6px
   }
 
-  .detail-wish span {
+  .detail-wish span,
+  .detail-share span {
     display: none
   }
 
-  .detail-wish {
+  .detail-wish,
+  .detail-share {
     padding: 10px
   }
 
@@ -2848,11 +2869,13 @@ footer {
     font-size: 6px
   }
 
-  .detail-wish span {
+  .detail-wish span,
+  .detail-share span {
     display: none
   }
 
-  .detail-wish {
+  .detail-wish,
+  .detail-share {
     padding: 10px
   }
 
@@ -14240,6 +14263,65 @@ a.btn.outline {
 .slider-zoom-badge:hover {
   background: #fff !important;
   color: #000 !important;
+}
+
+.slider-share-badge {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  transition: all 0.2s ease !important;
+}
+
+.slider-share-badge:hover,
+.slider-share-badge.copied {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+}
+
+.share-toast {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: #111 !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  padding: 10px 18px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  z-index: 99999 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  animation: toastFadeIn 0.25s ease both !important;
+  pointer-events: none !important;
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 .slider-arrow {
