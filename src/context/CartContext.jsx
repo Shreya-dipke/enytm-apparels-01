@@ -34,9 +34,25 @@ export function CartProvider({children}) {
     const list = Array.isArray(items) ? items : [];
     return qty<1?list.filter(i=>i.key!==key):list.map(i=>i.key===key?{...i,qty}:i);
   });
+  const updateSize=(key,newSize)=>setCart(items=>{
+    const list = Array.isArray(items) ? items : [];
+    const target = list.find(i=>i.key===key);
+    if (!target || !newSize || target.size === newSize) return list;
+    const newKey = `${target.id}-${newSize}`;
+    const existing = list.find(i=>i.key===newKey);
+    if (existing) {
+      return list.filter(i=>i.key!==key).map(i=>i.key===newKey ? {...i, qty: i.qty + target.qty} : i);
+    }
+    return list.map(i=>i.key===key ? {...i, size: newSize, key: newKey} : i);
+  });
   const removeFromCart=key=>setCart(items=>{
     const list = Array.isArray(items) ? items : [];
     return list.filter(i=>i.key!==key);
+  });
+  const addToWishlist=id=>setWishlist(w=>{
+    const list = Array.isArray(w) ? w : [];
+    const numId = Number(id) || id;
+    return list.some(x => String(x) === String(numId)) ? list : [...list, numId];
   });
   const toggleWishlist=id=>setWishlist(w=>{
     const list = Array.isArray(w) ? w : [];
@@ -48,6 +64,6 @@ export function CartProvider({children}) {
   const cartCount=safeCart.reduce((s,i)=>s+(Number(i.qty)||0),0);
   const subtotal=safeCart.reduce((s,i)=>s+((Number(i.price)||0)*(Number(i.qty)||0)),0);
   const shipping=0;
-  return <CartContext.Provider value={{cart:safeCart,wishlist:safeWishlist,addToCart,updateQty,removeFromCart,toggleWishlist,clearCart,cartCount,subtotal,shipping,total:subtotal+shipping}}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={{cart:safeCart,wishlist:safeWishlist,addToCart,updateQty,updateSize,removeFromCart,addToWishlist,toggleWishlist,clearCart,cartCount,subtotal,shipping,total:subtotal+shipping}}>{children}</CartContext.Provider>
 }
 export const useCart=()=>useContext(CartContext);

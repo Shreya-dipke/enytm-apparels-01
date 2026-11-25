@@ -708,6 +708,86 @@ function CustomDropdown({ label, value, options, onChange, icon = null, classNam
   );
 }
 
+export function CartSizeDropdown({
+  currentSize,
+  availableSizes = ["S", "M", "L", "XL", "XXL"],
+  sizeStock = {},
+  onSelect,
+  className = ""
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className={`enytm-custom-dropdown cart-size-custom-dropdown ${className} ${open ? "is-open" : ""}`} ref={ref}>
+      <button
+        type="button"
+        className="enytm-dropdown-trigger cart-size-trigger"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="enytm-dropdown-label">SIZE:</span>
+        <span className="enytm-dropdown-current">{currentSize}</span>
+        <ChevronDown size={12} className={`enytm-dropdown-arrow ${open ? "rotated" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="enytm-dropdown-menu cart-size-menu" role="listbox">
+          {availableSizes.map((s) => {
+            const stockVal = sizeStock?.[s];
+            const isOOS = typeof stockVal !== "undefined" && Number(stockVal) <= 0;
+            const isSelected = s === currentSize;
+
+            return (
+              <button
+                key={s}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                disabled={isOOS}
+                className={`enytm-dropdown-item cart-size-item ${isSelected ? "selected" : ""} ${isOOS ? "oos" : ""}`}
+                onClick={() => {
+                  if (!isOOS) {
+                    onSelect(s);
+                    setOpen(false);
+                  }
+                }}
+              >
+                <span className="cart-size-item-val">{s}</span>
+                {isOOS ? (
+                  <span className="cart-size-oos-tag">OUT OF STOCK</span>
+                ) : isSelected ? (
+                  <Check size={12} className="enytm-dropdown-check" />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Shop() {
   const products = useProducts();
   const location = useLocation();
@@ -2051,7 +2131,7 @@ function AddressLookupFields({ form, setForm, setError, compact = false }) {
 }
 
 function Checkout() {
-  const { cart, subtotal, shipping, total, clearCart, updateQty, removeFromCart } = useCart();
+  const { cart, subtotal, shipping, total, clearCart, updateQty, updateSize, removeFromCart, addToWishlist } = useCart();
   const products = useProducts();
   const nav = useNavigate();
   const [user, setUser] = useState(null);
@@ -2063,6 +2143,43 @@ function Checkout() {
   const [couponBusy, setCouponBusy] = useState(false);
   const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("online");
+  const [oosMovedItems, setOosMovedItems] = useState([]);
+
+  useEffect(() => {
+    if (!products || !products.length || !cart.length) return;
+
+    const moved = [];
+    cart.forEach(item => {
+      const prod = products.find(p => String(p.id) === String(item.id));
+      const isProductOOS = !prod || Number(prod.stock || 0) <= 0;
+      const isSizeOOS = Boolean(
+        prod?.sizeStock &&
+        typeof prod.sizeStock[item.size] !== "undefined" &&
+        Number(prod.sizeStock[item.size] || 0) <= 0
+      );
+
+      if (isProductOOS || isSizeOOS) {
+        moved.push({
+          id: item.id,
+          key: item.key,
+          name: item.name,
+          size: item.size
+        });
+      }
+    });
+
+    if (moved.length > 0) {
+      moved.forEach(m => {
+        removeFromCart(m.key);
+        addToWishlist(m.id);
+      });
+      setOosMovedItems(prev => {
+        const existingKeys = new Set(prev.map(p => p.key));
+        const newOnes = moved.filter(m => !existingKeys.has(m.key));
+        return [...prev, ...newOnes];
+      });
+    }
+  }, [products, cart]);
 
   useEffect(() => {
     if (error && error.toLowerCase().includes("item")) {
@@ -2266,7 +2383,12 @@ function Checkout() {
             </strong>
           </div>
           <div className="checkout-item-meta">
-            <span className="checkout-item-size-badge">SIZE {i.size}</span>
+            <CartSizeDropdown
+              currentSize={i.size}
+              availableSizes={productObj?.sizes && productObj.sizes.length ? productObj.sizes : ["S", "M", "L", "XL", "XXL"]}
+              sizeStock={productObj?.sizeStock || {}}
+              onSelect={(newSize) => updateSize(i.key, newSize)}
+            />
             <span className="checkout-item-rate">₹{Number(i.price).toLocaleString("en-IN")} each</span>
             {isOverStock ? (
               <span className="checkout-stock-pill out">Exceeds available stock</span>
@@ -2318,6 +2440,18 @@ function Checkout() {
         <p className="eyebrow">ENYTM APPARELS · SECURE CHECKOUT</p>
         <h1>COMPLETE YOUR ORDER</h1>
       </div>
+      {oosMovedItems.length > 0 && (
+        <div className="cart-oos-banner" style={{ margin: "0 auto 20px", maxWidth: "1200px" }}>
+          <div className="cart-oos-banner-header">
+            <Heart size={16} style={{ color: "#cbb89a" }} />
+            <strong>OUT OF STOCK ITEMS MOVED TO WISHLIST</strong>
+            <button className="cart-oos-close" onClick={() => setOosMovedItems([])} aria-label="Dismiss">✕</button>
+          </div>
+          <p>
+            {oosMovedItems.map(m => `"${m.name}" (Size ${m.size})`).join(", ")} {oosMovedItems.length === 1 ? "is" : "are"} currently sold out and {oosMovedItems.length === 1 ? "has" : "have"} been automatically moved to your <Link to="/wishlist" className="cart-oos-wishlist-link">Wishlist</Link>.
+          </p>
+        </div>
+      )}
       <div className="checkout-layout">
         {/* MOBILE COLLAPSIBLE ORDER SUMMARY WITH QUANTITY ADJUSTMENT */}
         <div className="mobile-order-summary-wrapper">
@@ -2741,8 +2875,47 @@ function OrderSuccess() {
 }
 
 function Cart() {
-  const { cart, updateQty, removeFromCart, subtotal } = useCart();
+  const { cart, updateQty, updateSize, removeFromCart, addToWishlist, subtotal } = useCart();
+  const products = useProducts();
   const nav = useNavigate();
+  const [oosMovedItems, setOosMovedItems] = useState([]);
+
+  useEffect(() => {
+    if (!products || !products.length || !cart.length) return;
+
+    const moved = [];
+    cart.forEach(item => {
+      const prod = products.find(p => String(p.id) === String(item.id));
+      const isProductOOS = !prod || Number(prod.stock || 0) <= 0;
+      const isSizeOOS = Boolean(
+        prod?.sizeStock &&
+        typeof prod.sizeStock[item.size] !== "undefined" &&
+        Number(prod.sizeStock[item.size] || 0) <= 0
+      );
+
+      if (isProductOOS || isSizeOOS) {
+        moved.push({
+          id: item.id,
+          key: item.key,
+          name: item.name,
+          size: item.size
+        });
+      }
+    });
+
+    if (moved.length > 0) {
+      moved.forEach(m => {
+        removeFromCart(m.key);
+        addToWishlist(m.id);
+      });
+      setOosMovedItems(prev => {
+        const existingKeys = new Set(prev.map(p => p.key));
+        const newOnes = moved.filter(m => !existingKeys.has(m.key));
+        return [...prev, ...newOnes];
+      });
+    }
+  }, [products, cart]);
+
   const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
   const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
   const buy2Discount = Math.round(subtotal * qtyDiscountPct);
@@ -2798,33 +2971,55 @@ function Cart() {
               </div>
             )}
 
+            {oosMovedItems.length > 0 && (
+              <div className="cart-oos-banner">
+                <div className="cart-oos-banner-header">
+                  <Heart size={16} style={{ color: "#cbb89a" }} />
+                  <strong>OUT OF STOCK ITEM MOVED TO WISHLIST</strong>
+                  <button className="cart-oos-close" onClick={() => setOosMovedItems([])} aria-label="Dismiss">✕</button>
+                </div>
+                <p>
+                  {oosMovedItems.map(m => `"${m.name}" (Size ${m.size})`).join(", ")} {oosMovedItems.length === 1 ? "is" : "are"} currently out of stock and {oosMovedItems.length === 1 ? "has" : "have"} been automatically moved to your <Link to="/wishlist" className="cart-oos-wishlist-link">Wishlist</Link>.
+                </p>
+              </div>
+            )}
+
             <div className="cart-items">
-              {cart.map((i) => (
-                <div className="cart-item" key={i.key}>
-                  <img src={normalizeImageUrl(i.image)} alt={i.name} />
-                  <div className="cart-item-info">
-                    <div>
-                      <h3>{i.name}</h3>
-                      <p>{i.fabric} · Size {i.size}</p>
-                    </div>
-                    <strong>₹{(i.price * i.qty).toLocaleString("en-IN")}</strong>
-                    <div className="cart-bottom">
-                      <div className="quantity">
-                        <button onClick={() => updateQty(i.key, i.qty - 1)} aria-label="Decrease quantity">
-                          <Minus size={14} />
-                        </button>
-                        <b>{i.qty}</b>
-                        <button onClick={() => updateQty(i.key, i.qty + 1)} aria-label="Increase quantity">
-                          <Plus size={14} />
+              {cart.map((i) => {
+                const prod = products?.find(p => String(p.id) === String(i.id));
+                const availableSizes = prod?.sizes && prod.sizes.length ? prod.sizes : ["S", "M", "L", "XL", "XXL"];
+                return (
+                  <div className="cart-item" key={i.key}>
+                    <img src={normalizeImageUrl(i.image)} alt={i.name} />
+                    <div className="cart-item-info">
+                      <div>
+                        <h3>{i.name}</h3>
+                        <CartSizeDropdown
+                          currentSize={i.size}
+                          availableSizes={availableSizes}
+                          sizeStock={prod?.sizeStock || {}}
+                          onSelect={(newSize) => updateSize(i.key, newSize)}
+                        />
+                      </div>
+                      <strong>₹{(i.price * i.qty).toLocaleString("en-IN")}</strong>
+                      <div className="cart-bottom">
+                        <div className="quantity">
+                          <button onClick={() => updateQty(i.key, i.qty - 1)} aria-label="Decrease quantity">
+                            <Minus size={14} />
+                          </button>
+                          <b>{i.qty}</b>
+                          <button onClick={() => updateQty(i.key, i.qty + 1)} aria-label="Increase quantity">
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                        <button className="remove" onClick={() => removeFromCart(i.key)}>
+                          <Trash2 size={15} /> REMOVE
                         </button>
                       </div>
-                      <button className="remove" onClick={() => removeFromCart(i.key)}>
-                        <Trash2 size={15} /> REMOVE
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
