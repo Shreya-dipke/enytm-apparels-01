@@ -158,6 +158,16 @@ function Navbar({ onSearch }) {
     setOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleAuth = () => setToken(localStorage.getItem("enytm-token"));
+    window.addEventListener("enytm:auth_change", handleAuth);
+    window.addEventListener("storage", handleAuth);
+    return () => {
+      window.removeEventListener("enytm:auth_change", handleAuth);
+      window.removeEventListener("storage", handleAuth);
+    };
+  }, []);
+
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
 
   return <>
@@ -1707,6 +1717,7 @@ function Auth({ register = false }) {
       if (!data?.token) throw new Error("Authentication failed: no session token returned.");
       localStorage.setItem("enytm-token", data.token);
       localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+      window.dispatchEvent(new Event("enytm:auth_change"));
       const redirect = sessionStorage.getItem("enytm-after-login") || "/";
       sessionStorage.removeItem("enytm-after-login");
       nav(redirect, { replace: true });
@@ -1793,6 +1804,7 @@ function Auth({ register = false }) {
       const data = await api("/auth/register/verify-otp", { method: "POST", body: JSON.stringify({ emailOtp: otp.email, challengeId, whatsappOptIn: form.whatsappOptIn, emailOptIn: form.emailOptIn }) });
       localStorage.setItem("enytm-token", data.token);
       localStorage.setItem("enytm-user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("enytm:auth_change"));
       const redirect = sessionStorage.getItem("enytm-after-login") || "/";
       sessionStorage.removeItem("enytm-after-login");
       nav(redirect);
@@ -1850,11 +1862,13 @@ function Auth({ register = false }) {
         localStorage.setItem("enytm-admin", data.adminToken);
         localStorage.setItem("enytm-token", data.token);
         localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+        window.dispatchEvent(new Event("enytm:auth_change"));
         nav("/admin", { replace: true });
         return;
       }
       localStorage.setItem("enytm-token", data.token);
       localStorage.setItem("enytm-user", JSON.stringify(data.user || {}));
+      window.dispatchEvent(new Event("enytm:auth_change"));
       const redirect = sessionStorage.getItem("enytm-after-login") || "/";
       sessionStorage.removeItem("enytm-after-login");
       nav(redirect, { replace: true });
@@ -3132,7 +3146,7 @@ function Cart() {
   );
 }
 function Account() {
-  const { wishlist } = useCart();
+  const { wishlist, logoutUser } = useCart();
   const nav = useNavigate();
   const location = useLocation();
 
@@ -3223,8 +3237,7 @@ function Account() {
         const errorMsg = meResult.reason?.message || "";
         const isAuthExpired = errorMsg.toLowerCase().includes("session") || errorMsg.includes("401");
         if (isAuthExpired && !user && !cachedUser) {
-          localStorage.removeItem("enytm-token");
-          localStorage.removeItem("enytm-user");
+          logoutUser();
           nav("/login", { replace: true });
           return;
         }
@@ -3453,9 +3466,7 @@ function Account() {
   };
 
   const logout = () => {
-    localStorage.removeItem("enytm-token");
-    localStorage.removeItem("enytm-user");
-
+    logoutUser();
     nav("/", { replace: true });
   };
 

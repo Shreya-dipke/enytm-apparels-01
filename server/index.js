@@ -990,16 +990,28 @@ app.delete("/api/auth/addresses/:id", auth, async (req, res) => {
   res.json({ addresses: user.addresses, defaultAddressId: user.defaultAddressId });
 });
 
+app.get("/api/cart", auth, async (req, res) => {
+  try { await db.read(["carts"]); } catch(e) {}
+  const record = (db.data.carts || []).find(c => String(c.userId) === String(req.user.id));
+  res.json({ items: record?.items || [] });
+});
+
 app.post("/api/cart/sync", auth, async (req, res) => {
-  const existing = db.data.carts.find(c => c.userId === req.user.id);
+  const existing = (db.data.carts || []).find(c => String(c.userId) === String(req.user.id));
   const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
   if (existing) Object.assign(existing, record); else db.data.carts.push(record);
   await db.write();
   res.json({ ok: true });
 });
 
+app.get("/api/wishlist", auth, async (req, res) => {
+  try { await db.read(["wishlists"]); } catch(e) {}
+  const record = (db.data.wishlists || []).find(c => String(c.userId) === String(req.user.id));
+  res.json({ items: record?.items || [] });
+});
+
 app.post("/api/wishlist/sync", auth, async (req, res) => {
-  const existing = db.data.wishlists.find(c => c.userId === req.user.id);
+  const existing = (db.data.wishlists || []).find(c => String(c.userId) === String(req.user.id));
   const record = { userId: req.user.id, items: req.body.items || [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
   if (existing) Object.assign(existing, record); else db.data.wishlists.push(record);
   await db.write();

@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { api } from "../api";
 const CartContext = createContext();
 
 export function CartProvider({children}) {
   const [cart,setCart] = useState(()=>{
     try {
+      if (!localStorage.getItem("enytm-token")) return [];
       const v = JSON.parse(localStorage.getItem("enytm-cart") || "[]");
       return Array.isArray(v) ? v.map(i => ({ ...i, selected: i.selected !== false })) : [];
     } catch {
@@ -13,6 +14,7 @@ export function CartProvider({children}) {
   });
   const [wishlist,setWishlist] = useState(()=>{
     try {
+      if (!localStorage.getItem("enytm-token")) return [];
       const v = JSON.parse(localStorage.getItem("enytm-wishlist") || "[]");
       return Array.isArray(v) ? v : [];
     } catch {
@@ -20,10 +22,71 @@ export function CartProvider({children}) {
     }
   });
 
-  useEffect(()=>localStorage.setItem("enytm-cart",JSON.stringify(cart)),[cart]);
-  useEffect(()=>localStorage.setItem("enytm-wishlist",JSON.stringify(wishlist)),[wishlist]);
-  useEffect(()=>{ if(localStorage.getItem("enytm-token")) api("/cart/sync",{method:"POST",body:JSON.stringify({items:cart})}).catch(()=>{}); },[cart]);
-  useEffect(()=>{ if(localStorage.getItem("enytm-token")) api("/wishlist/sync",{method:"POST",body:JSON.stringify({items:wishlist})}).catch(()=>{}); },[wishlist]);
+  const clearCart = useCallback(() => {
+    setCart([]);
+    localStorage.removeItem("enytm-cart");
+  }, []);
+
+  const clearWishlist = useCallback(() => {
+    setWishlist([]);
+    localStorage.removeItem("enytm-wishlist");
+  }, []);
+
+  const logoutUser = useCallback(() => {
+    localStorage.removeItem("enytm-token");
+    localStorage.removeItem("enytm-user");
+    localStorage.removeItem("enytm-cart");
+    localStorage.removeItem("enytm-wishlist");
+    setCart([]);
+    setWishlist([]);
+    window.dispatchEvent(new Event("enytm:auth_change"));
+  }, []);
+
+  const loadUserData = useCallback(async () => {
+    const token = localStorage.getItem("enytm-token");
+    if (!token) {
+      setCart([]);
+      setWishlist([]);
+      localStorage.removeItem("enytm-cart");
+      localStorage.removeItem("enytm-wishlist");
+      return;
+    }
+    try {
+      const [cRes, wRes] = await Promise.allSettled([api("/cart"), api("/wishlist")]);
+      if (cRes.status === "fulfilled" && Array.isArray(cRes.value?.items)) {
+        setCart(cRes.value.items.map(i => ({ ...i, selected: i.selected !== false })));
+      }
+      if (wRes.status === "fulfilled" && Array.isArray(wRes.value?.items)) {
+        setWishlist(wRes.value.items);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const onAuthChange = () => {
+      loadUserData();
+    };
+    window.addEventListener("enytm:auth_change", onAuthChange);
+    window.addEventListener("storage", onAuthChange);
+    return () => {
+      window.removeEventListener("enytm:auth_change", onAuthChange);
+      window.removeEventListener("storage", onAuthChange);
+    };
+  }, [loadUserData]);
+
+  useEffect(() => {
+    if (localStorage.getItem("enytm-token")) {
+      localStorage.setItem("enytm-cart", JSON.stringify(cart));
+      api("/cart/sync", { method: "POST", body: JSON.stringify({ items: cart }) }).catch(() => {});
+    }
+  }, [cart]);
+
+  useEffect(() => {
+    if (localStorage.getItem("enytm-token")) {
+      localStorage.setItem("enytm-wishlist", JSON.stringify(wishlist));
+      api("/wishlist/sync", { method: "POST", body: JSON.stringify({ items: wishlist }) }).catch(() => {});
+    }
+  }, [wishlist]);
 
   const addToCart=(product,size="M")=>setCart(items=>{
     const list = Array.isArray(items) ? items : [];
@@ -68,7 +131,6 @@ export function CartProvider({children}) {
     const list = Array.isArray(w) ? w : [];
     return list.includes(id)?list.filter(x=>x!==id):[...list,id];
   });
-  const clearCart=()=>setCart([]);
   const safeCart = Array.isArray(cart) ? cart : [];
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
   const selectedItems = useMemo(() => safeCart.filter(i => i.selected !== false), [safeCart]);
@@ -91,6 +153,8 @@ export function CartProvider({children}) {
       addToWishlist,
       toggleWishlist,
       clearCart,
+      clearWishlist,
+      logoutUser,
       cartCount,
       selectedCount,
       subtotal,
