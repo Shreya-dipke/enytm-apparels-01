@@ -1358,10 +1358,11 @@ app.post("/api/orders/:id/balance/order", auth, async (req, res) => {
 app.get("/api/orders/my", auth, async (req, res) => {
   try { await db.read("orders"); } catch (e) { }
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  // Exclude unconfirmed payment_pending draft attempts where customer never paid
+  // Only return legitimate placed orders — exclude failed or unpaid payment attempts
   const userOrders = (db.data.orders || [])
     .filter(o => o.userId === req.user.id)
     .filter(o => {
+      if (o.status === "failed" || o.paymentStatus === "failed") return false;
       if (o.status === "payment_pending" && (!o.advancePaid || Number(o.advancePaid) <= 0)) {
         return false;
       }

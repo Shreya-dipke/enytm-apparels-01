@@ -2957,6 +2957,7 @@ function OrderDetails() {
   const load = async () => { setLoading(true); setError(""); try { const o = await api(`/orders/${id}`); setOrder(o) } catch (e) { setError(e.message || "Could not load this order.") } finally { setLoading(false) } };
   useEffect(() => { if (!localStorage.getItem("enytm-token")) { nav("/login"); return } load(); const refresh = window.setInterval(() => { api(`/orders/${id}`).then(setOrder).catch(() => { }) }, 30000); return () => window.clearInterval(refresh) }, [id]);
   const status = String(order?.status || "payment_pending");
+  const isFailed = status === "failed" || order?.paymentStatus === "failed" || (status === "payment_pending" && (!order?.advancePaid || Number(order.advancePaid) <= 0));
   const shipped = ["shipped", "out_for_delivery", "delivered"].includes(status);
   const cancelled = status === "cancelled";
   // The steps array has 5 steps: 0: confirmed, 1: packed, 2: shipped, 3: out_for_delivery, 4: delivered
@@ -2979,6 +2980,36 @@ function OrderDetails() {
   const payBalance = async () => { setActionBusy(true); setMessage(""); try { const data = await api(`/orders/${id}/balance/order`, { method: "POST" }); if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection."); const rzp = new window.Razorpay({ key: data.keyId, amount: data.amount, currency: data.currency, name: "ENYTM APPARELS", description: "ENYTM pre-order balance", order_id: data.razorpayOrderId, theme: { color: "#111111" }, handler: async response => { try { const result = await api("/checkout/verify", { method: "POST", body: JSON.stringify({ ...response, orderId: data.orderId }) }); setOrder(result.order); setMessage("Balance payment successful. Your order is fully paid and will be dispatched after launch."); } catch (e) { setMessage(e.message || "Payment verification is pending. Refresh the order shortly."); } }, modal: { ondismiss: () => setActionBusy(false) } }); rzp.on("payment.failed", r => { setMessage(r.error?.description || "Balance payment failed. Please try again."); setActionBusy(false) }); rzp.open(); } catch (e) { setMessage(e.message || "Could not start balance payment."); setActionBusy(false) } };
   if (loading) return <main className="empty loading-page"><p className="eyebrow">ENYTM ORDER</p><h1>LOADING ORDER...</h1></main>;
   if (error || !order) return <main className="empty"><p className="eyebrow">ENYTM ORDER</p><h1>ORDER NOT FOUND</h1>{error && <div className="error">{error}</div>}<Link className="btn primary" to="/orders">BACK TO MY ORDERS</Link></main>;
+
+  if (isFailed) {
+    return (
+      <main className="order-detail-page">
+        <div className="order-detail-top">
+          <div>
+            <p className="eyebrow" style={{ color: "#ef4444" }}>ENYTM / PAYMENT FAILED</p>
+            <h1>{order.receipt || order.id}</h1>
+            <p className="muted">Attempted on {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</p>
+          </div>
+          <Link className="text-link" to="/orders">← MY ORDERS</Link>
+        </div>
+        <section className="order-status-card" style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)" }}>
+          <div className="order-status-head" style={{ borderBottom: "none", paddingBottom: 0 }}>
+            <div>
+              <span className="order-status-big" style={{ color: "#ef4444" }}>PAYMENT FAILED · ORDER NOT PLACED</span>
+              <h2 style={{ color: "#aaa", fontSize: 15, marginTop: 8 }}>
+                {order.failureReason || "Payment for this checkout attempt was not completed or failed. No order was placed."}
+              </h2>
+            </div>
+          </div>
+        </section>
+        <div style={{ display: "flex", gap: 14, marginTop: 30, maxWidth: 360 }}>
+          <Link to="/checkout" className="btn primary full">RETRY CHECKOUT</Link>
+          <Link to="/shop" className="btn outline full">SHOP CATALOG</Link>
+        </div>
+      </main>
+    );
+  }
+
   const steps = [
     ["confirmed", "ORDER CONFIRMED", "We received your order."],
     ["packed", "PACKED", "Your order is being prepared."],
