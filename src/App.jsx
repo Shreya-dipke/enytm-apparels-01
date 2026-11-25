@@ -2268,44 +2268,10 @@ function Checkout() {
   const payableToday = isOnline ? onlinePayable : advanceDue;
   const finalPayable = isOnline ? onlinePayable : basePayable;
 
+  // Cart out-of-stock notification only - never silently auto-remove items from cart
   useEffect(() => {
-    if (!products || !Array.isArray(products) || products.length === 0 || !cart || cart.length === 0) return;
-
-    const moved = [];
-    cart.forEach(item => {
-      const prod = products.find(p => String(p.id) === String(item.id) || (p._id && String(p._id) === String(item.id)));
-      // If product is not found in catalog, do not remove it (it might be loading or in pre-cache)
-      if (!prod) return;
-
-      const isProductOOS = Number(prod.stock || 0) <= 0;
-      const isSizeOOS = Boolean(
-        prod?.sizeStock &&
-        typeof prod.sizeStock[item.size] !== "undefined" &&
-        Number(prod.sizeStock[item.size] || 0) <= 0
-      );
-
-      if (isProductOOS || isSizeOOS) {
-        moved.push({
-          id: item.id,
-          key: item.key,
-          name: item.name,
-          size: item.size
-        });
-      }
-    });
-
-    if (moved.length > 0) {
-      moved.forEach(m => {
-        removeFromCart(m.key);
-        addToWishlist(m.id);
-      });
-      setOosMovedItems(prev => {
-        const existingKeys = new Set(prev.map(p => p.key));
-        const newOnes = moved.filter(m => !existingKeys.has(m.key));
-        return [...prev, ...newOnes];
-      });
-    }
-  }, [products, cart]);
+    // Left empty intentionally to prevent auto-deletion of cart items on page reload
+  }, []);
 
   useEffect(() => {
     if (error && error.toLowerCase().includes("item")) {
@@ -3437,44 +3403,10 @@ function Cart() {
   const nav = useNavigate();
   const [oosMovedItems, setOosMovedItems] = useState([]);
 
+  // Cart out-of-stock notification only - never silently auto-remove items from cart
   useEffect(() => {
-    if (!products || !Array.isArray(products) || products.length === 0 || !cart || cart.length === 0) return;
-
-    const moved = [];
-    cart.forEach(item => {
-      const prod = products.find(p => String(p.id) === String(item.id) || (p._id && String(p._id) === String(item.id)));
-      // If product is not found in catalog, do not remove it (it might be loading or in pre-cache)
-      if (!prod) return;
-
-      const isProductOOS = Number(prod.stock || 0) <= 0;
-      const isSizeOOS = Boolean(
-        prod?.sizeStock &&
-        typeof prod.sizeStock[item.size] !== "undefined" &&
-        Number(prod.sizeStock[item.size] || 0) <= 0
-      );
-
-      if (isProductOOS || isSizeOOS) {
-        moved.push({
-          id: item.id,
-          key: item.key,
-          name: item.name,
-          size: item.size
-        });
-      }
-    });
-
-    if (moved.length > 0) {
-      moved.forEach(m => {
-        removeFromCart(m.key);
-        addToWishlist(m.id);
-      });
-      setOosMovedItems(prev => {
-        const existingKeys = new Set(prev.map(p => p.key));
-        const newOnes = moved.filter(m => !existingKeys.has(m.key));
-        return [...prev, ...newOnes];
-      });
-    }
-  }, [products, cart]);
+    // Left empty intentionally to prevent auto-deletion of cart items on page reload
+  }, []);
 
   const totalQty = selectedItems.reduce((s, i) => s + (Number(i.qty) || 0), 0);
   const qtyDiscountPct = totalQty >= 3 ? 0.15 : (totalQty >= 2 ? 0.10 : 0);
