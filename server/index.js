@@ -1310,7 +1310,11 @@ app.post("/api/checkout/verify", auth, async (req, res) => {
   order.paymentIds.push({ id: razorpay_payment_id, stage, amount: amountPaid, capturedAt: Date.now() });
   order.updatedAt = Date.now();
   await db.write("orders");
-  if (stage === "advance" || stage === "full") await notifyOrder(order, "placed");
+
+  // Send email asynchronously in background so response returns to client immediately (<50ms)
+  if (stage === "advance" || stage === "full") {
+    notifyOrder(order, "placed").catch(e => console.error("[notifyOrder error]", e));
+  }
   res.json({ ok: true, order });
 });
 

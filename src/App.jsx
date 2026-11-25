@@ -2418,16 +2418,19 @@ function Checkout() {
         },
         handler: async (response) => {
           paymentCompleted = true;
-          setPaymentProcessing(true);
-          try {
-            rzp.close();
-          } catch (e) { }
+          // Immediately close the payment window
+          try { rzp.close(); } catch (e) { }
+          window.scrollTo(0, 0);
 
           try {
-            await api("/checkout/verify", {
+            const verifyRes = await api("/checkout/verify", {
               method: "POST",
               body: JSON.stringify({ ...response, orderId: data.orderId })
             });
+            if (verifyRes?.order) {
+              // Pre-cache confirmed order in sessionStorage so OrderSuccess renders with ZERO loading delay
+              sessionStorage.setItem(`enytm-order-cache-${data.orderId}`, JSON.stringify(verifyRes.order));
+            }
           } catch (err) {
             console.error("[Checkout verify error]", err);
           }
@@ -2436,7 +2439,8 @@ function Checkout() {
             checkoutItems.forEach(i => removeFromCart(i.key));
           } catch (e) { }
 
-          // Immediately navigate to Order Done page with the confirmed order
+          // Immediately navigate to Order Done page at the top of the page
+          window.scrollTo(0, 0);
           nav(`/order-success/${data.orderId}`, { replace: true });
         }
       });
@@ -2993,12 +2997,25 @@ function OrderSuccess() {
   const location = useLocation();
   const nav = useNavigate();
   const id = location.pathname.split("/").pop();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Instant retrieval from pre-cached order if available from checkout
+  const cachedOrder = useMemo(() => {
+    try {
+      const stored = sessionStorage.getItem(`enytm-order-cache-${id}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }, [id]);
+
+  const [order, setOrder] = useState(cachedOrder);
+  const [loading, setLoading] = useState(!cachedOrder);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     if (!localStorage.getItem("enytm-token")) {
       sessionStorage.setItem("enytm-after-login", `/order-success/${id}`);
       nav("/login", { replace: true });
@@ -3007,11 +3024,14 @@ function OrderSuccess() {
     let isMounted = true;
     (async () => {
       try {
-        setLoading(true);
+        if (!order) setLoading(true);
         const data = await api(`/orders/${id}`);
-        if (isMounted) setOrder(data);
+        if (isMounted) {
+          setOrder(data);
+          sessionStorage.setItem(`enytm-order-cache-${id}`, JSON.stringify(data));
+        }
       } catch (err) {
-        if (isMounted) setError(err.message || "Could not fetch order details.");
+        if (isMounted && !order) setError(err.message || "Could not fetch order details.");
       } finally {
         if (isMounted) setLoading(false);
       }
