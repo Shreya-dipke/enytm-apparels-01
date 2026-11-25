@@ -51,7 +51,9 @@ import {
   Phone,
   Banknote,
   Layers,
-  CreditCard
+  CreditCard,
+  Shirt,
+  ArrowUpRight
 } from "lucide-react";
 import { useCart } from "./context/useCart";
 import { api } from "./api";
@@ -1169,10 +1171,11 @@ function ProductPage() {
   return (
     <div className="product-page-container">
       <main className="product-page">
-        <section className="product-gallery-wrap modern-slider-gallery">
-          <div className="product-gallery-shell modern-slider-shell">
+        {/* MODERN PRODUCT GALLERY */}
+        <section className="product-gallery-wrap pdp-gallery-v4">
+          <div className="pdp-media-card">
             <div
-              className="product-main-media modern-slider-media"
+              className="pdp-image-container"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -1202,7 +1205,7 @@ function ProductPage() {
                   )}
                 </div>
               ) : (
-                <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
+                <div className="pdp-zoom-wrap" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
                   <img
                     key={activeMedia?.src || active}
                     src={activeMedia?.src || fallbackImg}
@@ -1226,70 +1229,58 @@ function ProductPage() {
                 </div>
               )}
 
+              {/* FLOATING WISHLIST BUTTON (TOP RIGHT) */}
+              <button
+                type="button"
+                className={`pdp-card-wishlist ${liked ? "liked" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleWishlist(product.id);
+                }}
+                aria-label={liked ? "Remove from wishlist" : "Save to wishlist"}
+                title={liked ? "Saved to wishlist" : "Save to wishlist"}
+              >
+                <Heart size={20} fill={liked ? "#e11d48" : "none"} color={liked ? "#e11d48" : "#ffffff"} />
+              </button>
+
+              {/* CAROUSEL ARROWS */}
               {safeGallery.length > 1 && (
                 <>
                   <button
                     type="button"
-                    className="slider-arrow slider-arrow-left"
+                    className="pdp-carousel-arrow pdp-arrow-left"
                     onClick={(e) => {
                       e.stopPropagation();
                       setActive((prev) => (prev > 0 ? prev - 1 : safeGallery.length - 1));
                     }}
                     aria-label="Previous image"
                   >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={22} />
                   </button>
                   <button
                     type="button"
-                    className="slider-arrow slider-arrow-right"
+                    className="pdp-carousel-arrow pdp-arrow-right"
                     onClick={(e) => {
                       e.stopPropagation();
                       setActive((prev) => (prev < safeGallery.length - 1 ? prev + 1 : 0));
                     }}
                     aria-label="Next image"
                   >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={22} />
                   </button>
                 </>
               )}
 
-              <button
-                type="button"
-                className={`slider-share-badge ${copiedLink ? "copied" : ""}`}
-                onClick={handleShare}
-                aria-label="Share product"
-                title={copiedLink ? "Link copied!" : "Share product link"}
-              >
-                {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
-              </button>
-
-              <button
-                type="button"
-                className="slider-zoom-badge"
-                onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}
-                aria-label="Zoom image"
-                title="Click to zoom"
-              >
-                <ZoomIn size={14} />
-              </button>
-
-              <div className="slider-meta-badge">
-                <span className="slider-rating">
-                  {product.rating || "4.8"} <Star size={10} fill="#14958f" color="#14958f" />
-                </span>
-                <span className="slider-divider">|</span>
-                <span className="slider-views">{product.reviewCount || "1.2k"}</span>
-              </div>
-
+              {/* PAGINATION DOTS (PILL ACTIVE + CIRCLES) */}
               {safeGallery.length > 1 && (
-                <div className="slider-pagination-dots" role="tablist" aria-label="Product images">
+                <div className="pdp-pagination-dots" role="tablist" aria-label="Product images">
                   {safeGallery.map((_, i) => (
                     <button
                       key={i}
                       type="button"
                       role="tab"
                       aria-selected={i === active}
-                      className={`slider-dot ${i === active ? "active" : ""}`}
+                      className={`pdp-dot ${i === active ? "active" : ""}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setActive(i);
@@ -1303,121 +1294,63 @@ function ProductPage() {
           </div>
         </section>
 
-        <section className="product-details">
-          <div className="product-detail-top">
-            <p className="eyebrow">{categoryLabel} / ENYTM APPARELS</p>
-            <div className="product-detail-actions">
-              <button
-                type="button"
-                className={`detail-action-btn detail-share ${copiedLink ? "copied" : ""}`}
-                onClick={handleShare}
-                aria-label="Share product link"
-                title={copiedLink ? "Link Copied!" : "Share Link"}
-              >
-                {copiedLink ? <Check size={18} /> : <Share2 size={18} />}
-                <span>{copiedLink ? "COPIED" : "SHARE"}</span>
-              </button>
-              <button
-                type="button"
-                className={`detail-action-btn detail-wish ${liked ? "liked" : ""}`}
-                onClick={() => toggleWishlist(product.id)}
-                aria-label="Wishlist"
-                title={liked ? "Saved to Wishlist" : "Save to Wishlist"}
-              >
-                <Heart size={18} fill={liked ? "currentColor" : "none"} />
-                <span>{liked ? "SAVED" : "SAVE"}</span>
-              </button>
-            </div>
+        <section className="product-details pdp-details-v4">
+          <div className="pdp-kicker-row">
+            <span className="pdp-kicker">{categoryLabel} / ENYTM APPARELS</span>
           </div>
 
-          {copiedLink && (
-            <div className="share-toast" role="status">
-              <Check size={14} /> Link copied to clipboard!
-            </div>
-          )}
+          <h1 className="pdp-title">{product.name}</h1>
 
-          <h1>{product.name}</h1>
-
-          <div className="price-row">
-            <strong className="selling-price">₹{priceDisplay}</strong>
-            {oldPriceDisplay && <del className="mrp-price">₹{oldPriceDisplay}</del>}
+          {/* PRICE ROW */}
+          <div className="pdp-price-row">
+            <strong className="pdp-price">₹{priceDisplay}</strong>
+            {oldPriceDisplay && <del className="pdp-old-price">₹{oldPriceDisplay}</del>}
             {savings > 0 && (
-              <span className="save-badge">SAVE ₹{savings.toLocaleString("en-IN")} ({discountPct}% OFF)</span>
+              <span className="pdp-save-pill">Save ₹{savings.toLocaleString("en-IN")} ({discountPct}% Off)</span>
             )}
-            <span className="price-note">INCLUSIVE OF ALL TAXES</span>
           </div>
+          <div className="pdp-tax-note">Inclusive of all taxes</div>
 
-          <p className={`product-stock-message ${outOfStock || isSizeOutOfStock ? "out" : sizeStockVal < 6 ? "low" : "in"}`}>
-            {isComingSoon
-              ? "DROPPING ON 8 NOVEMBER 2026."
-              : isSizeOutOfStock
-                ? `SIZE ${size} IS CURRENTLY OUT OF STOCK.`
-                : outOfStock
-                  ? "OUT OF STOCK — THIS ITEM IS CURRENTLY UNAVAILABLE."
-                  : sizeStockVal < 6
-                    ? "LOW STOCK"
-                    : "IN STOCK · READY TO DISPATCH"}
-          </p>
-
-          {/* OFFERS FOR YOU CARD */}
-          <div className="product-offers-card">
-            <div className="offers-card-header">
-              <div className="offers-title-wrap">
-                <Sparkles size={16} className="sparkle-gold" />
-                <span className="offers-title">OFFERS FOR YOU</span>
+          {/* OFFERS PERKS CARD (EXACT AS USER SCREENSHOT) */}
+          <div className="pdp-offers-card">
+            <div className="pdp-offers-top-grid">
+              <div className="pdp-offer-col">
+                <CreditCard size={18} className="pdp-offer-icon" />
+                <span className="pdp-offer-bold">Extra 5% Off</span>
+                <span className="pdp-offer-sub">on online payment</span>
               </div>
-              <span className="offers-badge">AUTO-APPLIED</span>
+              <div className="pdp-offer-col">
+                <Layers size={18} className="pdp-offer-icon" />
+                <span className="pdp-offer-sub">Buy 2</span>
+                <span className="pdp-offer-bold">Get 10% Off</span>
+              </div>
+              <div className="pdp-offer-col">
+                <Tag size={18} className="pdp-offer-icon" />
+                <span className="pdp-offer-sub">Buy 3</span>
+                <span className="pdp-offer-bold">Get 15% Off</span>
+              </div>
             </div>
-            <div className="offers-list">
-              <div className="offer-item">
-                <div className="offer-bullet"><Tag size={13} /></div>
-                <div className="offer-content">
-                  <div className="offer-heading-row">
-                    <strong>Extra 5% off on online payment</strong>
-                    <span className="offer-calc-price">₹{prepaidPrice.toLocaleString("en-IN")}</span>
-                  </div>
-                  <p>Pay only <b>₹{prepaidPrice.toLocaleString("en-IN")}</b> with 100% full online payment via Razorpay (UPI, Cards, NetBanking).</p>
-                </div>
-              </div>
-              <div className="offer-item">
-                <div className="offer-bullet"><Sparkles size={13} /></div>
-                <div className="offer-content">
-                  <div className="offer-heading-row">
-                    <strong>Buy 2, get 10% off · Buy 3, get 15% off</strong>
-                    <span className="offer-tag-pill">VOLUME SAVINGS</span>
-                  </div>
-                  <p>Add 2 pieces to get 10% off, or 3+ pieces to get 15% off automatically in your bag.</p>
-                </div>
-              </div>
-              <div className="offer-item">
-                <div className="offer-bullet"><Truck size={13} /></div>
-                <div className="offer-content">
-                  <div className="offer-heading-row">
-                    <strong>Free shipping on all orders</strong>
-                  </div>
-                  <p>Insured expedited delivery across all serviceable pincodes in India with zero delivery charge.</p>
-                </div>
-              </div>
+            <div className="pdp-offers-divider" />
+            <div className="pdp-offers-bottom-row">
+              <Truck size={17} className="pdp-truck-icon" />
+              <span>Free Shipping on All Orders</span>
             </div>
           </div>
 
-
-
-          {product.fabric && (
-            <div className="spec">
-              <span>FABRIC SPECS</span>
-              <b>{product.fabric}</b>
-            </div>
-          )}
-
-          <div className="option">
-            <div className="option-head">
-              <span>SELECT SIZE</span>
-              <button type="button" className="size-guide-modal-trigger" onClick={() => setShowSizeGuide(true)}>
-                SIZE GUIDE ↗
+          {/* SIZE SELECTION */}
+          <div className="pdp-size-section">
+            <div className="pdp-size-head">
+              <span className="pdp-size-heading">Select Your Size</span>
+              <button
+                type="button"
+                className="pdp-size-guide-link"
+                onClick={() => setShowSizeGuide(true)}
+              >
+                Size Guide <ArrowUpRight size={14} />
               </button>
             </div>
-            <div className="sizes">
+
+            <div className="pdp-size-buttons">
               {sizes.map((s) => {
                 const sQty = product?.sizeStock && typeof product.sizeStock[s] !== "undefined"
                   ? Number(product.sizeStock[s] || 0)
@@ -1427,7 +1360,7 @@ function ProductPage() {
                   <button
                     key={s}
                     type="button"
-                    className={`${size === s ? "selected" : ""} ${isSoldOut ? "size-sold-out" : ""}`}
+                    className={`pdp-size-btn ${size === s ? "active" : ""} ${isSoldOut ? "sold-out" : ""}`}
                     onClick={() => {
                       setSize(s);
                       if (product?.sizeStock && typeof product.sizeStock[s] !== "undefined") {
@@ -1435,79 +1368,72 @@ function ProductPage() {
                         if (targetStock > 0 && qty > targetStock) setQty(targetStock);
                       }
                     }}
-                    title={isSoldOut ? `Size ${s} - Out of stock` : sQty !== null ? (sQty < 6 ? `Size ${s} - Low stock` : `Size ${s} - In stock`) : `Size ${s}`}
+                    title={isSoldOut ? `Size ${s} - Out of stock` : `Size ${s}`}
                   >
-                    <span>{s}</span>
-                    {isSoldOut && <small className="size-badge-out">OUT</small>}
+                    {s}
                   </button>
                 );
               })}
             </div>
+
+            {/* MODEL & FIT INFO SPEC ROW */}
+            <div className="pdp-spec-row">
+              <Shirt size={14} className="pdp-shirt-icon" />
+              <span>Oversized Fit</span>
+              <span className="pdp-spec-pipe">|</span>
+              <span>Relaxed & Comfortable</span>
+              <span className="pdp-spec-pipe">|</span>
+              <span>Model is 5'11" wearing L</span>
+            </div>
           </div>
 
-          <div className="purchase-line">
-            <div className="quantity-block">
-              <span>QUANTITY</span>
-              <div className="quantity-control">
-                <button
-                  type="button"
-                  onClick={() => setQty(Math.max(1, qty - 1))}
-                  aria-label="Decrease quantity"
-                  disabled={outOfStock || isSizeOutOfStock || qty <= 1}
-                >
-                  <Minus size={15} />
-                </button>
-                <strong>{qty}</strong>
-                <button
-                  type="button"
-                  onClick={() => setQty(Math.min(sizeStockVal, qty + 1))}
-                  aria-label="Increase quantity"
-                  disabled={outOfStock || isSizeOutOfStock || qty >= sizeStockVal}
-                >
-                  <Plus size={15} />
-                </button>
-              </div>
+          {/* ACTION BAR (QUANTITY + ADD TO BAG + BUY NOW) */}
+          <div className="pdp-action-bar">
+            <div className="pdp-qty-control">
+              <button
+                type="button"
+                onClick={() => setQty(Math.max(1, qty - 1))}
+                aria-label="Decrease quantity"
+                disabled={outOfStock || isSizeOutOfStock || qty <= 1}
+              >
+                <Minus size={14} />
+              </button>
+              <strong className="pdp-qty-num">{qty}</strong>
+              <button
+                type="button"
+                onClick={() => setQty(Math.min(sizeStockVal, qty + 1))}
+                aria-label="Increase quantity"
+                disabled={outOfStock || isSizeOutOfStock || qty >= sizeStockVal}
+              >
+                <Plus size={14} />
+              </button>
             </div>
 
-            <div className="purchase-dual-buttons">
-              {isComingSoon ? (
-                <button
-                  type="button"
-                  className="btn outline add-detail full"
-                  disabled
-                  style={{
-                    opacity: 0.85,
-                    cursor: "not-allowed",
-                    borderColor: "#c8b69a",
-                    color: "#c8b69a",
-                    background: "#141210",
-                    letterSpacing: "0.16em",
-                    fontWeight: 800
-                  }}
-                >
-                  COMING SOON · DROP 002
-                </button>
+            <button
+              type="button"
+              className="pdp-add-btn"
+              onClick={add}
+              disabled={outOfStock || isSizeOutOfStock}
+            >
+              {added ? (
+                <>
+                  <CheckCircle size={17} /> Added!
+                </>
               ) : (
                 <>
-                  <button className="btn outline add-detail" onClick={add} disabled={outOfStock || isSizeOutOfStock}>
-                    {outOfStock || isSizeOutOfStock ? (
-                      <>SIZE {size} OUT OF STOCK</>
-                    ) : added ? (
-                      <>
-                        <CheckCircle size={18} /> ADDED TO BAG
-                      </>
-                    ) : (
-                      <>
-                        ADD TO BAG <ShoppingBag size={18} />
-                      </>
-                    )}
-                  </button>
-                  <button className="btn primary buy-now-btn" onClick={buyNow} disabled={outOfStock || isSizeOutOfStock}>
-                    {outOfStock || isSizeOutOfStock ? "SIZE SOLD OUT" : <>BUY NOW <ArrowRight size={18} /></>}
-                  </button>
+                  <ShoppingBag size={17} /> Add to Bag
                 </>
               )}
-            </div>
+            </button>
+
+            <button
+              type="button"
+              className="pdp-buy-btn"
+              onClick={buyNow}
+              disabled={outOfStock || isSizeOutOfStock}
+            >
+              Buy Now <ArrowRight size={16} />
+            </button>
           </div>
 
           {added && (
@@ -1517,27 +1443,6 @@ function ProductPage() {
               <Link to="/cart">VIEW BAG →</Link>
             </div>
           )}
-
-          <div className="perks">
-            <div>
-              <Truck />
-              <span>
-                <b>FREE SHIPPING</b> ON ALL ORDERS
-              </span>
-            </div>
-            <div>
-              <ShieldCheck />
-              <span>
-                <b>SECURE PAYMENT</b> POWERED BY RAZORPAY
-              </span>
-            </div>
-            <div>
-              <RotateCcw />
-              <span>
-                <b>EASY RETURNS</b> WITHIN 48 HOURS
-              </span>
-            </div>
-          </div>
 
           {/* EXPANDABLE ACCORDIONS */}
           <div className="product-accordions">
