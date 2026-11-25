@@ -3200,12 +3200,14 @@ function Account() {
       return;
     }
 
+    let accountUser = user || cachedUser;
+
     try {
       /*
-          * IMPORTANT:
-          * Do NOT use Promise.all here.
-          * If addresses API fails, account should still load.
-          */
+       * IMPORTANT:
+       * Do NOT use Promise.all here.
+       * If addresses API fails, account should still load.
+       */
       const results = await Promise.allSettled([
         api("/auth/me"),
         api("/orders/my"),
@@ -3218,19 +3220,24 @@ function Account() {
 
       // USER
       if (meResult.status === "rejected") {
-        if (!user) {
-          throw new Error(
-            meResult.reason?.message ||
-            "Unable to load your account."
-          );
+        const errorMsg = meResult.reason?.message || "";
+        const isAuthExpired = errorMsg.toLowerCase().includes("session") || errorMsg.includes("401");
+        if (isAuthExpired && !user && !cachedUser) {
+          localStorage.removeItem("enytm-token");
+          localStorage.removeItem("enytm-user");
+          nav("/login", { replace: true });
+          return;
         }
-      } else {
-        const accountUser = meResult.value;
-        if (accountUser) {
-          setUser(accountUser);
-          localStorage.setItem("enytm-user", JSON.stringify(accountUser));
-          setProfileForm({ name: accountUser.name || "", phone: accountUser.phone || "", whatsappOptIn: Boolean(accountUser.whatsappOptIn), emailOptIn: accountUser.emailOptIn !== false });
-        }
+      } else if (meResult.value) {
+        accountUser = meResult.value;
+        setUser(accountUser);
+        localStorage.setItem("enytm-user", JSON.stringify(accountUser));
+        setProfileForm({
+          name: accountUser.name || "",
+          phone: accountUser.phone || "",
+          whatsappOptIn: Boolean(accountUser.whatsappOptIn),
+          emailOptIn: accountUser.emailOptIn !== false
+        });
       }
 
       // ORDERS
@@ -3245,7 +3252,7 @@ function Account() {
       }
 
       // ADDRESSES
-      if (addressesResult.status === "fulfilled") {
+      if (addressesResult.status === "fulfilled" && addressesResult.value) {
         const data = addressesResult.value;
 
         setAddresses(
@@ -3258,16 +3265,10 @@ function Account() {
           data?.defaultAddressId || null
         );
       } else {
-        /*
-         * Older backend versions may not have
-         * /auth/addresses yet.
-         *
-         * Do not break the entire account page.
-         */
-        setAddresses([]);
+        setAddresses(Array.isArray(accountUser?.addresses) ? accountUser.addresses : []);
 
         // Preserve legacy single address if available
-        if (accountUser.address) {
+        if (accountUser && accountUser.address && (!accountUser.addresses || !accountUser.addresses.length)) {
           const legacyAddress = {
             id: "legacy-address",
             label: accountUser.address.label || "Home",
@@ -3288,11 +3289,13 @@ function Account() {
     } catch (error) {
       console.error("ACCOUNT LOAD ERROR:", error);
 
-      setLoadError(
-        error?.message?.includes("429")
-          ? "Rate limit exceeded. Please wait a few moments and try again."
-          : (error?.message || "Could not load your account. Please try again.")
-      );
+      if (!user && !cachedUser) {
+        setLoadError(
+          error?.message?.includes("429")
+            ? "Rate limit exceeded. Please wait a few moments and try again."
+            : (error?.message || "Could not load your account. Please try again.")
+        );
+      }
     } finally {
       setLoading(false);
     }

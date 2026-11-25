@@ -105,6 +105,12 @@ function publicUser(u) {
   return safe;
 }
 
+function findUserById(id) {
+  if (!id) return null;
+  const str = String(id);
+  return (db.data.users || []).find(u => String(u.id) === str || String(u._id) === str) || null;
+}
+
 function signUser(user) {
   return jwt.sign({ id: user.id, email: user.email, role: user.role || "customer" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "7d" });
 }
@@ -872,12 +878,13 @@ app.post("/api/auth/google", async (req, res) => {
 });
 
 app.get("/api/auth/me", auth, (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
+  if (!user) return res.status(401).json({ message: "User not found or session expired." });
   res.json(publicUser(user));
 });
 
 app.put("/api/auth/profile", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: "User not found." });
   const { name, phone, whatsappOptIn, emailOptIn, address } = req.body;
   if (name !== undefined) user.name = name;
@@ -890,8 +897,8 @@ app.put("/api/auth/profile", auth, async (req, res) => {
 });
 
 app.get("/api/auth/addresses", auth, (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ message: "User not found." });
+  const user = findUserById(req.user.id);
+  if (!user) return res.status(401).json({ message: "User not found." });
   user.addresses ||= [];
   if (!user.addresses.length && user.address) {
     user.addresses.push({
@@ -911,7 +918,7 @@ app.get("/api/auth/addresses", auth, (req, res) => {
 });
 
 app.post("/api/auth/addresses", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const newAddr = {
@@ -936,7 +943,7 @@ app.post("/api/auth/addresses", auth, async (req, res) => {
 });
 
 app.put("/api/auth/addresses/:id", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const addr = user.addresses.find(a => a.id === req.params.id);
@@ -960,7 +967,7 @@ app.put("/api/auth/addresses/:id", auth, async (req, res) => {
 });
 
 app.post("/api/auth/addresses/:id/default", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses ||= [];
   const exists = user.addresses.some(a => a.id === req.params.id);
@@ -972,7 +979,7 @@ app.post("/api/auth/addresses/:id/default", auth, async (req, res) => {
 });
 
 app.delete("/api/auth/addresses/:id", auth, async (req, res) => {
-  const user = db.data.users.find(u => u.id === req.user.id);
+  const user = findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: "User not found." });
   user.addresses = (user.addresses || []).filter(a => a.id !== req.params.id);
   if (user.defaultAddressId === req.params.id) {
