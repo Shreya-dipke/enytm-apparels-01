@@ -2148,9 +2148,31 @@ function Checkout() {
   const { cart, updateQty, updateSize, removeFromCart, addToWishlist } = useCart();
   const products = useProducts();
   const nav = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", state: "", pincode: "" });
+  const cachedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("enytm-user") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+  const [user, setUser] = useState(cachedUser);
+  const [loading, setLoading] = useState(() => !localStorage.getItem("enytm-user"));
+  const [form, setForm] = useState(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("enytm-user") || "null");
+      const a = Array.isArray(u?.addresses) ? u.addresses.find((x) => x.isDefault) || u.addresses[0] : u?.address;
+      return {
+        name: a?.name || u?.name || "",
+        phone: a?.phone || u?.phone || "",
+        address: a?.address || "",
+        city: a?.city || "",
+        state: a?.state || "",
+        pincode: a?.pincode || ""
+      };
+    } catch {
+      return { name: "", phone: "", address: "", city: "", state: "", pincode: "" };
+    }
+  });
   const [error, setError] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -2233,7 +2255,8 @@ function Checkout() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      if (!localStorage.getItem("enytm-token")) {
+      const token = localStorage.getItem("enytm-token");
+      if (!token) {
         sessionStorage.setItem("enytm-after-login", "/checkout");
         nav("/login");
         return;
@@ -2241,18 +2264,28 @@ function Checkout() {
       try {
         const u = await api("/auth/me");
         if (!alive) return;
-        setUser(u);
-        const a = Array.isArray(u.addresses) ? u.addresses.find((x) => x.isDefault) || u.addresses[0] : u.address;
-        setForm({
-          name: a?.name || u.name || "",
-          phone: a?.phone || u.phone || "",
-          address: a?.address || "",
-          city: a?.city || "",
-          state: a?.state || "",
-          pincode: a?.pincode || ""
-        });
+        if (u && typeof u === "object") {
+          setUser(u);
+          try { localStorage.setItem("enytm-user", JSON.stringify(u)); } catch {}
+          const a = Array.isArray(u.addresses) ? u.addresses.find((x) => x.isDefault) || u.addresses[0] : u.address;
+          setForm(prev => ({
+            name: a?.name || u.name || prev.name || "",
+            phone: a?.phone || u.phone || prev.phone || "",
+            address: a?.address || prev.address || "",
+            city: a?.city || prev.city || "",
+            state: a?.state || prev.state || "",
+            pincode: a?.pincode || prev.pincode || ""
+          }));
+        }
       } catch (e) {
-        if (alive) setError(e.message || "Could not load your account.");
+        if (!alive) return;
+        const msg = e?.message || "";
+        const isAuthExpired = msg.toLowerCase().includes("session") || msg.includes("401");
+        if (isAuthExpired && !cachedUser) {
+          setError("Your session has expired. Please log in again.");
+        } else if (!cachedUser) {
+          setError(msg || "Could not load your account.");
+        }
       } finally {
         if (alive) setLoading(false);
       }
@@ -2260,7 +2293,7 @@ function Checkout() {
     return () => {
       alive = false;
     };
-  }, [nav]);
+  }, [nav, cachedUser]);
 
   const applyCoupon = async () => {
     setCouponBusy(true);

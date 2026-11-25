@@ -877,7 +877,8 @@ app.post("/api/auth/google", async (req, res) => {
   }
 });
 
-app.get("/api/auth/me", auth, (req, res) => {
+app.get("/api/auth/me", auth, async (req, res) => {
+  try { await db.read(["users"]); } catch(e) {}
   const user = findUserById(req.user.id);
   if (!user) return res.status(401).json({ message: "User not found or session expired." });
   res.json(publicUser(user));
@@ -896,7 +897,8 @@ app.put("/api/auth/profile", auth, async (req, res) => {
   res.json(publicUser(user));
 });
 
-app.get("/api/auth/addresses", auth, (req, res) => {
+app.get("/api/auth/addresses", auth, async (req, res) => {
+  try { await db.read(["users"]); } catch(e) {}
   const user = findUserById(req.user.id);
   if (!user) return res.status(401).json({ message: "User not found." });
   user.addresses ||= [];
