@@ -45,7 +45,10 @@ import {
   ShoppingCart,
   Camera,
   LayoutGrid,
-  List
+  List,
+  Headphones,
+  Mail,
+  Phone
 } from "lucide-react";
 import { useCart } from "./context/useCart";
 import { api } from "./api";
@@ -3958,90 +3961,94 @@ function Account() {
     <main className="account-page">
 
       {/* HERO */}
-
-      <section className="account-hero">
-
-        <div>
-          <p className="eyebrow">
-            ENYTM MEMBERS /{" "}
-            {String(user.name || "").toUpperCase()}
-          </p>
-
-          <h1>
-            YOUR
-            <br />
+      <section className="account-hero-modern">
+        <div className="account-hero-copy">
+          <h1 className="account-hero-title">
+            YOUR<br />
             <em>ENYTM.</em>
           </h1>
-
-          <p>
-            Everything you have ordered,
-            saved and built with us —
-            in one place.
+          <div className="account-hero-line" />
+          <p className="account-hero-sub">
+            Everything you've ordered, saved, and built with us — <strong>all in one place.</strong>
           </p>
+          <Link to="/shop" className="account-hero-shop-btn">
+            <ShoppingBag size={15} /> SHOP NOW →
+          </Link>
         </div>
 
-        <div className="account-mark" aria-hidden="true">
-          <span className="account-mark-bars">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span>™</span>
+        <div className="account-hero-model-wrap">
+          <img
+            src="/account-hero-model.jpg"
+            alt="ENYTM Apparel"
+            className="account-hero-model-img"
+          />
         </div>
-
       </section>
 
-
-
-
       {/* MAIN GRID */}
-
       <div className={`account-grid ${!activeTab ? "single-col" : ""}`}>
 
         {/* PROFILE */}
+        <section className="account-card profile-card-modern">
+          <div className="card-kicker">01 / PROFILE</div>
 
-        <section className="account-card profile-card">
+          <div className="profile-identity-row">
+            <div className="profile-avatar-circle">
+              <img
+                src="/account-avatar-model.jpg"
+                alt={user.name || "User"}
+                className="profile-avatar-img"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <span className="profile-avatar-fallback">
+                {user.name?.charAt(0).toUpperCase() || "U"}
+              </span>
+            </div>
 
-          <div className="card-kicker">
-            01 / PROFILE
+            <div className="profile-identity-details">
+              <h2 className="profile-user-name">{user.name}</h2>
+              <div className="profile-info-row">
+                <Mail size={14} className="profile-info-icon" />
+                <span>{user.email}</span>
+              </div>
+              <div className="profile-info-row">
+                <Phone size={14} className="profile-info-icon" />
+                <span>{user.phone || "No phone added"}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="profile-avatar">
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-
-          <h2>{user.name}</h2>
-
-          <p>{user.email}</p>
-
-          <p>
-            {user.phone || "No phone added"}
-          </p>
-
-          <button type="button" className="btn outline profile-edit-trigger" onClick={() => { setProfileMessage(""); setProfileEditing(v => !v); }}>
+          <button
+            type="button"
+            className="btn outline profile-edit-btn"
+            onClick={() => {
+              setProfileMessage("");
+              setProfileEditing(v => !v);
+            }}
+          >
             <Pencil size={14} /> {profileEditing ? "CLOSE EDIT" : "EDIT PROFILE"}
           </button>
+
           {profileMessage && <p className="profile-feedback" role="status">{profileMessage}</p>}
-          {profileEditing && <form className="profile-edit-form" onSubmit={saveProfile}>
-            <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({ ...v, name: e.target.value }))} /></label>
-            <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({ ...v, phone: e.target.value }))} /></label>
-            <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({ ...v, whatsappOptIn: e.target.checked }))} /> Receive order updates on WhatsApp</label>
-            <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({ ...v, emailOptIn: e.target.checked }))} /> Receive order updates by email</label>
-            <button className="btn primary full" type="submit" disabled={profileSaving}>{profileSaving ? "SAVING PROFILE..." : "SAVE PROFILE"}</button>
-          </form>}
+          {profileEditing && (
+            <form className="profile-edit-form" onSubmit={saveProfile}>
+              <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({ ...v, name: e.target.value }))} /></label>
+              <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({ ...v, phone: e.target.value }))} /></label>
+              <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({ ...v, whatsappOptIn: e.target.checked }))} /> Receive order updates on WhatsApp</label>
+              <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({ ...v, emailOptIn: e.target.checked }))} /> Receive order updates by email</label>
+              <button className="btn primary full" type="submit" disabled={profileSaving}>{profileSaving ? "SAVING PROFILE..." : "SAVE PROFILE"}</button>
+            </form>
+          )}
 
           <div className="profile-preferences">
-
             <span className={user.whatsappOptIn ? "on" : ""}>
-              WHATSAPP{" "}
-              {user.whatsappOptIn ? "ON" : "OFF"}
+              WHATSAPP {user.whatsappOptIn ? "ON" : "OFF"}
             </span>
-
             <span className={user.emailOptIn ? "on" : ""}>
-              EMAIL{" "}
-              {user.emailOptIn ? "ON" : "OFF"}
+              EMAIL {user.emailOptIn ? "ON" : "OFF"}
             </span>
-
           </div>
 
           <div className="profile-menu-section">
@@ -4053,12 +4060,12 @@ function Account() {
                 onClick={() => setActiveTab(prev => prev === "orders" ? null : "orders")}
               >
                 <div className="profile-menu-item-left">
-                  <Package size={15} />
+                  <Package size={17} />
                   <span>ORDERS</span>
                 </div>
                 <div className="profile-menu-item-right">
                   <span className="profile-menu-badge">{orders.length}</span>
-                  <ChevronRight size={13} className={`menu-chevron ${activeTab === "orders" ? "rotated" : ""}`} />
+                  <ChevronRight size={14} className={`menu-chevron ${activeTab === "orders" ? "rotated" : ""}`} />
                 </div>
               </button>
 
@@ -4068,12 +4075,12 @@ function Account() {
                 onClick={() => setActiveTab(prev => prev === "addresses" ? null : "addresses")}
               >
                 <div className="profile-menu-item-left">
-                  <MapPin size={15} />
+                  <MapPin size={17} />
                   <span>SAVED ADDRESSES</span>
                 </div>
                 <div className="profile-menu-item-right">
                   <span className="profile-menu-badge">{addresses.length}</span>
-                  <ChevronRight size={13} className={`menu-chevron ${activeTab === "addresses" ? "rotated" : ""}`} />
+                  <ChevronRight size={14} className={`menu-chevron ${activeTab === "addresses" ? "rotated" : ""}`} />
                 </div>
               </button>
 
@@ -4082,29 +4089,42 @@ function Account() {
                 className="profile-menu-item"
               >
                 <div className="profile-menu-item-left">
-                  <Heart size={15} />
+                  <Heart size={17} />
                   <span>WISHLIST</span>
                 </div>
                 <div className="profile-menu-item-right">
                   <span className="profile-menu-badge">{wishlist.length}</span>
-                  <ChevronRight size={13} />
+                  <ChevronRight size={14} />
                 </div>
               </Link>
+
+              <a
+                href="https://wa.me/message/5KFLGKP4XCG7C1"
+                target="_blank"
+                rel="noreferrer"
+                className="profile-menu-item"
+              >
+                <div className="profile-menu-item-left">
+                  <Headphones size={17} />
+                  <span>RAISE A COMPLAINT</span>
+                </div>
+                <div className="profile-menu-item-right">
+                  <ChevronRight size={14} />
+                </div>
+              </a>
             </div>
           </div>
 
           <div className="account-actions">
-
             <button
-              className="btn outline full"
+              type="button"
+              className="account-logout-pill-btn"
               onClick={logout}
             >
-              <LogOut size={15} />
+              <LogOut size={16} />
               LOG OUT
             </button>
-
           </div>
-
         </section>
 
 
