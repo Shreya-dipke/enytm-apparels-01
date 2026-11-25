@@ -43,6 +43,10 @@ export function CartProvider({children}) {
     setCart([]);
     localStorage.removeItem("enytm-cart");
     if (uid && uid !== "anon") localStorage.removeItem(`enytm-cart-${uid}`);
+    const token = localStorage.getItem("enytm-token");
+    if (token) {
+      api("/cart/sync", { method: "POST", body: JSON.stringify({ items: [] }) }).catch(() => {});
+    }
   }, []);
 
   const clearWishlist = useCallback(() => {
@@ -93,29 +97,17 @@ export function CartProvider({children}) {
     try {
       const [cRes, wRes] = await Promise.allSettled([api("/cart"), api("/wishlist")]);
       if (cRes.status === "fulfilled" && Array.isArray(cRes.value?.items)) {
+        // If server returns cart items, sync exactly with server (respects server removals and empty cart)
         const serverItems = cRes.value.items.map(i => ({ ...i, selected: i.selected !== false }));
-        // Merge server items with any newly added local items by key so nothing is ever dropped
-        const itemMap = new Map();
-        for (const item of serverItems) {
-          if (item?.key) itemMap.set(item.key, item);
-        }
-        for (const item of localItems) {
-          if (item?.key) itemMap.set(item.key, item);
-        }
-        const merged = Array.from(itemMap.values());
-        setCart(merged);
-        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(merged));
-        localStorage.setItem("enytm-cart", JSON.stringify(merged));
-        // Keep backend in sync with full merged cart
-        api("/cart/sync", { method: "POST", body: JSON.stringify({ items: merged }) }).catch(() => {});
+        setCart(serverItems);
+        localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(serverItems));
+        localStorage.setItem("enytm-cart", JSON.stringify(serverItems));
       }
       if (wRes.status === "fulfilled" && Array.isArray(wRes.value?.items)) {
         const serverWish = wRes.value.items;
-        const setWish = new Set([...serverWish, ...wishlist]);
-        const mergedWish = Array.from(setWish);
-        setWishlist(mergedWish);
-        localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(mergedWish));
-        localStorage.setItem("enytm-wishlist", JSON.stringify(mergedWish));
+        setWishlist(serverWish);
+        localStorage.setItem(`enytm-wishlist-${uid}`, JSON.stringify(serverWish));
+        localStorage.setItem("enytm-wishlist", JSON.stringify(serverWish));
       }
     } catch {} finally {
       initialLoadDone.current = true;
