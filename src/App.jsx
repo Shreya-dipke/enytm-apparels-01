@@ -144,7 +144,7 @@ const TICKER_ITEMS = [
   { text: "BUY 3, GET 15% OFF", highlight: true },
   { text: "ONLINE PAYMENT: EXTRA 5% OFF", highlight: false },
   { text: "FREE SHIPPING ACROSS INDIA", highlight: false },
-  { text: "PRE-ORDER IS LIVE · COD (30% ADVANCE)", highlight: false }
+  { text: "PRE-ORDER IS LIVE · 30% ADVANCE (70% AFTER DISPATCH)", highlight: false }
 ];
 const TICKER_GROUP_ITEMS = Array.from({ length: 6 }, () => TICKER_ITEMS).flat();
 
@@ -384,7 +384,7 @@ function PrelaunchHome() {
       @media(prefers-reduced-motion:reduce){.prelaunch-explore{transition:none}}
     `}</style>
     <header className="prelaunch-top"><Link className="prelaunch-logo" to="/" aria-label="ENYTM"><BrandLogo /></Link><span className="prelaunch-top-note">MORE THAN A MOMENT<br />PUNE, INDIA · EST. 2026</span></header>
-    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br />CLOTHING.<br /><em>A<br />FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18} /></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br /><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Cash on Delivery</b> (pay a 30% advance online today to confirm manufacturing, and pay the remaining 70% in cash/UPI upon delivery).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15} /></Link></div></div></section>
+    <section className="prelaunch-hero"><div className="prelaunch-copy"><p className="prelaunch-kicker">A NEW EVERYDAY IS COMING · 001</p><h1 className="prelaunch-title">NOT JUST<br />CLOTHING.<br /><em>A<br />FEELING.</em></h1><p className="prelaunch-description">Considered fits. Better-feeling fabrics. An everyday uniform made to feel like you. Our first drop is almost here.</p><Link className="prelaunch-explore" to="/launch">EXPLORE THE DROP <ArrowRight size={18} /></Link></div><div className="prelaunch-bottom"><span>ENYTM APPARELS / FIRST DROP</span><span>THE COUNTDOWN STARTS HERE ↗</span></div></section><section className="home-faq" id="faq"><div className="home-faq-heading"><p className="eyebrow">06 / GOOD TO KNOW</p><h2>The useful<br /><em>details.</em></h2><p>Everything you need to know before making ENYTM part of your everyday.</p></div><div className="home-faq-list"><details><summary>What is the tee made from?<span aria-hidden="true">＋</span></summary><p>Each product listing includes its fabric and GSM details. Check the individual product page for the exact composition and specifications of the piece you choose.</p></details><details><summary>How should I care for it?<span aria-hidden="true">＋</span></summary><p>For best results, follow the care label on your garment. As a general guide, wash with similar colours, turn printed garments inside out, use a gentle cycle and avoid high heat when drying.</p></details><details><summary>Where do you ship?<span aria-hidden="true">＋</span></summary><p>We aim to deliver across serviceable locations in India. Enter your delivery pincode at checkout to confirm service availability.</p></details><details><summary>How do payments & pre-orders work?<span aria-hidden="true">＋</span></summary><p>You can choose between two convenient options at checkout: <b>Online Payment</b> (pay 100% upfront via UPI/Cards and receive an instant <b>extra 5% discount</b>) or <b>Partial Payment</b> (pay a 30% advance online today to confirm booking, and pay the remaining 70% after dispatch).</p></details><details><summary>When will my pre-order be dispatched?<span aria-hidden="true">＋</span></summary><p>Pre-orders are scheduled for dispatch after the 8 November 2026 launch. We’ll share tracking updates through the contact details provided at checkout.</p></details><div className="home-faq-footer"><span>STILL CURIOUS?</span><Link to="/about">GET TO KNOW US <ArrowRight size={15} /></Link></div></div></section>
   </main>
 }
 function LaunchCountdown() {
@@ -1595,7 +1595,7 @@ function ProductPage() {
                     <p>The refund will be sent to the original payment method (Cards, UPI, NetBanking).</p>
                   </div>
                   <div>
-                    <b>Cash on Delivery (COD) Orders:</b>
+                    <b>Partial Payment Orders:</b>
                     <p>Refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
                   </div>
                 </div>
@@ -1622,7 +1622,7 @@ function ProductPage() {
                 <div className="acc-preorder-terms">
                   <h4>PAYMENT & PRE-ORDER OPTIONS</h4>
                   <p><b>1. Online Payment (Prepaid):</b> Pay 100% online at checkout to unlock an <b>instant extra 5% discount</b>. Zero balance due on delivery.</p>
-                  <p><b>2. Cash on Delivery (COD):</b> Pay a <b>30% advance online today</b> to confirm your order booking, and pay the remaining 70% in cash or UPI upon delivery.</p>
+                  <p><b>2. Partial Payment (30% Advance):</b> Pay a <b>30% advance online today</b> to confirm your order booking, and pay the remaining 70% after dispatch.</p>
                   <p>If you change your mind, you may cancel your order within 24 hours of payment and receive a 100% full refund.</p>
                   <p>After 24 hours, custom manufacturing begins specifically against your booking.</p>
                 </div>
@@ -2726,7 +2726,7 @@ function Checkout() {
               )}
             </div>
 
-            {/* OPTION 2: CASH ON DELIVERY (COD - 30% ADVANCE TO CONFIRM) */}
+            {/* OPTION 2: PARTIAL PAYMENT (30% ADVANCE · REMAINING 70% AFTER DISPATCH) */}
             <div
               className={`payment-plan-card ${!isOnline ? "active" : ""}`}
               onClick={() => setPaymentMethod("cod")}
@@ -2742,10 +2742,10 @@ function Checkout() {
                   </span>
                   <div className="plan-title-group">
                     <div className="plan-title-row">
-                      <strong className="plan-title">CASH ON DELIVERY (COD)</strong>
-                      <span className="plan-split-pill">30% ADVANCE REQUIRED</span>
+                      <strong className="plan-title">PARTIAL PAYMENT (30% ADVANCE)</strong>
+                      <span className="plan-split-pill">REMAINING 70% AFTER DISPATCH</span>
                     </div>
-                    <span className="plan-subtitle">Pay 30% advance now to confirm order · Remaining 70% in cash on delivery</span>
+                    <span className="plan-subtitle">Pay 30% advance now to confirm order · Remaining 70% after dispatch</span>
                   </div>
                 </div>
                 <div className="plan-amount-group">
@@ -2762,7 +2762,7 @@ function Checkout() {
                   </div>
                   <div className="plan-perk-row">
                     <CheckCircle size={13} className="text-muted" />
-                    <span>Remaining 70% cash balance: <b>₹{balanceDue.toLocaleString("en-IN")}</b> payable upon delivery</span>
+                    <span>Remaining 70% balance: <b>₹{balanceDue.toLocaleString("en-IN")}</b> payable after dispatch</span>
                   </div>
                   <div className="plan-perk-row">
                     <CheckCircle size={13} className="text-muted" />
@@ -2807,10 +2807,10 @@ function Checkout() {
           ) : (
             <div className="preorder-payment-note">
               <div className="preorder-badge-title">
-                <Sparkles size={14} /> <b>CASH ON DELIVERY (COD) TERMS · 30% ADVANCE</b>
+                <Sparkles size={14} /> <b>PARTIAL PAYMENT TERMS · 30% ADVANCE</b>
               </div>
               <p>
-                To prevent unverified bookings and confirm garment manufacturing, <b>COD requires a 30% advance payment online today</b> via Razorpay. The remaining 70% is collected in cash or UPI at your doorstep upon delivery.
+                To confirm your booking and begin garment manufacturing, <b>pay a 30% advance online today</b> via Razorpay. The remaining 70% balance is payable after your order is dispatched.
               </p>
               <p className="preorder-cancel-rule">
                 Cancellation with 100% full refund is available within 24 hours of payment. After 24 hours, production begins and advance becomes non-refundable.
@@ -2820,7 +2820,7 @@ function Checkout() {
                 <strong>₹{advanceDue.toLocaleString("en-IN")}</strong>
               </div>
               <div className="preorder-split-row">
-                <span>Cash due on delivery (70%)</span>
+                <span>Balance due after dispatch (70%)</span>
                 <strong>₹{balanceDue.toLocaleString("en-IN")}</strong>
               </div>
             </div>
@@ -2829,7 +2829,7 @@ function Checkout() {
           <button className="btn primary full checkout-pay-btn" type="submit">
             {isOnline
               ? `PAY ONLINE ₹${onlinePayable.toLocaleString("en-IN")} (5% OFF) `
-              : `PAY 30% ADVANCE ₹${advanceDue.toLocaleString("en-IN")} TO CONFIRM COD `}
+              : `PAY 30% ADVANCE ₹${advanceDue.toLocaleString("en-IN")} TO CONFIRM ORDER `}
             <ArrowRight />
           </button>
           <p className="tiny">
@@ -2898,7 +2898,7 @@ function Checkout() {
                   <b>₹{advanceDue.toLocaleString("en-IN")}</b>
                 </div>
                 <div>
-                  <span>Cash balance due on delivery (70%):</span>
+                  <span>Balance due after dispatch (70%):</span>
                   <b>₹{balanceDue.toLocaleString("en-IN")}</b>
                 </div>
               </>
@@ -2956,7 +2956,7 @@ function OrderDetails() {
         <div className="order-panel"><div className="panel-head"><h2>DELIVERY ADDRESS</h2><MapPin size={18} /></div><div className="delivery-address"><b>{order.customer?.name}</b><p>{order.customer?.address}</p><p>{order.customer?.city}, {order.customer?.state} — {order.customer?.pincode}</p><p>{order.customer?.phone}</p></div></div>
       </section>
       <aside className="order-detail-side">
-        <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal || 0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping || 0) ? `₹${Number(order.shipping).toLocaleString("en-IN")}` : "FREE"}</b></div>{Number(order.buy2Discount || 0) > 0 && <div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount || 0) > 0 && !order.buy2Discount && <div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount || 0) > 0 && <div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee || 0) > 0 && <div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr /><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total || 0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Cash on Delivery (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid || 0).toLocaleString("en-IN")}</b></div><div><span>Cash due on delivery (70%)</span><b>₹{Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid || order.total || 0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod || "online").toUpperCase()} · {String(order.paymentStatus || "").replace(/_/g, " ").toUpperCase()}</p>{!cancelled && order.paymentStatus !== "paid" && order.paymentMethod !== "cod" && Number(order.advancePaid || 0) > 0 && <button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy ? "PROCESSING..." : `PAY BALANCE ₹${Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}`}</button>}</div>
+        <div className="order-panel price-panel"><div className="panel-head"><h2>PRICE DETAILS</h2></div><div><span>Item total</span><b>₹{Number(order.subtotal || 0).toLocaleString("en-IN")}</b></div><div><span>Shipping</span><b>{Number(order.shipping || 0) ? `₹${Number(order.shipping).toLocaleString("en-IN")}` : "FREE"}</b></div>{Number(order.buy2Discount || 0) > 0 && <div className="promo-line"><span>Promotional Discount</span><b className="discount-green">−₹{Number(order.buy2Discount).toLocaleString("en-IN")}</b></div>}{Number(order.discount || 0) > 0 && !order.buy2Discount && <div className="coupon-summary-line"><span>Coupon ({order.couponCode})</span><b className="discount-green">−₹{Number(order.discount).toLocaleString("en-IN")}</b></div>}{Number(order.fullPaymentDiscount || 0) > 0 && <div className="promo-line"><span>Online Payment Discount (5% Off)</span><b className="discount-green">−₹{Number(order.fullPaymentDiscount).toLocaleString("en-IN")}</b></div>}{Number(order.codFee || 0) > 0 && <div><span>COD fee</span><b>₹{Number(order.codFee).toLocaleString("en-IN")}</b></div>}<hr /><div className="grand"><span>ORDER TOTAL</span><b>₹{Number(order.total || 0).toLocaleString("en-IN")}</b></div>{order.paymentMethod === "cod" ? (<><div><span>Payment method</span><b>Partial Payment (30% Advance)</b></div><div><span>Advance paid online (30%)</span><b>₹{Number(order.advancePaid || 0).toLocaleString("en-IN")}</b></div><div><span>Balance due after dispatch (70%)</span><b>₹{Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}</b></div></>) : (<><div><span>Payment method</span><b>Online Payment (100% Prepaid)</b></div><div><span>Amount paid online</span><b>₹{Number(order.advancePaid || order.total || 0).toLocaleString("en-IN")}</b></div><div><span>Balance due on delivery</span><b style={{ color: "#4ade80" }}>₹0 (Fully Paid)</b></div></>)}<p className="payment-meta">Payment: {String(order.paymentMethod || "online").toUpperCase()} · {String(order.paymentStatus || "").replace(/_/g, " ").toUpperCase()}</p>{!cancelled && order.paymentStatus !== "paid" && order.paymentMethod !== "cod" && Number(order.advancePaid || 0) > 0 && <button className="btn primary full" disabled={actionBusy} onClick={payBalance}>{actionBusy ? "PROCESSING..." : `PAY BALANCE ₹${Math.max(0, Number(order.total || 0) - Number(order.advancePaid || 0) - Number(order.balancePaid || 0)).toLocaleString("en-IN")}`}</button>}</div>
         <div className="order-panel delivery-summary"><div className="panel-head"><h2>DELIVERY</h2><CalendarDays size={18} /></div><b>{deliveryDate ? formatDate(deliveryDate) : "To be confirmed"}</b><p className="muted">Standard delivery</p></div>
         <div className="order-actions-panel">{!cancelled && <><button className="btn primary full" disabled={actionBusy || shipped} onClick={cancelOrder}>{shipped ? "CANCELLATION CLOSED" : actionBusy ? "PROCESSING..." : "CANCEL ORDER"}</button><p className="action-note">Cancellation is available until the order is shipped.</p></>}<Link className="btn outline full" to="/shop">CONTINUE SHOPPING</Link></div>
       </aside>
@@ -4402,7 +4402,7 @@ function RefundPolicyPage() {
           <div className="verbatim-card">
             <p>“Once the returned item reaches us and passes our quality inspection, we will process the refund within 3–5 business days.</p>
             <p>For prepaid orders, the refund will be sent to the original payment method.</p>
-            <p>For Cash on Delivery (COD) orders, refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
+            <p>For Partial Payment orders, refunds will be processed through UPI or bank transfer. Our team will contact you for the required details.</p>
             <p>Please note that your bank or payment provider may take additional time to reflect the refund after it has been processed.”</p>
           </div>
         </section>
