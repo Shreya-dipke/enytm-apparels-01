@@ -16314,15 +16314,41 @@ a.btn.outline {
 .footer-hero-section {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: flex-start !important;
   position: relative !important;
-  min-height: 250px !important;
+  min-height: 260px !important;
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
-  padding: 30px 6vw 24px !important;
+  padding: 36px 6vw 30px !important;
   overflow: hidden !important;
+  border-bottom: 1px solid #161616 !important;
+  background: #14110e !important;
   box-sizing: border-box !important;
+}
+
+.footer-hero-bg-wrap {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.footer-hero-bg-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: right center !important;
+}
+
+.footer-hero-gradient-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(to right, rgba(16, 13, 11, 0.96) 0%, rgba(16, 13, 11, 0.8) 45%, rgba(16, 13, 11, 0.2) 75%, transparent 100%) !important;
+  pointer-events: none !important;
 }
 
 .footer-hero-copy {
@@ -16383,26 +16409,7 @@ a.btn.outline {
   transform: translateY(-1px) !important;
 }
 
-.footer-hero-model-wrap {
-  position: absolute !important;
-  right: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  width: 48% !important;
-  max-width: 500px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
 
-.footer-hero-model-img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-  object-position: right center !important;
-}
 
 .footer-nav-container {
   width: 100% !important;

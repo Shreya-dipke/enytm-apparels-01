@@ -2260,7 +2260,7 @@ function Checkout() {
         if (!alive) return;
         if (u && typeof u === "object") {
           setUser(u);
-          try { localStorage.setItem("enytm-user", JSON.stringify(u)); } catch {}
+          try { localStorage.setItem("enytm-user", JSON.stringify(u)); } catch { }
           const a = Array.isArray(u.addresses) ? u.addresses.find((x) => x.isDefault) || u.addresses[0] : u.address;
           setForm(prev => ({
             name: a?.name || u.name || prev.name || "",
@@ -3110,7 +3110,7 @@ function OrderSuccess() {
   const location = useLocation();
   const nav = useNavigate();
   const id = location.pathname.split("/").pop();
-  
+
   // Instant retrieval from pre-cached order if available from checkout
   const cachedOrder = useMemo(() => {
     try {
@@ -5049,6 +5049,15 @@ function Footer() {
       <footer className="enytm-luxury-footer">
         {/* TOP HERO BANNER */}
         <div className="footer-hero-section">
+          <div className="footer-hero-bg-wrap" aria-hidden="true">
+            <img
+              src="/footer-wide-banner.jpg"
+              alt="ENYTM Streetwear"
+              className="footer-hero-bg-img"
+            />
+            <div className="footer-hero-gradient-overlay" />
+          </div>
+
           <div className="footer-hero-copy">
             <Link className="logo footer-logo" to="/" aria-label="ENYTM">
               <BrandLogo />
@@ -5061,14 +5070,6 @@ function Footer() {
             <Link to="/shop" className="footer-hero-shop-btn">
               SHOP NOW →
             </Link>
-          </div>
-
-          <div className="footer-hero-model-wrap">
-            <img
-              src="/footer-model.png"
-              alt="ENYTM Streetwear"
-              className="footer-hero-model-img"
-            />
           </div>
         </div>
 
