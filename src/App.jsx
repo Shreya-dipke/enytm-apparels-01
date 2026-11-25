@@ -1009,6 +1009,16 @@ function ProductPage() {
   const safeGallery = gallery.length ? gallery : [{ type: "image", src: normalizeImageUrl(product?.image) || fallbackImg, label: "01 / VIEW" }];
   const activeMedia = safeGallery[Math.min(active, safeGallery.length - 1)] || safeGallery[0];
 
+  // Preload all gallery images in parallel immediately so switching slides is instantaneous with 0 lag
+  useEffect(() => {
+    safeGallery.forEach((item) => {
+      if (item && item.type === "image" && item.src) {
+        const preImg = new Image();
+        preImg.src = item.src;
+      }
+    });
+  }, [safeGallery]);
+
   useEffect(() => {
     setVideoBlocked(false);
     if (!activeMedia || activeMedia.type !== "video") return;
@@ -1149,24 +1159,39 @@ function ProductPage() {
                 </div>
               ) : (
                 <div className="product-zoom-container" onClick={() => setZoomImage(activeMedia?.src || fallbackImg)}>
-                  <img
-                    src={activeMedia?.src || fallbackImg}
-                    alt={`${product.name} - View ${active + 1}`}
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const src = e.currentTarget.src;
-                      if (src.includes("googleusercontent.com/d/")) {
-                        const id = src.split("/d/")[1]?.split("=")[0];
-                        if (id && !e.currentTarget.dataset.retried) {
-                          e.currentTarget.dataset.retried = "1";
-                          e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
-                          return;
-                        }
-                      }
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = fallbackImg;
-                    }}
-                  />
+                  {safeGallery.map((item, idx) => {
+                    if (item.type === "video") return null;
+                    const isCurrent = idx === active;
+                    return (
+                      <img
+                        key={`${item.src}-${idx}`}
+                        src={item.src || fallbackImg}
+                        alt={`${product.name} - View ${idx + 1}`}
+                        referrerPolicy="no-referrer"
+                        loading="eager"
+                        style={{
+                          display: isCurrent ? "block" : "none",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          objectPosition: "center center"
+                        }}
+                        onError={(e) => {
+                          const src = e.currentTarget.src;
+                          if (src.includes("googleusercontent.com/d/")) {
+                            const id = src.split("/d/")[1]?.split("=")[0];
+                            if (id && !e.currentTarget.dataset.retried) {
+                              e.currentTarget.dataset.retried = "1";
+                              e.currentTarget.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+                              return;
+                            }
+                          }
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = fallbackImg;
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               )}
 

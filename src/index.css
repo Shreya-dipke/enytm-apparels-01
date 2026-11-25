@@ -14120,22 +14120,35 @@ a.btn.outline {
   max-width: 580px !important;
   margin: 0 auto !important;
   aspect-ratio: 3 / 4 !important;
-  background: #111 !important;
+  background: #0d0d0d !important;
   border-radius: 12px !important;
   overflow: hidden !important;
   border: 1px solid #24221f !important;
   user-select: none;
   touch-action: pan-y;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.modern-slider-media .product-zoom-container {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .modern-slider-media img,
 .modern-slider-media video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
+  object-position: center center !important;
   display: block !important;
-  background: #111 !important;
-  transition: opacity 0.25s ease !important;
+  background: #0d0d0d !important;
+  transition: opacity 0.2s ease !important;
+  animation: none !important;
 }
 
 .slider-pagination-dots {
@@ -14279,13 +14292,36 @@ a.btn.outline {
     border-right: 0 !important;
     border-top: 0 !important;
     max-width: 100% !important;
-    aspect-ratio: 3.2 / 4 !important;
+    aspect-ratio: 1 / 1 !important;
+    min-height: 380px !important;
+    background: #0d0d0d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .modern-slider-media .product-zoom-container {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .modern-slider-media img,
+  .modern-slider-media video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    background: #0d0d0d !important;
   }
 
   .slider-arrow {
-    opacity: 0.75 !important;
-    width: 32px !important;
-    height: 32px !important;
+    opacity: 0.85 !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
   }
 }
 
