@@ -548,32 +548,6 @@ function Home() {
         </div>
       </section>
 
-      <section className="feature-editorial-v2">
-        <div className="feature-editorial-image">
-          <img src="/enytm-hero.jpg" alt="ENYTM streetwear editorial" />
-          <span className="image-index">FIG. 01 — THE EVERYDAY UNIFORM</span>
-          <span className="image-vertical-label">FABRIC / FORM / FUNCTION</span>
-        </div>
-        <div className="feature-editorial-copy">
-          <span className="feature-big-number">01</span>
-          <h2>
-            LESS,<br />
-            <em>BETTER.</em>
-          </h2>
-          <p>
-            We start with the fabric. Refine the fit. Strip away what doesn't belong. The result is an everyday uniform that speaks through texture, cut, and weight.
-          </p>
-          <Link className="btn outline" to="/about">
-            GET TO KNOW ENYTM <ArrowRight size={18} />
-          </Link>
-          <div className="feature-specs">
-            <span><b>01</b> FABRIC FIRST</span>
-            <span><b>02</b> THOUGHTFUL FIT</span>
-            <span><b>03</b> CLEAN FINISH</span>
-          </div>
-        </div>
-      </section>
-
       <section className="quote quote-black-label quote-v2">
         <div className="quote-mark">“</div>
         <p className="eyebrow">THE THOUGHT BEHIND THE THREAD</p>
