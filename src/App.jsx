@@ -6169,7 +6169,7 @@ function CustomizeTeePage() {
   // Left Sleeve: ₹39
   // Right Sleeve: ₹39
   const baseTeePrice = 499;
-  const numTees = packageType === "double" ? 2 * quantity : 1 * quantity;
+  const numTees = Math.max(1, quantity);
 
   const hasFrontPrint = Boolean(
     (placementDesigns["front-center"]?.enabled && placementDesigns["front-center"]?.artwork) ||
@@ -6388,7 +6388,7 @@ function CustomizeTeePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           color: currentColorObj.name,
-          sizes: packageType === "double" ? [sizeTee1, sizeTee2] : [sizeTee1],
+          sizes: [sizeTee1],
           quantity: numTees,
           placement,
           printSize,
@@ -6420,7 +6420,7 @@ function CustomizeTeePage() {
   const handleAddToCart = async () => {
     const saveRes = await saveDesignToBackend();
     const customId = saveRes.customId || `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
-    const sizesDesc = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
+    const sizesDesc = sizeTee1;
     const customItem = {
       id: `custom-${customId}`,
       customId,
@@ -6497,7 +6497,7 @@ function CustomizeTeePage() {
       const leftUrl = mockupUrls.left ? `${origin}${mockupUrls.left}` : null;
       const rightUrl = mockupUrls.right ? `${origin}${mockupUrls.right}` : null;
 
-      const sizesText = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
+      const sizesText = sizeTee1;
 
       // Build list of active placements
       const activePlacementsList = Object.entries(placementDesigns)
@@ -6989,110 +6989,41 @@ MORE THAN A MOMENT.`;
                 </div>
               </div>
 
-              {/* ROW 2: CUSTOMIZATION PACKAGE & SIZES */}
-              <div className="config-packages-row">
-                <label className="config-label">Customization Package</label>
-                <div className="packages-toggle-grid">
-                  <button
-                    type="button"
-                    className={`package-opt-btn ${packageType === "single" ? "is-active" : ""}`}
-                    onClick={() => {
-                      setPackageType("single");
-                      setQuantity(1);
-                    }}
-                  >
-                    <div className="pkg-meta">
-                      <span className="pkg-title">1 T-Shirt</span>
-                      <span className="pkg-fee">+₹79 Customization</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`package-opt-btn ${packageType === "double" ? "is-active" : ""}`}
-                    onClick={() => {
-                      setPackageType("double");
-                      setQuantity(1);
-                    }}
-                  >
-                    <span className="best-value-badge">Best Value</span>
-                    <div className="pkg-meta">
-                      <span className="pkg-title">2 T-Shirts</span>
-                      <span className="pkg-fee">+₹129 Customization</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* ROW 3: SIZE SELECTION (SEPARATE IF 2 TEES) */}
+              {/* ROW 2: SIZE SELECTION & QUANTITY */}
               <div className="config-grid-row">
-                {packageType === "single" ? (
-                  <div className="config-field-group">
-                    <div className="label-with-action">
-                      <label className="config-label">Select Size</label>
+                <div className="config-field-group">
+                  <div className="label-with-action">
+                    <label className="config-label">Select Size</label>
+                    <button
+                      type="button"
+                      className="size-guide-modal-btn"
+                      onClick={() => setShowSizeGuide(true)}
+                    >
+                      <Ruler size={12} /> <span>Size Guide</span>
+                    </button>
+                  </div>
+                  <div className="size-pills-row">
+                    {["S", "M", "L", "XL", "XXL"].map((sz) => (
                       <button
+                        key={sz}
                         type="button"
-                        className="size-guide-modal-btn"
-                        onClick={() => setShowSizeGuide(true)}
+                        className={`size-pill-btn ${sizeTee1 === sz ? "is-selected" : ""}`}
+                        onClick={() => setSizeTee1(sz)}
                       >
-                        <Ruler size={12} /> <span>Size Guide</span>
+                        {sz}
                       </button>
-                    </div>
-                    <div className="size-pills-row">
-                      {["S", "M", "L", "XL", "XXL"].map((sz) => (
-                        <button
-                          key={sz}
-                          type="button"
-                          className={`size-pill-btn ${sizeTee1 === sz ? "is-selected" : ""}`}
-                          onClick={() => setSizeTee1(sz)}
-                        >
-                          {sz}
-                        </button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="double-size-selection-grid">
-                    <div className="double-size-col">
-                      <span className="sub-label">T-Shirt 1 Size:</span>
-                      <div className="size-pills-row">
-                        {["S", "M", "L", "XL", "XXL"].map((sz) => (
-                          <button
-                            key={sz}
-                            type="button"
-                            className={`size-pill-btn mini ${sizeTee1 === sz ? "is-selected" : ""}`}
-                            onClick={() => setSizeTee1(sz)}
-                          >
-                            {sz}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="double-size-col">
-                      <span className="sub-label">T-Shirt 2 Size:</span>
-                      <div className="size-pills-row">
-                        {["S", "M", "L", "XL", "XXL"].map((sz) => (
-                          <button
-                            key={sz}
-                            type="button"
-                            className={`size-pill-btn mini ${sizeTee2 === sz ? "is-selected" : ""}`}
-                            onClick={() => setSizeTee2(sz)}
-                          >
-                            {sz}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 <div className="config-field-group qty-group">
-                  <label className="config-label">Sets</label>
+                  <label className="config-label">Quantity</label>
                   <div className="stepper-box">
                     <button
                       type="button"
                       className="stepper-btn"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      aria-label="Decrease quantity"
                     >
                       <Minus size={13} />
                     </button>
@@ -7101,6 +7032,7 @@ MORE THAN A MOMENT.`;
                       type="button"
                       className="stepper-btn"
                       onClick={() => setQuantity((q) => q + 1)}
+                      aria-label="Increase quantity"
                     >
                       <Plus size={13} />
                     </button>
@@ -7446,8 +7378,8 @@ MORE THAN A MOMENT.`;
                   <strong>{currentColorObj.name}</strong>
                 </div>
                 <div className="spec-row">
-                  <span>Sizes Selected:</span>
-                  <strong>{packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1}</strong>
+                  <span>Size Selected:</span>
+                  <strong>{sizeTee1}</strong>
                 </div>
                 <div className="spec-row">
                   <span>Print Placement:</span>
