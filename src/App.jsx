@@ -5321,18 +5321,162 @@ function CustomizeTeePage() {
   const [sizeTee1, setSizeTee1] = useState("L");
   const [sizeTee2, setSizeTee2] = useState("M");
   const [quantity, setQuantity] = useState(1);
-  const [placement, setPlacement] = useState("front-center"); // "chest-centre", "left-chest", "right-chest", "back", "full-front"
+  const [placement, setPlacement] = useState("front-center");
+  const [activePlacement, setActivePlacement] = useState("front-center");
   const [printSize, setPrintSize] = useState("A3"); // "A4", "A3"
 
-  // Artwork & canvas manipulation
-  const [uploadedDesign, setUploadedDesign] = useState(null);
-  const [artworkScale, setArtworkScale] = useState(1); // 0.6 to 1.5
-  const [artworkRotation, setArtworkRotation] = useState(0); // 0 to 360
-  const [artworkOpacity, setArtworkOpacity] = useState(1); // 0.5 to 1.0
-  const [artworkFlipped, setArtworkFlipped] = useState(false);
-  const [artworkOffsetX, setArtworkOffsetX] = useState(0); // -40 to 40 px
-  const [artworkOffsetY, setArtworkOffsetY] = useState(0); // -40 to 40 px
-  const [isArtworkVisible, setIsArtworkVisible] = useState(true);
+  // MULTIPLE DESIGNS PER PLACEMENT STATE
+  const [placementDesigns, setPlacementDesigns] = useState({
+    "front-center": {
+      enabled: true,
+      artwork: "/customize/mountain-artwork-pure.png?v=2",
+      name: "Alpine Sunrise Graphic",
+      offsetX: 0,
+      offsetY: 0,
+      scale: 1.0,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: true,
+    },
+    "back-center": {
+      enabled: false,
+      artwork: null,
+      name: "Back Center Artwork",
+      offsetX: 0,
+      offsetY: 0,
+      scale: 1.15,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: false,
+    },
+    "sleeves": {
+      enabled: false,
+      artwork: null,
+      name: "Sleeve Crest Print",
+      offsetX: -118,
+      offsetY: -20,
+      scale: 0.65,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: false,
+    },
+    "right-logo": {
+      enabled: false,
+      artwork: null,
+      name: "Right Chest Emblem",
+      offsetX: 52,
+      offsetY: -38,
+      scale: 0.55,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: false,
+    },
+  });
+
+  // Backward compatibility alias for single references
+  const currentActiveDesign = placementDesigns[activePlacement] || placementDesigns["front-center"];
+  const uploadedDesign = currentActiveDesign && currentActiveDesign.artwork ? {
+    name: currentActiveDesign.name,
+    dataUrl: currentActiveDesign.artwork,
+    isImage: currentActiveDesign.isImage,
+    size: currentActiveDesign.size || "Original",
+  } : null;
+
+  const artworkScale = currentActiveDesign?.scale ?? 1;
+  const artworkRotation = currentActiveDesign?.rotation ?? 0;
+  const artworkOpacity = currentActiveDesign?.opacity ?? 1;
+  const artworkFlipped = currentActiveDesign?.flipped ?? false;
+  const artworkOffsetX = currentActiveDesign?.offsetX ?? 0;
+  const artworkOffsetY = currentActiveDesign?.offsetY ?? 0;
+  const isArtworkVisible = currentActiveDesign?.enabled ?? true;
+
+  const setArtworkScale = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        scale: typeof val === "function" ? val(prev[activePlacement]?.scale || 1) : val,
+      },
+    }));
+  };
+
+  const setArtworkRotation = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        rotation: typeof val === "function" ? val(prev[activePlacement]?.rotation || 0) : val,
+      },
+    }));
+  };
+
+  const setArtworkFlipped = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        flipped: typeof val === "function" ? val(prev[activePlacement]?.flipped || false) : val,
+      },
+    }));
+  };
+
+  const setArtworkOffsetX = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        offsetX: typeof val === "function" ? val(prev[activePlacement]?.offsetX || 0) : val,
+      },
+    }));
+  };
+
+  const setArtworkOffsetY = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        offsetY: typeof val === "function" ? val(prev[activePlacement]?.offsetY || 0) : val,
+      },
+    }));
+  };
+
+  const setIsArtworkVisible = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        enabled: typeof val === "function" ? val(prev[activePlacement]?.enabled ?? true) : val,
+      },
+    }));
+  };
+
+  const setArtworkOpacity = (val) => {
+    setPlacementDesigns((prev) => ({
+      ...prev,
+      [activePlacement]: {
+        ...prev[activePlacement],
+        opacity: typeof val === "function" ? val(prev[activePlacement]?.opacity || 1) : val,
+      },
+    }));
+  };
+
+  const setUploadedDesign = (val) => {
+    if (!val) {
+      setPlacementDesigns((prev) => ({
+        ...prev,
+        [activePlacement]: {
+          ...prev[activePlacement],
+          enabled: false,
+          artwork: null,
+          name: "",
+        },
+      }));
+    }
+  };
 
   // Custom text state
   const [customText, setCustomText] = useState("");
@@ -5366,7 +5510,7 @@ function CustomizeTeePage() {
   const canvasRef = useRef(null);
 
   // REAL-TIME DIRECT MANIPULATION CANVAS STATE
-  const [selectedElement, setSelectedElement] = useState("artwork"); // "artwork" | "text" | null
+  const [selectedElement, setSelectedElement] = useState("front-center"); // "front-center" | "back-center" | "sleeves" | "right-logo" | "text" | null
   const [isTransforming, setIsTransforming] = useState(null); // "move" | "resize-nw" | "resize-ne" | "resize-se" | "resize-sw" | "rotate" | null
   const [isSnappedToCenter, setIsSnappedToCenter] = useState(false);
   const [isFabricBlend, setIsFabricBlend] = useState(true);
@@ -5388,165 +5532,6 @@ function CustomizeTeePage() {
     initialDist: 1,
     initialAngle: 0,
   });
-
-  // Start real-time transformation on canvas
-  const startTransform = (e, element, type) => {
-    e.stopPropagation();
-    if (e.cancelable) e.preventDefault();
-    setSelectedElement(element);
-    setIsTransforming(type);
-
-    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
-
-    let centerX = clientX;
-    let centerY = clientY;
-
-    const overlayEl = e.currentTarget.closest(".tee-interactive-overlay");
-    if (overlayEl) {
-      const rect = overlayEl.getBoundingClientRect();
-      centerX = rect.left + rect.width / 2;
-      centerY = rect.top + rect.height / 2;
-    } else if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      centerX = rect.left + rect.width / 2;
-      centerY = rect.top + rect.height / 2;
-    }
-
-    const initialDist = Math.hypot(clientX - centerX, clientY - centerY) || 60;
-    const initialAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-
-    transformRef.current = {
-      type,
-      element,
-      startX: clientX,
-      startY: clientY,
-      startOffsetX: element === "artwork" ? artworkOffsetX : textOffsetX,
-      startOffsetY: element === "artwork" ? artworkOffsetY : textOffsetY,
-      startScale: element === "artwork" ? artworkScale : textScale,
-      startRot: element === "artwork" ? artworkRotation : textRotation,
-      centerX,
-      centerY,
-      initialDist: Math.max(20, initialDist),
-      initialAngle,
-    };
-  };
-
-  // Global pointer & touch tracking for buttery smooth direct manipulation
-  useEffect(() => {
-    const onPointerMove = (e) => {
-      if (!isTransforming) return;
-      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-      const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
-      const { type, element, startX, startY, startOffsetX, startOffsetY, startScale, startRot, centerX, centerY, initialDist, initialAngle } = transformRef.current;
-
-      if (type === "move") {
-        const dx = clientX - startX;
-        const dy = clientY - startY;
-        let newX = startOffsetX + dx;
-        let newY = startOffsetY + dy;
-
-        // Wide bounds allowing print to be positioned anywhere on the garment
-        newX = Math.max(-180, Math.min(180, newX));
-        newY = Math.max(-190, Math.min(190, newY));
-
-        // Magnetic snap to center within 8px
-        if (Math.abs(newX) < 8) {
-          newX = 0;
-          setIsSnappedToCenter(true);
-        } else {
-          setIsSnappedToCenter(false);
-        }
-
-        if (element === "artwork") {
-          setArtworkOffsetX(newX);
-          setArtworkOffsetY(newY);
-        } else {
-          setTextOffsetX(newX);
-          setTextOffsetY(newY);
-        }
-      } else if (type.startsWith("resize")) {
-        const currDist = Math.hypot(clientX - centerX, clientY - centerY);
-        const ratio = currDist / initialDist;
-        const newScale = Math.min(2.5, Math.max(0.3, Number((startScale * ratio).toFixed(2))));
-        if (element === "artwork") {
-          setArtworkScale(newScale);
-        } else {
-          setTextScale(newScale);
-        }
-      } else if (type === "rotate") {
-        const currAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-        const delta = currAngle - initialAngle;
-        let newRot = Math.round((startRot + delta + 360) % 360);
-        // Magnetic snap to 0, 90, 180, 270 if within 5 degrees
-        [0, 90, 180, 270, 360].forEach((snap) => {
-          if (Math.abs(newRot - snap) < 5) newRot = snap % 360;
-        });
-        if (element === "artwork") {
-          setArtworkRotation(newRot);
-        } else {
-          setTextRotation(newRot);
-        }
-      }
-    };
-
-    const onPointerUp = () => {
-      if (isTransforming) {
-        setIsTransforming(null);
-        setIsSnappedToCenter(false);
-        pushState();
-      }
-    };
-
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("touchmove", onPointerMove, { passive: false });
-    window.addEventListener("touchend", onPointerUp);
-
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("touchmove", onPointerMove);
-      window.removeEventListener("touchend", onPointerUp);
-    };
-  }, [isTransforming]);
-
-  // Keyboard shortcut listener for precision nudge and deletion
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!selectedElement) return;
-      if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
-
-      const step = e.shiftKey ? 10 : 2;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        if (selectedElement === "artwork") setArtworkOffsetX((x) => x - step);
-        else setTextOffsetX((x) => x - step);
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        if (selectedElement === "artwork") setArtworkOffsetX((x) => x + step);
-        else setTextOffsetX((x) => x + step);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        if (selectedElement === "artwork") setArtworkOffsetY((y) => y - step);
-        else setTextOffsetY((y) => y - step);
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        if (selectedElement === "artwork") setArtworkOffsetY((y) => y + step);
-        else setTextOffsetY((y) => y + step);
-      } else if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault();
-        if (selectedElement === "artwork") setIsArtworkVisible(false);
-        else setIsTextVisible(false);
-        setSelectedElement(null);
-      } else if (e.key === "Escape") {
-        setSelectedElement(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedElement]);
 
   // Asset paths with cache buster to guarantee fresh loads
   const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
@@ -5711,7 +5696,7 @@ function CustomizeTeePage() {
     }
   };
 
-    // Upload handler
+    // Upload handler - saves artwork directly to the active placement
   const handleFileUpload = (file) => {
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) {
@@ -5719,34 +5704,41 @@ function CustomizeTeePage() {
       return;
     }
     pushState();
-    setIsArtworkVisible(true);
-    setSelectedElement("artwork");
-    setArtworkOpacity(1);
 
     const isImg = file.type.startsWith("image/") || /\.(png|jpe?g|webp|svg|gif|bmp)$/i.test(file.name);
 
     if (isImg) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setUploadedDesign({
-          name: file.name,
-          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
-          dataUrl: e.target.result,
-          isImage: true,
-        });
-        setIsArtworkVisible(true);
-        setSelectedElement("artwork");
+        setPlacementDesigns((prev) => ({
+          ...prev,
+          [activePlacement]: {
+            ...prev[activePlacement],
+            enabled: true,
+            artwork: e.target.result,
+            name: file.name,
+            size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            isImage: true,
+            opacity: 1,
+          },
+        }));
+        setSelectedElement(activePlacement);
       };
       reader.readAsDataURL(file);
     } else {
-      setUploadedDesign({
-        name: file.name,
-        size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
-        dataUrl: null,
-        isImage: false,
-      });
-      setIsArtworkVisible(true);
-      setSelectedElement("artwork");
+      setPlacementDesigns((prev) => ({
+        ...prev,
+        [activePlacement]: {
+          ...prev[activePlacement],
+          enabled: true,
+          artwork: null,
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          isImage: false,
+          opacity: 1,
+        },
+      }));
+      setSelectedElement(activePlacement);
     }
   };
 
@@ -5762,7 +5754,8 @@ function CustomizeTeePage() {
   const baseTeePrice = 749;
   const numTees = packageType === "double" ? 2 * quantity : 1 * quantity;
   const customizationFee = packageType === "double" ? 129 * quantity : 79 * quantity;
-  const printPlacementFee = (placement === "back" || placement === "back-center") ? (printSize === "A4" ? 29 : 49) * numTees : 0;
+  const hasBackPrint = placementDesigns["back-center"]?.enabled && Boolean(placementDesigns["back-center"]?.artwork);
+  const printPlacementFee = hasBackPrint ? (printSize === "A4" ? 29 : 49) * numTees : 0;
   const orderTotal = (baseTeePrice * numTees) + customizationFee + printPlacementFee;
 
   // Mockup Download as image
@@ -5874,11 +5867,17 @@ function CustomizeTeePage() {
     else if (placement === "full-front") placementLabel = "Full Front";
 
     const sizesText = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
-    const designText = uploadedDesign
-      ? `I have attached my artwork (${uploadedDesign.name}).`
-      : customText
-      ? `Custom text: "${customText}"`
-      : `Alpine Sunrise Studio Print (Artwork Attached)`;
+    // Build list of all active placement designs
+    const activePlacementsList = Object.entries(placementDesigns)
+      .filter(([_, d]) => d.enabled && d.artwork)
+      .map(([k, d]) => {
+        const title = k === "front-center" ? "Front (Center)" : k === "back-center" ? `Back Center (${printSize})` : k === "sleeves" ? "Sleeves" : "Right Logo";
+        return `• ${title}: ${d.name || "Custom Design"}`;
+      });
+
+    const placementsSummaryText = activePlacementsList.length > 0
+      ? activePlacementsList.join("\n")
+      : "• Front (Center): Alpine Sunrise Graphic";
 
     const text = `Hi ENYTM™️! 👋
 
@@ -5892,10 +5891,14 @@ Here are my details:
 📏 Size: ${sizesText}
 🔢 Quantity: ${numTees}
 
-🖼️ Design: ${designText}
-📍 Print Placement: ${placementLabel}
-📐 Print Size: ${placement === "back" ? printSize : "Free Logo"}
+🖼️ Customized Placements:
+${placementsSummaryText}
+${customText ? `✍️ Custom Text: "${customText}"\n` : ""}
 🆔 Customization ID: ${customId}
+
+Base T-shirt Price: ₹${baseTeePrice * numTees}
+Customization Charges: ₹${customizationFee}
+${printPlacementFee > 0 ? `Additional Back Print Charges: ₹${printPlacementFee}\n` : ""}Total: ₹${orderTotal}
 
 Please check my design and share the final price and confirmation.
 
@@ -6107,39 +6110,60 @@ MORE THAN A MOMENT.`;
                       </div>
                     )}
 
-                    {/* DYNAMIC INTERACTIVE ARTWORK OVERLAY */}
-                    {isArtworkVisible &&
-                      (((placement === "back" || placement === "back-center") && viewSide === "back") ||
-                        (placement !== "back" && placement !== "back-center" && viewSide !== "back")) && (
+                    {/* DYNAMIC MULTI-PLACEMENT INTERACTIVE ARTWORK OVERLAYS */}
+                    {Object.entries(placementDesigns).map(([placeKey, designItem]) => {
+                      if (!designItem || !designItem.enabled || !designItem.artwork) return null;
+
+                      // Check view side compatibility
+                      const isBackItem = placeKey === "back-center" || placeKey === "back";
+                      if (isBackItem && viewSide !== "back") return null;
+                      if (!isBackItem && viewSide === "back") return null;
+
+                      const isSelected = selectedElement === placeKey;
+
+                      return (
                         <div
-                          className={`tee-interactive-overlay tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide} ${selectedElement === "artwork" ? "is-selected" : ""} ${isFabricBlend && selectedColor !== "black" ? "fabric-multiply-mode" : ""}`}
+                          key={placeKey}
+                          className={`tee-interactive-overlay tee-print-overlay placement-${placeKey} size-${printSize.toLowerCase()} view-${viewSide} ${isSelected ? "is-selected" : ""} ${isFabricBlend && selectedColor !== "black" ? "fabric-multiply-mode" : ""}`}
                           style={{
-                            opacity: artworkOpacity,
-                            transform: `translate(calc(-50% + ${artworkOffsetX}px), ${artworkOffsetY}px) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                            opacity: designItem.opacity ?? 1,
+                            transform: `translate(calc(-50% + ${designItem.offsetX}px), ${designItem.offsetY}px) rotate(${designItem.rotation}deg) scale(${designItem.scale})`,
                           }}
-                          onPointerDown={(e) => startTransform(e, "artwork", "move")}
+                          onPointerDown={(e) => startTransform(e, placeKey, "move")}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedElement("artwork");
+                            setSelectedElement(placeKey);
+                            setActivePlacement(placeKey);
+                            setPlacement(placeKey);
                           }}
                         >
                           <img
-                            src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
-                            alt="Custom Print"
-                            className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
+                            src={designItem.artwork}
+                            alt={`${placeKey} Print`}
+                            className={`print-graphic-img ${designItem.flipped ? "flipped-x" : ""}`}
                             draggable={false}
                           />
 
-                          {/* INTERACTIVE BOUNDING BOX & HANDLES WHEN SELECTED */}
-                          {selectedElement === "artwork" && (
-                            <div className="canvas-bounding-box" onPointerDown={(e) => startTransform(e, "artwork", "move")} onClick={(e) => e.stopPropagation()}>
+                          {/* INTERACTIVE BOUNDING BOX FOR THIS SPECIFIC PLACEMENT */}
+                          {isSelected && (
+                            <div
+                              className="canvas-bounding-box"
+                              onPointerDown={(e) => startTransform(e, placeKey, "move")}
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               {/* TOP FLOATING QUICK ACTIONS BAR */}
                               <div className="canvas-elem-mini-bar">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setArtworkScale((s) => Math.max(0.3, Number((s - 0.15).toFixed(2))));
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: {
+                                        ...prev[placeKey],
+                                        scale: Math.max(0.3, Number(((prev[placeKey]?.scale || 1) - 0.15).toFixed(2))),
+                                      },
+                                    }));
                                   }}
                                   title="Make Smaller (-15%)"
                                 >
@@ -6149,7 +6173,13 @@ MORE THAN A MOMENT.`;
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setArtworkScale((s) => Math.min(2.5, Number((s + 0.15).toFixed(2))));
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: {
+                                        ...prev[placeKey],
+                                        scale: Math.min(2.5, Number(((prev[placeKey]?.scale || 1) + 0.15).toFixed(2))),
+                                      },
+                                    }));
                                   }}
                                   title="Make Bigger (+15%)"
                                 >
@@ -6159,7 +6189,10 @@ MORE THAN A MOMENT.`;
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setArtworkOffsetX(0);
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: { ...prev[placeKey], offsetX: 0 },
+                                    }));
                                   }}
                                   title="Center Alignment"
                                 >
@@ -6169,7 +6202,13 @@ MORE THAN A MOMENT.`;
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setArtworkRotation((r) => (r + 90) % 360);
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: {
+                                        ...prev[placeKey],
+                                        rotation: ((prev[placeKey]?.rotation || 0) + 90) % 360,
+                                      },
+                                    }));
                                   }}
                                   title="Rotate 90°"
                                 >
@@ -6179,7 +6218,13 @@ MORE THAN A MOMENT.`;
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setArtworkFlipped((f) => !f);
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: {
+                                        ...prev[placeKey],
+                                        flipped: !prev[placeKey]?.flipped,
+                                      },
+                                    }));
                                   }}
                                   title="Flip Horizontal"
                                 >
@@ -6190,55 +6235,59 @@ MORE THAN A MOMENT.`;
                                   className="del-elem-btn"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setIsArtworkVisible(false);
+                                    setPlacementDesigns((prev) => ({
+                                      ...prev,
+                                      [placeKey]: { ...prev[placeKey], enabled: false },
+                                    }));
                                     setSelectedElement(null);
                                   }}
-                                  title="Delete / Hide"
+                                  title="Remove from this placement"
                                 >
                                   ✕
                                 </button>
                               </div>
 
-                              {/* ROTATION STALK & CIRCULAR HANDLE */}
+                              {/* ROTATION HANDLE */}
                               <div className="canvas-rot-stalk" />
                               <div
                                 className="canvas-handle canvas-handle-rot"
-                                onPointerDown={(e) => startTransform(e, "artwork", "rotate")}
+                                onPointerDown={(e) => startTransform(e, placeKey, "rotate")}
                                 title="Drag to Rotate"
                               >
                                 <RotateCw size={11} />
                               </div>
 
-                              {/* 4 CORNER RESIZE HANDLES */}
+                              {/* CORNER RESIZE HANDLES */}
                               <div
                                 className="canvas-handle canvas-handle-nw"
-                                onPointerDown={(e) => startTransform(e, "artwork", "resize-nw")}
+                                onPointerDown={(e) => startTransform(e, placeKey, "resize-nw")}
                                 title="Drag to Resize"
                               />
                               <div
                                 className="canvas-handle canvas-handle-ne"
-                                onPointerDown={(e) => startTransform(e, "artwork", "resize-ne")}
+                                onPointerDown={(e) => startTransform(e, placeKey, "resize-ne")}
                                 title="Drag to Resize"
                               />
                               <div
                                 className="canvas-handle canvas-handle-se"
-                                onPointerDown={(e) => startTransform(e, "artwork", "resize-se")}
+                                onPointerDown={(e) => startTransform(e, placeKey, "resize-se")}
                                 title="Drag to Resize"
                               />
                               <div
                                 className="canvas-handle canvas-handle-sw"
-                                onPointerDown={(e) => startTransform(e, "artwork", "resize-sw")}
+                                onPointerDown={(e) => startTransform(e, placeKey, "resize-sw")}
                                 title="Drag to Resize"
                               />
 
-                              {/* LIVE DIMENSION SPECIFICATION BADGE */}
+                              {/* LIVE DIMENSION BADGE */}
                               <div className="canvas-elem-dim-badge">
-                                {Math.round(21 * artworkScale)} × {Math.round(21 * artworkScale)} cm
+                                {Math.round(20 * (designItem.scale || 1))} × {Math.round(20 * (designItem.scale || 1))} cm
                               </div>
                             </div>
                           )}
                         </div>
-                      )}
+                      );
+                    })}
 
                     {/* DYNAMIC INTERACTIVE CUSTOM TEXT OVERLAY */}
                     {isTextVisible && customText &&
@@ -6594,7 +6643,12 @@ MORE THAN A MOMENT.`;
                 <div className="config-design-row">
                   {/* UPLOAD DROPZONE */}
                   <div className="add-design-card">
-                    <label className="config-label">Upload Your Design</label>
+                    <div className="label-with-active-tag">
+                    <label className="config-label">
+                      Design for {activePlacement === "front-center" ? "Front (Center)" : activePlacement === "back-center" ? "Back Center" : activePlacement === "sleeves" ? "Sleeves" : "Right Logo"}
+                    </label>
+                    <span className="current-target-tag">Target Placement</span>
+                  </div>
                     {!uploadedDesign ? (
                       <div
                         className={`upload-dropzone-v2 ${isDragging ? "is-dragging" : ""}`}
@@ -7056,24 +7110,18 @@ MORE THAN A MOMENT.`;
                         id: "front-center",
                         label: "Front (Center)",
                         side: "front",
-                        offset: { x: 0, y: 0 },
-                        scale: 1.0,
                         renderRect: () => <rect x="14" y="14" width="8" height="6" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "back-center",
                         label: "Back Center",
                         side: "back",
-                        offset: { x: 0, y: 0 },
-                        scale: 1.15,
                         renderRect: () => <rect x="13.5" y="12" width="9" height="11" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "sleeves",
                         label: "Sleeves",
                         side: "front",
-                        offset: { x: -118, y: -20 },
-                        scale: 0.65,
                         renderRect: () => (
                           <>
                             <rect x="4" y="13" width="5" height="5" rx="1" fill="#d8be9b" />
@@ -7085,24 +7133,38 @@ MORE THAN A MOMENT.`;
                         id: "right-logo",
                         label: "Right Logo",
                         side: "front",
-                        offset: { x: 52, y: -38 },
-                        scale: 0.55,
                         renderRect: () => <rect x="20" y="14" width="4" height="4" rx="1" fill="#d8be9b" />,
                       },
                     ].map((p) => {
-                      const isSel = placement === p.id || (p.id === "front-center" && placement === "chest-centre") || (p.id === "back-center" && placement === "back");
+                      const isEditing = activePlacement === p.id;
+                      const hasActiveDesign = placementDesigns[p.id]?.enabled && Boolean(placementDesigns[p.id]?.artwork);
                       return (
                         <button
                           key={p.id}
                           type="button"
-                          className={`placement-mini-btn ${isSel ? "is-selected" : ""}`}
+                          className={`placement-mini-btn ${isEditing ? "is-selected" : ""} ${hasActiveDesign ? "has-design" : ""}`}
                           onClick={() => {
+                            setActivePlacement(p.id);
                             setPlacement(p.id);
                             setViewSide(p.side);
-                            setArtworkOffsetX(p.offset.x);
-                            setArtworkOffsetY(p.offset.y);
-                            setArtworkScale(p.scale);
-                            setSelectedElement("artwork");
+                            setSelectedElement(p.id);
+                            // Enable placement if not enabled
+                            setPlacementDesigns((prev) => {
+                              const curr = prev[p.id] || {};
+                              if (!curr.enabled) {
+                                return {
+                                  ...prev,
+                                  [p.id]: {
+                                    ...curr,
+                                    enabled: true,
+                                    artwork: curr.artwork || "/customize/mountain-artwork-pure.png?v=2",
+                                    name: curr.name || `${p.label} Graphic`,
+                                    isImage: true,
+                                  },
+                                };
+                              }
+                              return prev;
+                            });
                           }}
                         >
                           <svg
