@@ -80,6 +80,7 @@ import { useCart } from "./context/useCart";
 import { api } from "./api";
 import "./index.css";
 import "./customize-studio.css";
+import { getDynamicGarmentImage } from "./utils/garmentColorEngine";
 
 let globalProductsCache = (() => {
   try {
@@ -5804,24 +5805,90 @@ function CustomizeTeePage() {
   };
   const STUDIO_ARTWORK = "/customize/mountain-artwork-pure.png?v=2";
 
-  // Garment Colors
+  // Garment Colors - Authentic real garment colorways (no CSS filters, true fabric dyeing)
   const colors = [
     { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none", available: true },
-    { id: "black", name: "Black", hex: "#181818", filter: "brightness(0.24) contrast(1.15)", available: true },
-    { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "sepia(0.8) hue-rotate(65deg) brightness(0.38) saturate(1.2)", available: true },
-    { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "sepia(0.9) hue-rotate(345deg) brightness(0.35) saturate(1.25)", available: true },
-    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "sepia(0.35) brightness(0.95) saturate(0.9)", available: true },
-    { id: "grey", name: "Grey", hex: "#7a7a7a", filter: "grayscale(1) brightness(0.7)", available: true },
+    { id: "black", name: "Black", hex: "#181818", filter: "none", available: true },
+    { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "none", available: true },
+    { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "none", available: true },
+    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "none", available: true },
+    { id: "grey", name: "Grey", hex: "#7a7a7a", filter: "none", available: true },
   ];
 
   const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
 
+  // Real Garment Color States
+  const [activeStageTeeSrc, setActiveStageTeeSrc] = useState(() => getStageTeeImage("front"));
+  const [thumbImages, setThumbImages] = useState({
+    front: PLAIN_TEE_FRONT,
+    back: PLAIN_TEE_BACK,
+    left: PLAIN_TEE_LEFT,
+    right: PLAIN_TEE_RIGHT,
+  });
+
+  // Dynamically dyes the garment fabric with true colorways (preserving studio background)
+  useEffect(() => {
+    let isCancelled = false;
+    const baseSrc = getStageTeeImage(viewSide);
+    if (selectedColor === "offwhite") {
+      setActiveStageTeeSrc(baseSrc);
+    } else {
+      getDynamicGarmentImage(baseSrc, selectedColor).then((dyedSrc) => {
+        if (!isCancelled && dyedSrc) {
+          setActiveStageTeeSrc(dyedSrc);
+        }
+      });
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [viewSide, selectedColor]);
+
+  // Sync gallery thumbnails with active garment colorway
+  useEffect(() => {
+    if (selectedColor === "offwhite") {
+      setThumbImages({
+        front: PLAIN_TEE_FRONT,
+        back: PLAIN_TEE_BACK,
+        left: PLAIN_TEE_LEFT,
+        right: PLAIN_TEE_RIGHT,
+      });
+      return;
+    }
+
+    let isCancelled = false;
+    const views = ["front", "back", "left", "right"];
+    views.forEach(async (v) => {
+      const src = getStageTeeImage(v);
+      const dyed = await getDynamicGarmentImage(src, selectedColor);
+      if (!isCancelled && dyed) {
+        setThumbImages((prev) => ({ ...prev, [v]: dyed }));
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedColor]);
+
+  // Background pre-warming for instant 0ms color switches
+  useEffect(() => {
+    const idleTimer = setTimeout(() => {
+      const nonWhiteColors = ["black", "olive", "coffee", "beige", "grey"];
+      const baseSrc = getStageTeeImage(viewSide);
+      nonWhiteColors.forEach((c) => {
+        getDynamicGarmentImage(baseSrc, c);
+      });
+    }, 200);
+    return () => clearTimeout(idleTimer);
+  }, [viewSide]);
+
   // Gallery Thumbnails
   const galleryThumbs = [
-    { id: 0, title: "Front View", img: PLAIN_TEE_FRONT, view: "front" },
-    { id: 1, title: "Back View", img: PLAIN_TEE_BACK, view: "back" },
-    { id: 2, title: "Left Side", img: PLAIN_TEE_LEFT, view: "left" },
-    { id: 3, title: "Right Side", img: PLAIN_TEE_RIGHT, view: "right" },
+    { id: 0, title: "Front View", img: thumbImages.front || PLAIN_TEE_FRONT, view: "front" },
+    { id: 1, title: "Back View", img: thumbImages.back || PLAIN_TEE_BACK, view: "back" },
+    { id: 2, title: "Left Side", img: thumbImages.left || PLAIN_TEE_LEFT, view: "left" },
+    { id: 3, title: "Right Side", img: thumbImages.right || PLAIN_TEE_RIGHT, view: "right" },
   ];
 
   // Pre-designed template library
@@ -6135,8 +6202,8 @@ function CustomizeTeePage() {
       ctx.fillStyle = "#090909";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // 2. Draw base T-shirt garment with active color filter & exact screen aspect ratio
-      const teeSrc = getStageTeeImage(viewSide);
+      // 2. Draw base T-shirt garment with active real fabric color & exact screen aspect ratio
+      const teeSrc = activeStageTeeSrc || getStageTeeImage(viewSide);
       const teeImg = await loadImage(teeSrc);
       if (teeImg) {
         const teeImgEl = stageEl ? stageEl.querySelector(".tee-desktop-img") : null;
@@ -6169,13 +6236,8 @@ function CustomizeTeePage() {
           }
         }
 
-        if (currentColorObj && currentColorObj.filter && currentColorObj.filter !== "none") {
-          ctx.filter = currentColorObj.filter;
-        } else {
-          ctx.filter = "none";
-        }
-        ctx.drawImage(teeImg, teeX, teeY, teeW, teeH);
         ctx.filter = "none";
+        ctx.drawImage(teeImg, teeX, teeY, teeW, teeH);
       }
 
       // 3. Fallback layout percentages in case DOM elements are not currently attached
@@ -6547,7 +6609,7 @@ MORE THAN A MOMENT.`;
                         <span>360°</span>
                       </div>
                     ) : (
-                      <img src={thumb.img} alt={thumb.title} style={{ filter: currentColorObj.filter }} />
+                      <img src={thumb.img} alt={thumb.title} style={{ filter: "none" }} />
                     )}
                   </button>
                 ))}
@@ -6616,10 +6678,10 @@ MORE THAN A MOMENT.`;
                     onClick={() => setSelectedElement(null)}
                   >
                     <img
-                      src={getStageTeeImage(viewSide)}
+                      src={activeStageTeeSrc || getStageTeeImage(viewSide)}
                       alt="ENYTM Plain Oversized Tee"
                       className="tee-desktop-img"
-                      style={{ filter: currentColorObj.filter }}
+                      style={{ filter: "none" }}
                     />
 
 
@@ -7257,9 +7319,9 @@ MORE THAN A MOMENT.`;
                   <span className="col-label">Front View</span>
                   <div className="mini-tee-frame">
                     <img
-                      src={PLAIN_TEE_FRONT}
+                      src={thumbImages.front || PLAIN_TEE_FRONT}
                       alt="Front"
-                      style={{ filter: currentColorObj.filter }}
+                      style={{ filter: "none" }}
                     />
                     {placement !== "back" && placement !== "back-center" && uploadedDesign?.dataUrl && (
                       <div className={`mini-overlay placement-${placement}`}>
@@ -7276,9 +7338,9 @@ MORE THAN A MOMENT.`;
                   <span className="col-label">Back View</span>
                   <div className="mini-tee-frame">
                     <img
-                      src={PLAIN_TEE_BACK}
+                      src={thumbImages.back || PLAIN_TEE_BACK}
                       alt="Back"
-                      style={{ filter: currentColorObj.filter }}
+                      style={{ filter: "none" }}
                     />
                     {(placement === "back" || placement === "back-center") && uploadedDesign?.dataUrl && (
                       <div className="mini-overlay placement-back">
@@ -7414,10 +7476,10 @@ MORE THAN A MOMENT.`;
               </button>
               <div className="tee-stage-zoomed">
                 <img
-                  src={getStageTeeImage(viewSide)}
+                  src={activeStageTeeSrc || getStageTeeImage(viewSide)}
                   alt="ENYTM Tee Preview Zoomed"
                   className="tee-base-img"
-                  style={{ filter: currentColorObj.filter }}
+                  style={{ filter: "none" }}
                 />
                 {isArtworkVisible &&
                   ((placement === "back" && viewSide === "back") ||

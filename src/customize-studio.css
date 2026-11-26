@@ -270,7 +270,6 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
-  transition: filter 0.3s ease !important;
   user-select: none !important;
   display: block !important;
 }
