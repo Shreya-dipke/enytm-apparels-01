@@ -5392,6 +5392,7 @@ function CustomizeTeePage() {
   // Start real-time transformation on canvas
   const startTransform = (e, element, type) => {
     e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
     setSelectedElement(element);
     setIsTransforming(type);
 
@@ -6131,7 +6132,7 @@ MORE THAN A MOMENT.`;
 
                           {/* INTERACTIVE BOUNDING BOX & HANDLES WHEN SELECTED */}
                           {selectedElement === "artwork" && (
-                            <div className="canvas-bounding-box" onClick={(e) => e.stopPropagation()}>
+                            <div className="canvas-bounding-box" onPointerDown={(e) => startTransform(e, "artwork", "move")} onClick={(e) => e.stopPropagation()}>
                               {/* TOP FLOATING QUICK ACTIONS BAR */}
                               <div className="canvas-elem-mini-bar">
                                 <button
@@ -6243,7 +6244,7 @@ MORE THAN A MOMENT.`;
 
                           {/* INTERACTIVE BOUNDING BOX FOR TEXT */}
                           {selectedElement === "text" && (
-                            <div className="canvas-bounding-box" onClick={(e) => e.stopPropagation()}>
+                            <div className="canvas-bounding-box" onPointerDown={(e) => startTransform(e, "text", "move")} onClick={(e) => e.stopPropagation()}>
                               <div className="canvas-elem-mini-bar">
                                 <button
                                   type="button"

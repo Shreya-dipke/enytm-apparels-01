@@ -296,8 +296,8 @@
 /* DYNAMIC PRINT OVERLAY */
 .tee-print-overlay {
   position: absolute !important;
-  pointer-events: none !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  pointer-events: auto !important;
+  transition: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -3371,4 +3371,62 @@
   object-fit: contain !important;
   pointer-events: none !important;
   display: block !important;
+}
+
+/* ======================================================== */
+/* CRITICAL FIX: ENABLE FULL DRAGGING ON OVERLAYS & BOXES   */
+/* ======================================================== */
+
+.tee-stage-viewport {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.tee-print-overlay,
+.tee-interactive-overlay {
+  pointer-events: auto !important;
+  cursor: grab !important;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: none !important;
+}
+
+.tee-print-overlay:active,
+.tee-interactive-overlay:active {
+  cursor: grabbing !important;
+}
+
+.canvas-bounding-box {
+  cursor: grab !important;
+  pointer-events: auto !important;
+}
+
+.canvas-bounding-box:active {
+  cursor: grabbing !important;
+}
+
+.print-graphic-img {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -webkit-user-select: none !important;
+}
+
+.canvas-elem-mini-bar,
+.canvas-handle {
+  pointer-events: auto !important;
+  cursor: default !important;
+}
+
+.canvas-handle-rot {
+  cursor: grab !important;
+}
+
+.canvas-handle-nw, .canvas-handle-se {
+  cursor: nwse-resize !important;
+}
+
+.canvas-handle-ne, .canvas-handle-sw {
+  cursor: nesw-resize !important;
 }
