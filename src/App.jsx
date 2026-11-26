@@ -4721,9 +4721,10 @@ function PrivacyPolicyPage() {
           </p>
           <div className="policy-contact-box">
             <b>ENYTM APPARELS SUPPORT</b>
-            <p>Email: <a href="mailto:support@enytm.co.in">support@enytm.co.in</a></p>
-            <p>WhatsApp: <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">+91 (Official WhatsApp)</a></p>
-            <p>Location: Charoli, Pune, Maharashtra 412105, India</p>
+            <p>Email: <a href="mailto:enytmapparels@gmail.com">enytmapparels@gmail.com</a></p>
+            <p>Contact number: <a href="tel:+919405815466">+91 9405815466</a></p>
+            <p>WhatsApp: <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">+91 9405815466 (Official WhatsApp)</a></p>
+            <p>Address: Charoli, Pune, Maharashtra 412105, India</p>
           </div>
         </section>
       </div>
@@ -4787,7 +4788,7 @@ function ShippingReturnsPage() {
             <div className="how-to-report">
               <b>How to report:</b>
               <ol>
-                <li>Reach out to our official <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp Support</a> or email <a href="mailto:support@enytm.co.in">support@enytm.co.in</a>.</li>
+                <li>Reach out to our official <a href="https://wa.me/message/5KFLGKP4XCG7C1" target="_blank" rel="noreferrer">WhatsApp Support</a> or email <a href="mailto:enytmapparels@gmail.com">enytmapparels@gmail.com</a>.</li>
                 <li>Share your <b>Order Receipt ID</b> (e.g. ENYTM-XXXX).</li>
                 <li>Attach clear photographs or an unboxing video showing the shipping label and the flaw/damage.</li>
                 <li>Our team will arrange a priority replacement or full refund within 24–48 hours.</li>
