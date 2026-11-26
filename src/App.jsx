@@ -5767,8 +5767,17 @@ function CustomizeTeePage() {
   }, [selectedElement, activePlacement]);
 
   // Asset paths with cache buster to guarantee fresh loads
-  const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
-  const PLAIN_TEE_BACK = "/customize/plain-tee-back.jpg?v=2";
+  const PLAIN_TEE_FRONT = "/customize/tee-front.jpg?v=3";
+  const PLAIN_TEE_BACK = "/customize/tee-back.jpg?v=3";
+  const PLAIN_TEE_LEFT = "/customize/tee-left.jpg?v=3";
+  const PLAIN_TEE_RIGHT = "/customize/tee-right.jpg?v=3";
+
+  const getStageTeeImage = (side) => {
+    if (side === "back") return PLAIN_TEE_BACK;
+    if (side === "left") return PLAIN_TEE_LEFT;
+    if (side === "right") return PLAIN_TEE_RIGHT;
+    return PLAIN_TEE_FRONT;
+  };
   const STUDIO_ARTWORK = "/customize/mountain-artwork-pure.png?v=2";
 
   // Garment Colors
@@ -5786,10 +5795,9 @@ function CustomizeTeePage() {
   // Gallery Thumbnails
   const galleryThumbs = [
     { id: 0, title: "Front View", img: PLAIN_TEE_FRONT, view: "front" },
-    { id: 1, title: "Side View", img: "/customize/thumb-side.jpg", view: "left" },
-    { id: 2, title: "Back View", img: PLAIN_TEE_BACK, view: "back" },
-    { id: 3, title: "Collar Ribbing", img: "/customize/thumb-collar.jpg", view: "front" },
-    { id: 4, title: "Fabric Weave", img: "/customize/thumb-fabric.jpg", view: "front" },
+    { id: 1, title: "Back View", img: PLAIN_TEE_BACK, view: "back" },
+    { id: 2, title: "Left Side", img: PLAIN_TEE_LEFT, view: "left" },
+    { id: 3, title: "Right Side", img: PLAIN_TEE_RIGHT, view: "right" },
   ];
 
   // Pre-designed template library
@@ -5998,7 +6006,7 @@ function CustomizeTeePage() {
     const ctx = canvas.getContext("2d");
     const teeImg = new Image();
     teeImg.crossOrigin = "anonymous";
-    teeImg.src = viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT;
+    teeImg.src = getStageTeeImage(viewSide);
     teeImg.onload = () => {
       ctx.drawImage(teeImg, 0, 0, 1024, 1024);
       if (uploadedDesign && uploadedDesign.dataUrl) {
@@ -6322,7 +6330,7 @@ MORE THAN A MOMENT.`;
                     onClick={() => setSelectedElement(null)}
                   >
                     <img
-                      src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
+                      src={getStageTeeImage(viewSide)}
                       alt="ENYTM Plain Oversized Tee"
                       className="tee-desktop-img"
                       style={{ filter: currentColorObj.filter }}
@@ -6348,8 +6356,9 @@ MORE THAN A MOMENT.`;
 
                       // Check view side compatibility
                       const isBackItem = placeKey === "back-center" || placeKey === "back";
-                      if (isBackItem && viewSide !== "back") return null;
-                      if (!isBackItem && viewSide === "back") return null;
+                      if (viewSide === "front" && isBackItem) return null;
+                      if (viewSide === "back" && !isBackItem) return null;
+                      if ((viewSide === "left" || viewSide === "right") && placeKey !== "sleeves") return null;
 
                       const isSelected = selectedElement === placeKey;
 
@@ -7255,7 +7264,7 @@ MORE THAN A MOMENT.`;
               </button>
               <div className="tee-stage-zoomed">
                 <img
-                  src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
+                  src={getStageTeeImage(viewSide)}
                   alt="ENYTM Tee Preview Zoomed"
                   className="tee-base-img"
                   style={{ filter: currentColorObj.filter }}
