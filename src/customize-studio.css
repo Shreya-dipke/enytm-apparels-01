@@ -230,6 +230,14 @@
   max-height: 17%;
 }
 
+.tee-print-overlay.placement-right-chest {
+  top: 29%;
+  left: 64%;
+  transform: translate(-50%, -20%);
+  width: 17%;
+  max-height: 17%;
+}
+
 .tee-print-overlay.placement-side-left {
   top: 42%;
   left: 27%;
@@ -257,6 +265,12 @@
   transform: translate(-50%, -20%) scale(0.9);
 }
 .tee-print-overlay.placement-left-chest.size-a3 {
+  transform: translate(-50%, -20%) scale(1.1);
+}
+.tee-print-overlay.placement-right-chest.size-a4 {
+  transform: translate(-50%, -20%) scale(0.9);
+}
+.tee-print-overlay.placement-right-chest.size-a3 {
   transform: translate(-50%, -20%) scale(1.1);
 }
 .tee-print-overlay.placement-side-left.size-a4 {

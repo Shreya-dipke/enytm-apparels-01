@@ -5339,34 +5339,39 @@ function CustomizeTeePage() {
   // WhatsApp Order Link generator
   const generateWhatsAppLink = () => {
     const sizeString = qtyTier === 1 ? size1 : `Shirt 1: ${size1}, Shirt 2: ${size2}`;
-    const text = `*NEW CUSTOMIZATION ENQUIRY - ENYTM STUDIO*
----------------------------------------
-• *Product:* ENYTM Heavyweight Oversized Tee
-• *Color:* ${currentColorObj.name}
-• *View Mode:* ${viewSide === "back" ? "Back View" : "Front View"}
-• *Print Placement:* ${
-      placement === "back"
-        ? "Back Print"
-        : placement === "chest-centre"
-        ? "Chest (Centre)"
-        : placement === "left-chest"
-        ? "Left Chest"
-        : "Side (Left)"
-    }
-• *Print Size:* ${printSize} (${printSize === "A3" ? "29.7 × 42 cm Large" : "21 × 29.7 cm Medium"})
-• *Quantity:* ${qtyTier} T-Shirt${qtyTier > 1 ? "s" : ""}
-• *Garment Size:* ${sizeString}
 
-*PRICE BREAKDOWN:*
-• T-Shirt Base: ₹${teeSubtotal}
-• Customization Add-on: +₹${customizationFee}
-• Print Size Add-on: +₹${printSizeFees}
-• *Total Estimated:* ₹${orderTotal}
+    let placementString = "Back";
+    if (placement === "chest-centre") placementString = "Chest";
+    else if (placement === "left-chest" || placement === "side-left") placementString = "Left Chest";
+    else if (placement === "right-chest" || placement === "side-right") placementString = "Right Chest";
+    else if (placement === "back") placementString = "Back";
 
-*DESIGN DETAILS:*
-• ${uploadedDesign ? `Custom Design: ${uploadedDesign.name} (${uploadedDesign.size})` : "Default Studio Artwork (Mountain & Sun)"}
+    const printSizeString = printSize; // "A4" or "A3"
+    const designString = uploadedDesign
+      ? `I have attached my artwork (${uploadedDesign.name}).`
+      : `I have attached my artwork.`;
 
-I would like to confirm and place this customization order. Please advise on production & dispatch!`;
+    const text = `Hi ENYTM™️! 👋
+
+I want to customize my T-shirt.
+
+Here are my details:
+
+👕 Product: Oversized T-shirt
+💰 Blank T-shirt: ₹749
+🎨 Colour: ${currentColorObj.name}
+📏 Size: ${sizeString}
+🔢 Quantity: ${qtyTier}
+
+🖼️ Design: ${designString}
+📍 Print Placement: ${placementString}
+📐 Print Size: ${printSizeString}
+
+Please check my design and share the final price and confirmation.
+
+Looking forward to my customized ENYTM™️ T-shirt!
+
+MORE THAN A MOMENT.`;
 
     return `https://wa.me/919405815466?text=${encodeURIComponent(text)}`;
   };
@@ -5558,9 +5563,9 @@ I would like to confirm and place this customization order. Please advise on pro
 
                 <button
                   type="button"
-                  className={`placement-guide-item ${placement === "side-left" ? "is-active" : ""}`}
+                  className={`placement-guide-item ${placement === "right-chest" ? "is-active" : ""}`}
                   onClick={() => {
-                    setPlacement("side-left");
+                    setPlacement("right-chest");
                     setViewSide("front");
                   }}
                 >
