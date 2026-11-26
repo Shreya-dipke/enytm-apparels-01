@@ -22181,9 +22181,9 @@ a.btn.outline {
 .cta-btn-col {
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
-  width: 100% !important;
-  max-width: 320px !important;
+  align-items: flex-end !important;
+  width: auto !important;
+  max-width: 260px !important;
 }
 
 .send-whatsapp-main-btn {
@@ -23146,21 +23146,22 @@ a.btn.outline {
 /* ======================================================== */
 
 .whatsapp-main-send-btn {
-  width: 100% !important;
+  width: auto !important;
+  min-width: 210px !important;
   background: linear-gradient(180deg, #25D366 0%, #1EBE5B 100%) !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 9999px !important;
-  padding: 16px 28px !important;
-  font-size: 15px !important;
+  padding: 9px 18px !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.4px !important;
   cursor: pointer !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 10px !important;
-  box-shadow: 0 4px 22px rgba(37, 211, 102, 0.45) !important;
+  gap: 8px !important;
+  box-shadow: 0 3px 14px rgba(37, 211, 102, 0.35) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-transform: uppercase !important;
 }
@@ -23176,11 +23177,11 @@ a.btn.outline {
 }
 
 .whatsapp-help-note {
-  font-size: 11px !important;
+  font-size: 10px !important;
   color: #888888 !important;
-  text-align: center !important;
-  margin: 10px 0 0 0 !important;
-  line-height: 1.4 !important;
+  text-align: right !important;
+  margin: 5px 0 0 0 !important;
+  line-height: 1.35 !important;
 }
 
 .confirm-whatsapp-btn.full-width {
