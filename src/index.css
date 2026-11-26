@@ -18178,3 +18178,63 @@ a.btn.outline {
   object-fit: contain;
   display: block;
 }
+
+/* ========================================================
+   REDUCE EXCESSIVE SPACE ABOVE QUOTE / THOUGHT SECTION
+   ======================================================== */
+.home-v3 .home-arrivals-v2,
+.section.home-arrivals.home-arrivals-v2 {
+  padding: 24px 4vw 24px !important;
+  margin-bottom: 0 !important;
+}
+
+.home-v3 .arrivals-footnote {
+  margin-top: 16px !important;
+  padding-top: 12px !important;
+  margin-bottom: 0 !important;
+}
+
+.quote,
+.quote.quote-v2,
+.home-v3 .quote,
+.home-v3 .quote.quote-v2,
+.quote-black-label {
+  padding: 36px 20px 48px !important;
+  margin: 0 !important;
+}
+
+.quote-mark,
+.quote-v2 .quote-mark,
+.home-v3 .quote-v2 .quote-mark {
+  font-size: 42px !important;
+  line-height: 1 !important;
+  margin-bottom: 8px !important;
+  height: auto !important;
+}
+
+.quote .eyebrow,
+.quote-v2 .eyebrow,
+.home-v3 .quote-v2 .eyebrow {
+  margin: 0 0 10px !important;
+}
+
+.quote h2,
+.quote-v2 h2,
+.home-v3 .quote-v2 h2 {
+  margin: 0 0 20px !important;
+}
+
+@media (max-width: 768px) {
+  .home-v3 .home-arrivals-v2,
+  .section.home-arrivals.home-arrivals-v2 {
+    padding: 14px 15px 18px !important;
+  }
+
+  .quote,
+  .quote.quote-v2,
+  .home-v3 .quote,
+  .home-v3 .quote.quote-v2,
+  .quote-black-label {
+    padding: 28px 16px 36px !important;
+  }
+}
