@@ -5533,6 +5533,239 @@ function CustomizeTeePage() {
     initialAngle: 0,
   });
 
+  // Start real-time transformation on canvas (multi-placement & text)
+  const startTransform = (e, element, type) => {
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+    setSelectedElement(element);
+    setIsTransforming(type);
+
+    if (element && element !== "text" && element !== "artwork") {
+      setActivePlacement(element);
+      setPlacement(element);
+    }
+
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+
+    let centerX = clientX;
+    let centerY = clientY;
+
+    const overlayEl = e.currentTarget.closest(".tee-interactive-overlay");
+    if (overlayEl) {
+      const rect = overlayEl.getBoundingClientRect();
+      centerX = rect.left + rect.width / 2;
+      centerY = rect.top + rect.height / 2;
+    } else if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      centerX = rect.left + rect.width / 2;
+      centerY = rect.top + rect.height / 2;
+    }
+
+    const initialDist = Math.hypot(clientX - centerX, clientY - centerY) || 1;
+    const initialAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+
+    let startOffsetX = 0;
+    let startOffsetY = 0;
+    let startScale = 1;
+    let startRot = 0;
+
+    if (element === "text") {
+      startOffsetX = textOffsetX;
+      startOffsetY = textOffsetY;
+      startScale = textScale;
+      startRot = textRotation;
+    } else {
+      const pKey = element === "artwork" ? activePlacement : element;
+      const design = placementDesigns[pKey] || placementDesigns["front-center"] || {};
+      startOffsetX = design.offsetX || 0;
+      startOffsetY = design.offsetY || 0;
+      startScale = design.scale || 1;
+      startRot = design.rotation || 0;
+    }
+
+    transformRef.current = {
+      type,
+      element,
+      startX: clientX,
+      startY: clientY,
+      startOffsetX,
+      startOffsetY,
+      startScale,
+      startRot,
+      centerX,
+      centerY,
+      initialDist,
+      initialAngle,
+    };
+  };
+
+  // Global pointer & touch tracking for buttery smooth 60fps direct manipulation
+  useEffect(() => {
+    const onPointerMove = (e) => {
+      if (!isTransforming) return;
+      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      const {
+        type,
+        element,
+        startX,
+        startY,
+        startOffsetX,
+        startOffsetY,
+        startScale,
+        startRot,
+        centerX,
+        centerY,
+        initialDist,
+        initialAngle,
+      } = transformRef.current;
+
+      if (type === "move") {
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        let newX = startOffsetX + dx;
+        let newY = startOffsetY + dy;
+
+        // Constraint check - limit to canvas boundary +/- 160px horizontal, +/- 170px vertical
+        newX = Math.max(-160, Math.min(160, newX));
+        newY = Math.max(-170, Math.min(170, newY));
+
+        // Magnetic snap to center within 8px
+        if (Math.abs(newX) < 8) {
+          newX = 0;
+          setIsSnappedToCenter(true);
+        } else {
+          setIsSnappedToCenter(false);
+        }
+
+        if (element === "text") {
+          setTextOffsetX(newX);
+          setTextOffsetY(newY);
+        } else {
+          const pKey = element === "artwork" ? activePlacement : element;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: {
+              ...prev[pKey],
+              offsetX: newX,
+              offsetY: newY,
+            },
+          }));
+        }
+      } else if (type.startsWith("resize")) {
+        const currDist = Math.hypot(clientX - centerX, clientY - centerY);
+        const ratio = currDist / initialDist;
+        const newScale = Math.min(2.5, Math.max(0.3, Number((startScale * ratio).toFixed(2))));
+        if (element === "text") {
+          setTextScale(newScale);
+        } else {
+          const pKey = element === "artwork" ? activePlacement : element;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: {
+              ...prev[pKey],
+              scale: newScale,
+            },
+          }));
+        }
+      } else if (type === "rotate") {
+        const currAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+        const delta = currAngle - initialAngle;
+        let newRot = Math.round((startRot + delta + 360) % 360);
+        // Magnetic snap to 0, 90, 180, 270 if within 5 degrees
+        [0, 90, 180, 270, 360].forEach((snap) => {
+          if (Math.abs(newRot - snap) < 5) newRot = snap % 360;
+        });
+        if (element === "text") {
+          setTextRotation(newRot);
+        } else {
+          const pKey = element === "artwork" ? activePlacement : element;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: {
+              ...prev[pKey],
+              rotation: newRot,
+            },
+          }));
+        }
+      }
+    };
+
+    const onPointerUp = () => {
+      setIsTransforming(null);
+      setIsSnappedToCenter(false);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("touchmove", onPointerMove, { passive: false });
+    window.addEventListener("touchend", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", onPointerUp);
+    };
+  }, [isTransforming, activePlacement]);
+
+  // Keyboard shortcut listener for precision nudge and deletion
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedElement) return;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+
+      const step = e.shiftKey ? 10 : 2;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (selectedElement === "text") setTextOffsetX((x) => x - step);
+        else {
+          const pKey = selectedElement === "artwork" ? activePlacement : selectedElement;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: { ...prev[pKey], offsetX: (prev[pKey]?.offsetX || 0) - step }
+          }));
+        }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (selectedElement === "text") setTextOffsetX((x) => x + step);
+        else {
+          const pKey = selectedElement === "artwork" ? activePlacement : selectedElement;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: { ...prev[pKey], offsetX: (prev[pKey]?.offsetX || 0) + step }
+          }));
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (selectedElement === "text") setTextOffsetY((y) => y - step);
+        else {
+          const pKey = selectedElement === "artwork" ? activePlacement : selectedElement;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: { ...prev[pKey], offsetY: (prev[pKey]?.offsetY || 0) - step }
+          }));
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (selectedElement === "text") setTextOffsetY((y) => y + step);
+        else {
+          const pKey = selectedElement === "artwork" ? activePlacement : selectedElement;
+          setPlacementDesigns((prev) => ({
+            ...prev,
+            [pKey]: { ...prev[pKey], offsetY: (prev[pKey]?.offsetY || 0) + step }
+          }));
+        }
+      } else if (e.key === "Escape") {
+        setSelectedElement(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedElement, activePlacement]);
+
   // Asset paths with cache buster to guarantee fresh loads
   const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
   const PLAIN_TEE_BACK = "/customize/plain-tee-back.jpg?v=2";
