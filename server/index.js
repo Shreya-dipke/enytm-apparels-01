@@ -73,6 +73,25 @@ const uploadVideoFile = multer({
   },
 });
 
+const uploadArtworkFile = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/svg+xml",
+      "application/pdf",
+    ];
+    if (!allowed.includes(file.mimetype)) {
+      return cb(new Error("Supported formats: PNG, JPG, JPEG, SVG, PDF (Max 50MB)."));
+    }
+    cb(null, true);
+  },
+});
+
 // Non-blocking initial warm-up read so Express can open port 5173 instantly
 db.read().catch(e => {
   console.warn("[MongoDB] Initial read deferred:", e.message);
@@ -1528,6 +1547,160 @@ app.post("/api/admin/login", async (req, res) => {
   }
   const token = jwt.sign({ email: configuredEmail, role: "admin" }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "12h" });
   res.json({ token });
+});
+
+// ============================================================
+// CUSTOM DESIGN STUDIO ENDPOINTS
+// ============================================================
+
+// 1. Artwork Upload (Max 50MB, PNG/JPG/SVG/PDF)
+app.post("/api/custom-designs/upload", (req, res) => {
+  uploadArtworkFile.single("artwork")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message || "Artwork upload failed." });
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No artwork file selected." });
+    }
+    res.json({
+      success: true,
+      url: `/uploads/${req.file.filename}`,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: (req.file.size / (1024 * 1024)).toFixed(2) + " MB",
+      mimetype: req.file.mimetype,
+    });
+  });
+});
+
+// 2. Pre-Designed Artwork Library
+app.get("/api/custom-designs/templates", (req, res) => {
+  const templates = [
+    { id: "tmpl-nature-01", category: "Nature", title: "Alpine Sunrise", image: "/customize/mountain-artwork-pure.png" },
+    { id: "tmpl-street-01", category: "Streetwear", title: "Midnight Club", text: "MIDNIGHT 98", style: "streetwear" },
+    { id: "tmpl-typo-01", category: "Typography", title: "More Than A Moment", text: "MORE THAN A MOMENT.", style: "sans" },
+    { id: "tmpl-minimal-01", category: "Minimalist", title: "Geometric Compass", text: "ENYTM EST. 2024", style: "display" },
+    { id: "tmpl-vintage-01", category: "Vintage", title: "Heritage Archive", text: "AUTHENTIC STREETWEAR", style: "serif" },
+  ];
+  res.json({ success: true, templates });
+});
+
+// 3. Save Custom Design & Calculate Authoritative Pricing
+app.post("/api/custom-designs", async (req, res) => {
+  try {
+    const {
+      color = "Off White",
+      sizes = ["L"],
+      quantity = 1,
+      placement = "chest-centre",
+      printSize = "A3",
+      customText = null,
+      uploadedDesign = null,
+      frontCanvas = null,
+      backCanvas = null,
+      customerNotes = "",
+    } = req.body || {};
+
+    const basePricePerTee = 749;
+    const qty = Math.max(1, Number(quantity) || 1);
+    const customizationFee = qty === 1 ? 79 : qty === 2 ? 129 : 129 + ((qty - 2) * 69);
+    
+    let printPlacementFee = 0;
+    if (placement === "back") {
+      printPlacementFee = printSize === "A4" ? 29 : 49;
+    }
+
+    const calculatedTotal = (basePricePerTee * qty) + customizationFee + (printPlacementFee * qty);
+    const customId = `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newDesign = {
+      id: customId,
+      customId,
+      userId: req.user?.id || "guest",
+      color,
+      sizes: Array.isArray(sizes) ? sizes : [sizes],
+      quantity: qty,
+      placement,
+      printSize,
+      customText,
+      uploadedDesign,
+      frontCanvas,
+      backCanvas,
+      customerNotes,
+      pricing: {
+        basePricePerTee,
+        customizationFee,
+        printPlacementFee,
+        total: calculatedTotal,
+        currency: "INR",
+      },
+      status: "draft_saved",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    try {
+      const col = (await db.connect()).collection("customDesigns");
+      await col.insertOne(newDesign);
+      delete db.cacheTimestamps["customDesigns"];
+    } catch (e) {
+      db.data.customDesigns ||= [];
+      db.data.customDesigns.push(newDesign);
+    }
+
+    res.json({
+      success: true,
+      customId,
+      total: calculatedTotal,
+      design: newDesign,
+    });
+  } catch (err) {
+    console.error("[CUSTOM DESIGN ERROR]", err);
+    res.status(500).json({ success: false, message: "Could not save custom design." });
+  }
+});
+
+// 4. Fetch Custom Design By ID
+app.get("/api/custom-designs/:id", async (req, res) => {
+  try {
+    const col = (await db.connect()).collection("customDesigns");
+    const design = await col.findOne({ customId: req.params.id }) || await col.findOne({ id: req.params.id });
+    if (!design) {
+      const inMem = (db.data.customDesigns || []).find(d => d.customId === req.params.id || d.id === req.params.id);
+      if (!inMem) return res.status(404).json({ success: false, message: "Design not found." });
+      return res.json({ success: true, design: inMem });
+    }
+    res.json({ success: true, design });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Could not fetch custom design." });
+  }
+});
+
+// 5. Admin: List All Custom Designs
+app.get("/api/admin/custom-designs", adminAuth, async (req, res) => {
+  try {
+    const col = (await db.connect()).collection("customDesigns");
+    const designs = await col.find({}).sort({ createdAt: -1 }).toArray();
+    res.json({ success: true, designs });
+  } catch (err) {
+    const fallback = (db.data.customDesigns || []).slice().sort((a, b) => b.createdAt - a.createdAt);
+    res.json({ success: true, designs: fallback });
+  }
+});
+
+// 6. Admin: Update Custom Design Approval Status
+app.patch("/api/admin/custom-designs/:id/status", adminAuth, async (req, res) => {
+  try {
+    const { status, adminNotes } = req.body || {};
+    const col = (await db.connect()).collection("customDesigns");
+    await col.updateOne(
+      { $or: [{ customId: req.params.id }, { id: req.params.id }] },
+      { $set: { status, adminNotes, updatedAt: Date.now() } }
+    );
+    res.json({ success: true, message: `Status updated to ${status}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Could not update status." });
+  }
 });
 
 app.get("/api/admin/dashboard", adminAuth, async (req, res) => {

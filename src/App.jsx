@@ -66,6 +66,13 @@ import {
   Droplet,
   Sliders,
   Ruler,
+  Undo2,
+  Redo2,
+  Clock,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Download,
   Image as ImageIcon
 } from "lucide-react";
 import { useCart } from "./context/useCart";
@@ -1166,8 +1173,25 @@ function ProductPage() {
           <h2 style={{ fontSize: "16px", letterSpacing: ".15em", color: "#f5f5f2", margin: "16px 0 20px" }}>LOADING PIECE...</h2>
           <div style={{ width: "48px", height: "2px", background: "#222", overflow: "hidden", position: "relative" }}>
             <div style={{ width: "100%", height: "100%", background: "#d4af37", animation: "pulse 1.2s infinite ease-in-out" }} />
+                {/* MOBILE STICKY BOTTOM ACTION BAR */}
+        <div className="customize-mobile-sticky-bar">
+          <div className="mobile-sticky-price">
+            <span className="mobile-price-lbl">Total</span>
+            <span className="mobile-price-val">₹{orderTotal}</span>
           </div>
-        </main>
+          <button
+            type="button"
+            className="mobile-sticky-whatsapp-btn"
+            onClick={() => setShowConfirmModal(true)}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.02.592 1.849.883 2.806.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.766-5.768-5.766zm9.965 5.765c0 5.514-4.482 9.996-9.965 9.996-1.706 0-3.32-.44-4.737-1.218l-5.294 1.387 1.41-5.155c-.887-1.488-1.379-3.21-1.379-5.01 0-5.514 4.482-9.996 9.965-9.996 5.483 0 9.965 4.482 9.965 9.996z"/>
+            </svg>
+            <span>Send on WhatsApp</span>
+          </button>
+        </div>
+      </div>
+    </main>
       );
     }
     return (
@@ -5284,47 +5308,80 @@ function FaqPage() {
 
 function CustomizeTeePage() {
   const { addToCart } = useCart();
-  const [activeTab, setActiveTab] = useState("design"); // design, text, logo, placement
-  const [selectedThumb, setSelectedThumb] = useState(0); // 0..5
-  const [viewSide, setViewSide] = useState("front"); // front, back, left, right
+  const navigate = useNavigate();
+
+  // Core customization state
+  const [activeTab, setActiveTab] = useState("design"); // "design", "text", "logo", "templates", "placement"
+  const [viewSide, setViewSide] = useState("front"); // "front", "back", "left", "right"
+  const [selectedThumb, setSelectedThumb] = useState(0);
   const [selectedColor, setSelectedColor] = useState("offwhite");
   const [selectedFabric, setSelectedFabric] = useState("240gsm");
-  const [selectedSize, setSelectedSize] = useState("L");
+  const [packageType, setPackageType] = useState("single"); // "single" (1 tee), "double" (2 tees)
+  const [sizeTee1, setSizeTee1] = useState("L");
+  const [sizeTee2, setSizeTee2] = useState("M");
   const [quantity, setQuantity] = useState(1);
-  const [placement, setPlacement] = useState("chest-centre"); // chest-centre, left-chest, right-chest, back, full-front
-  const [printSize, setPrintSize] = useState("A3"); // A4, A3
-  const [printType, setPrintType] = useState("artwork"); // artwork, text
+  const [placement, setPlacement] = useState("chest-centre"); // "chest-centre", "left-chest", "right-chest", "back", "full-front"
+  const [printSize, setPrintSize] = useState("A3"); // "A4", "A3"
+
+  // Artwork & canvas manipulation
+  const [uploadedDesign, setUploadedDesign] = useState(null);
+  const [artworkScale, setArtworkScale] = useState(1); // 0.6 to 1.5
+  const [artworkRotation, setArtworkRotation] = useState(0); // 0 to 360
+  const [artworkOpacity, setArtworkOpacity] = useState(1); // 0.5 to 1.0
+  const [artworkFlipped, setArtworkFlipped] = useState(false);
+  const [artworkOffsetX, setArtworkOffsetX] = useState(0); // -40 to 40 px
+  const [artworkOffsetY, setArtworkOffsetY] = useState(0); // -40 to 40 px
+  const [isArtworkVisible, setIsArtworkVisible] = useState(true);
+
+  // Custom text state
   const [customText, setCustomText] = useState("");
   const [textColor, setTextColor] = useState("#ffffff");
-  const [textFont, setTextFont] = useState("sans"); // sans, streetwear, serif, display
-  const [textSize, setTextSize] = useState("md"); // sm, md, lg
-  const [artworkOpacity, setArtworkOpacity] = useState(1); // 1, 0.85, 0.70, 0.50
-  const [artworkRotation, setArtworkRotation] = useState(0); // 0, 90, 180, 270
-  const [artworkScale, setArtworkScale] = useState(1); // scale modifier
-  const [uploadedDesign, setUploadedDesign] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [textFont, setTextFont] = useState("montserrat");
+  const [textSize, setTextSize] = useState("md"); // "sm", "md", "lg"
+  const [isTextBold, setIsTextBold] = useState(true);
+  const [isTextItalic, setIsTextItalic] = useState(false);
+  const [textAlignment, setTextAlignment] = useState("center");
+  const [textOffsetY, setTextOffsetY] = useState(0);
+  const [isTextVisible, setIsTextVisible] = useState(true);
+
+  // History for Undo / Redo
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // UI Modals & feedback
   const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1); // 1, 1.25, 1.5
   const [is360Playing, setIs360Playing] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [hasConfirmedCheckbox, setHasConfirmedCheckbox] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
+  const [draftToast, setDraftToast] = useState(false);
+  const [isSavingDesign, setIsSavingDesign] = useState(false);
+  const [activeTemplateCategory, setActiveTemplateCategory] = useState("all");
+
   const fileInputRef = useRef(null);
+  const canvasRef = useRef(null);
 
   // Asset paths with cache buster to guarantee fresh loads
   const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
   const PLAIN_TEE_BACK = "/customize/plain-tee-back.jpg?v=2";
   const STUDIO_ARTWORK = "/customize/mountain-artwork-pure.png?v=2";
 
+  // Garment Colors
   const colors = [
-    { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none" },
-    { id: "black", name: "Black", hex: "#181818", filter: "brightness(0.24) contrast(1.15)" },
-    { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "sepia(0.8) hue-rotate(65deg) brightness(0.38) saturate(1.2)" },
-    { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "sepia(0.9) hue-rotate(345deg) brightness(0.35) saturate(1.25)" },
-    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "sepia(0.35) brightness(0.95) saturate(0.9)" },
-    { id: "grey", name: "Grey", hex: "#7a7a7a", filter: "grayscale(1) brightness(0.7)" },
-    { id: "asshown", name: "Custom", hex: "#f4f0e8", filter: "none", isAsShown: true },
+    { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none", available: true },
+    { id: "black", name: "Black", hex: "#181818", filter: "brightness(0.24) contrast(1.15)", available: true },
+    { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "sepia(0.8) hue-rotate(65deg) brightness(0.38) saturate(1.2)", available: true },
+    { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "sepia(0.9) hue-rotate(345deg) brightness(0.35) saturate(1.25)", available: true },
+    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "sepia(0.35) brightness(0.95) saturate(0.9)", available: true },
+    { id: "grey", name: "Grey", hex: "#7a7a7a", filter: "grayscale(1) brightness(0.7)", available: true },
   ];
 
   const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
 
+  // Gallery Thumbnails
   const galleryThumbs = [
     { id: 0, title: "Front View", img: PLAIN_TEE_FRONT, view: "front" },
     { id: 1, title: "Side View", img: "/customize/thumb-side.jpg", view: "left" },
@@ -5334,7 +5391,17 @@ function CustomizeTeePage() {
     { id: 5, title: "360° View", is360: true },
   ];
 
-  // 360 rotation timer
+  // Pre-designed template library
+  const templateLibrary = [
+    { id: "tmpl-1", category: "Nature", title: "Alpine Sunrise", image: STUDIO_ARTWORK },
+    { id: "tmpl-2", category: "Streetwear", title: "Midnight 98", text: "MIDNIGHT 98", font: "streetwear" },
+    { id: "tmpl-3", category: "Typography", title: "More Than A Moment", text: "MORE THAN A MOMENT.", font: "montserrat" },
+    { id: "tmpl-4", category: "Minimalist", title: "Tokyo Minimal", text: "TOKYO // 2026", font: "display" },
+    { id: "tmpl-5", category: "Vintage", title: "Heritage Archive", text: "ENYTM HERITAGE", font: "serif" },
+    { id: "tmpl-6", category: "Abstract", title: "Balance Wave", text: "B A L A N C E", font: "poppins" },
+  ];
+
+  // 360 Rotation Timer
   useEffect(() => {
     if (!is360Playing) return;
     const views = ["front", "left", "back", "right"];
@@ -5347,8 +5414,127 @@ function CustomizeTeePage() {
     return () => clearInterval(timer);
   }, [is360Playing]);
 
+  // Autosave & Restore Draft from LocalStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("enytm_custom_draft");
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft.selectedColor) setSelectedColor(draft.selectedColor);
+        if (draft.placement) setPlacement(draft.placement);
+        if (draft.printSize) setPrintSize(draft.printSize);
+        if (draft.customText !== undefined) setCustomText(draft.customText);
+        if (draft.textColor) setTextColor(draft.textColor);
+        if (draft.textFont) setTextFont(draft.textFont);
+        if (draft.sizeTee1) setSizeTee1(draft.sizeTee1);
+        if (draft.packageType) setPackageType(draft.packageType);
+        if (draft.artworkScale) setArtworkScale(draft.artworkScale);
+        if (draft.artworkOpacity) setArtworkOpacity(draft.artworkOpacity);
+        setDraftToast(true);
+        setTimeout(() => setDraftToast(false), 2600);
+      }
+    } catch (e) {}
+  }, []);
+
+  const saveCurrentDraft = () => {
+    try {
+      const draft = {
+        selectedColor,
+        placement,
+        printSize,
+        customText,
+        textColor,
+        textFont,
+        sizeTee1,
+        sizeTee2,
+        packageType,
+        quantity,
+        artworkScale,
+        artworkOpacity,
+        artworkRotation,
+      };
+      localStorage.setItem("enytm_custom_draft", JSON.stringify(draft));
+      setDraftToast(true);
+      setTimeout(() => setDraftToast(false), 2400);
+    } catch (e) {}
+  };
+
+  // Push State to History
+  const pushState = () => {
+    const currentState = {
+      placement,
+      printSize,
+      artworkScale,
+      artworkRotation,
+      artworkOpacity,
+      artworkOffsetX,
+      artworkOffsetY,
+      customText,
+      textColor,
+      textFont,
+    };
+    setHistory((prev) => [...prev.slice(0, historyIndex + 1), currentState]);
+    setHistoryIndex((prev) => prev + 1);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const target = history[historyIndex - 1];
+      setPlacement(target.placement);
+      setPrintSize(target.printSize);
+      setArtworkScale(target.artworkScale);
+      setArtworkRotation(target.artworkRotation);
+      setArtworkOpacity(target.artworkOpacity);
+      setArtworkOffsetX(target.artworkOffsetX);
+      setArtworkOffsetY(target.artworkOffsetY);
+      setCustomText(target.customText);
+      setTextColor(target.textColor);
+      setTextFont(target.textFont);
+      setHistoryIndex(historyIndex - 1);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const target = history[historyIndex + 1];
+      setPlacement(target.placement);
+      setPrintSize(target.printSize);
+      setArtworkScale(target.artworkScale);
+      setArtworkRotation(target.artworkRotation);
+      setArtworkOpacity(target.artworkOpacity);
+      setArtworkOffsetX(target.artworkOffsetX);
+      setArtworkOffsetY(target.artworkOffsetY);
+      setCustomText(target.customText);
+      setTextColor(target.textColor);
+      setTextFont(target.textFont);
+      setHistoryIndex(historyIndex + 1);
+    }
+  };
+
+  const handleResetDesign = () => {
+    if (window.confirm("Reset all customizations and start fresh?")) {
+      setUploadedDesign(null);
+      setCustomText("");
+      setArtworkScale(1);
+      setArtworkRotation(0);
+      setArtworkOpacity(1);
+      setArtworkOffsetX(0);
+      setArtworkOffsetY(0);
+      setArtworkFlipped(false);
+      setPlacement("chest-centre");
+      setPrintSize("A3");
+      localStorage.removeItem("enytm_custom_draft");
+    }
+  };
+
+  // Upload handler
   const handleFileUpload = (file) => {
     if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      alert("File is too large! Maximum supported size is 50 MB.");
+      return;
+    }
+    pushState();
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -5358,7 +5544,6 @@ function CustomizeTeePage() {
           dataUrl: e.target.result,
           isImage: true,
         });
-        setPrintType("artwork");
       };
       reader.readAsDataURL(file);
     } else {
@@ -5379,18 +5564,88 @@ function CustomizeTeePage() {
     }
   };
 
-  // Pricing calculations: Blank Tee ₹699 + Customization Fee ₹79 = ₹778
-  const baseTeePrice = 699;
-  const customizationFee = 79;
-  const orderTotal = (baseTeePrice + customizationFee) * quantity;
+  // Pricing formula matching specification
+  const baseTeePrice = 749;
+  const numTees = packageType === "double" ? 2 * quantity : 1 * quantity;
+  const customizationFee = packageType === "double" ? 129 * quantity : 79 * quantity;
+  const printPlacementFee = placement === "back" ? (printSize === "A4" ? 29 : 49) * numTees : 0;
+  const orderTotal = (baseTeePrice * numTees) + customizationFee + printPlacementFee;
+
+  // Mockup Download as image
+  const handleDownloadMockup = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext("2d");
+    const teeImg = new Image();
+    teeImg.crossOrigin = "anonymous";
+    teeImg.src = viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT;
+    teeImg.onload = () => {
+      ctx.drawImage(teeImg, 0, 0, 1024, 1024);
+      if (uploadedDesign && uploadedDesign.isImage) {
+        const art = new Image();
+        art.crossOrigin = "anonymous";
+        art.src = uploadedDesign.dataUrl;
+        art.onload = () => {
+          ctx.globalAlpha = artworkOpacity;
+          ctx.drawImage(art, 348, 368, 328 * artworkScale, 328 * artworkScale);
+          downloadCanvas();
+        };
+      } else {
+        const art = new Image();
+        art.crossOrigin = "anonymous";
+        art.src = STUDIO_ARTWORK;
+        art.onload = () => {
+          ctx.globalAlpha = artworkOpacity;
+          ctx.drawImage(art, 348, 368, 328 * artworkScale, 328 * artworkScale);
+          downloadCanvas();
+        };
+      }
+    };
+    const downloadCanvas = () => {
+      const a = document.createElement("a");
+      a.download = `enytm-custom-tee-${selectedColor}-${viewSide}.png`;
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    };
+  };
+
+  // Save design to backend API
+  const saveDesignToBackend = async () => {
+    setIsSavingDesign(true);
+    try {
+      const res = await fetch("/api/custom-designs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          color: currentColorObj.name,
+          sizes: packageType === "double" ? [sizeTee1, sizeTee2] : [sizeTee1],
+          quantity: numTees,
+          placement,
+          printSize,
+          customText: customText || null,
+          uploadedDesign: uploadedDesign ? { name: uploadedDesign.name, size: uploadedDesign.size } : null,
+        }),
+      });
+      const data = await res.json();
+      setIsSavingDesign(false);
+      return data.customId || `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
+    } catch (e) {
+      setIsSavingDesign(false);
+      return `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
+    }
+  };
 
   // Add to Cart handler
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    const customId = await saveDesignToBackend();
+    const sizesDesc = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
     const customItem = {
-      id: `custom-tee-${Date.now()}`,
+      id: `custom-${customId}`,
+      customId,
       title: `Custom Oversized Tee (${currentColorObj.name})`,
       name: `Custom Oversized Tee (${currentColorObj.name})`,
-      price: orderTotal / quantity,
+      price: Math.round(orderTotal / numTees),
       originalPrice: 1299,
       discount: "40% OFF",
       badge: "CUSTOM",
@@ -5399,36 +5654,37 @@ function CustomizeTeePage() {
       category: "Custom",
       color: currentColorObj.name,
       customColor: currentColorObj.name,
+      customSizes: sizesDesc,
       customPlacement: placement,
       customPrintSize: printSize,
       customFabric: selectedFabric,
-      customText: printType === "text" ? customText : null,
-      customDesign: uploadedDesign ? uploadedDesign.name : "Studio Mountain Artwork",
+      customText: customText || null,
+      customDesign: uploadedDesign ? uploadedDesign.name : "Alpine Sunrise Artwork",
       customOpacity: artworkOpacity,
       isCustom: true,
     };
 
-    for (let i = 0; i < quantity; i++) {
-      addToCart(customItem, selectedSize);
-    }
+    addToCart(customItem, sizeTee1);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2400);
+    setShowConfirmModal(false);
   };
 
-  // WhatsApp formatted link
-  const generateWhatsAppLink = () => {
-    let placementLabel = "Chest";
-    if (placement === "chest-centre") placementLabel = "Chest";
-    else if (placement === "left-chest") placementLabel = "Left Chest";
+  // WhatsApp Order Link generator (Exclusively sends customization details to WhatsApp)
+  const handleWhatsAppOrder = async () => {
+    const customId = await saveDesignToBackend();
+    let placementLabel = "Chest (Centre)";
+    if (placement === "left-chest") placementLabel = "Left Chest";
     else if (placement === "right-chest") placementLabel = "Right Chest";
     else if (placement === "back") placementLabel = "Back";
     else if (placement === "full-front") placementLabel = "Full Front";
 
-    const designString = uploadedDesign
+    const sizesText = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
+    const designText = uploadedDesign
       ? `I have attached my artwork (${uploadedDesign.name}).`
-      : printType === "text" && customText
+      : customText
       ? `Custom text: "${customText}"`
-      : `I have attached my artwork.`;
+      : `Alpine Sunrise Studio Print (Artwork Attached)`;
 
     const text = `Hi ENYTM™️! 👋
 
@@ -5439,12 +5695,13 @@ Here are my details:
 👕 Product: Oversized T-shirt
 💰 Blank T-shirt: ₹749
 🎨 Colour: ${currentColorObj.name}
-📏 Size: ${selectedSize}
-🔢 Quantity: ${quantity}
+📏 Size: ${sizesText}
+🔢 Quantity: ${numTees}
 
-🖼️ Design: ${designString}
+🖼️ Design: ${designText}
 📍 Print Placement: ${placementLabel}
-📐 Print Size: ${printSize}
+📐 Print Size: ${placement === "back" ? printSize : "Free Logo"}
+🆔 Customization ID: ${customId}
 
 Please check my design and share the final price and confirmation.
 
@@ -5452,10 +5709,11 @@ Looking forward to my customized ENYTM™️ T-shirt!
 
 MORE THAN A MOMENT.`;
 
-    return `https://wa.me/919405815466?text=${encodeURIComponent(text)}`;
+    window.open(`https://wa.me/919405815466?text=${encodeURIComponent(text)}`, "_blank");
+    setShowConfirmModal(false);
   };
 
-  // Cycle views
+  // View angle cycler
   const cycleView = (dir) => {
     setIs360Playing(false);
     const views = ["front", "left", "back", "right"];
@@ -5469,7 +5727,7 @@ MORE THAN A MOMENT.`;
 
   return (
     <main className="customize-studio-page">
-      {/* TOP ANNOUNCEMENT TICKER */}
+      {/* TOP PROMOTIONAL ANNOUNCEMENT BAR */}
       <div className="customize-top-ticker">
         <div className="ticker-item">
           <Truck size={14} /> <span>Free Shipping Across India</span>
@@ -5486,17 +5744,33 @@ MORE THAN A MOMENT.`;
       </div>
 
       <div className="customize-container">
+        {/* DRAFT NOTIFICATION TOAST */}
+        {draftToast && (
+          <div className="draft-alert-toast">
+            <Check size={14} />
+            <span>Customization draft restored</span>
+          </div>
+        )}
+
         <div className="customize-main-content">
-          {/* LEFT COLUMN: GALLERY STRIP + TEE STAGE + VIEW PILL */}
+          {/* ======================================================== */}
+          {/* LEFT COLUMN: INTERACTIVE T-SHIRT PREVIEW & CONTROLS (48%) */}
+          {/* ======================================================== */}
           <div className="customize-left-section">
             <header className="customize-studio-header">
               <p className="customize-eyebrow">— CUSTOMIZATION STUDIO —</p>
               <h1 className="customize-main-title">
-                CUSTOMIZE <span className="champagne-italic">YOUR TEE</span>
+                Customize <span className="champagne-italic">Your Tee.</span>
               </h1>
               <p className="customize-subtitle">
                 Bring your ideas to life on our premium T-shirts.
               </p>
+              <div className="studio-intro-benefits">
+                <span className="benefit-pill"><Cloud size={13} /> Premium Fabric</span>
+                <span className="benefit-pill"><Layers size={13} /> High-Quality Printing</span>
+                <span className="benefit-pill"><Zap size={13} /> Easy Customization</span>
+                <span className="benefit-pill"><Sparkles size={13} /> Personalized Designs</span>
+              </div>
             </header>
 
             <div className="customize-stage-wrapper">
@@ -5520,7 +5794,7 @@ MORE THAN A MOMENT.`;
                   >
                     {thumb.is360 ? (
                       <div className="thumb-360-inner">
-                        <Play size={16} />
+                        <Play size={15} />
                         <span>360°</span>
                       </div>
                     ) : (
@@ -5533,15 +5807,58 @@ MORE THAN A MOMENT.`;
               {/* CENTRAL TEE STAGE */}
               <div className="customize-center-stage">
                 <div className="customize-canvas-box">
-                  <button
-                    type="button"
-                    className="canvas-expand-btn"
-                    onClick={() => setIsZoomed(true)}
-                    title="Zoom Canvas"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
+                  {/* CANVAS TOP TOOLBAR: ZOOM, UNDO, REDO, DOWNLOAD, EXPAND */}
+                  <div className="canvas-top-bar">
+                    <div className="canvas-tool-group">
+                      <button
+                        type="button"
+                        className="canvas-icon-btn"
+                        onClick={handleUndo}
+                        disabled={historyIndex <= 0}
+                        title="Undo"
+                      >
+                        <Undo2 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="canvas-icon-btn"
+                        onClick={handleRedo}
+                        disabled={historyIndex >= history.length - 1}
+                        title="Redo"
+                      >
+                        <Redo2 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="canvas-icon-btn"
+                        onClick={handleResetDesign}
+                        title="Reset Design"
+                      >
+                        <RotateCcw size={15} />
+                      </button>
+                    </div>
 
+                    <div className="canvas-tool-group">
+                      <button
+                        type="button"
+                        className="canvas-icon-btn"
+                        onClick={handleDownloadMockup}
+                        title="Download Mockup Image"
+                      >
+                        <Download size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="canvas-icon-btn"
+                        onClick={() => setIsZoomed(true)}
+                        title="Full Screen Preview"
+                      >
+                        <Maximize2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ANGLE CYCLE ARROWS */}
                   <button
                     type="button"
                     className="canvas-arrow-btn canvas-arrow-prev"
@@ -5559,49 +5876,57 @@ MORE THAN A MOMENT.`;
                     <ChevronRight size={18} />
                   </button>
 
-                  {/* TEE STAGE WITH HANGER & GRAPHIC */}
-                  <div className="tee-stage-viewport">
+                  {/* TEE VIEWPORT CANVAS */}
+                  <div className="tee-stage-viewport" ref={canvasRef}>
                     <img
                       src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
-                      alt="ENYTM Oversized Plain Tee"
+                      alt="ENYTM Plain Oversized Tee"
                       className="tee-desktop-img"
                       style={{ filter: currentColorObj.filter }}
                     />
 
-                    {/* DYNAMIC PRINT GRAPHIC / TEXT OVERLAY */}
-                    {((placement === "back" && viewSide === "back") ||
-                      (placement !== "back" && viewSide !== "back")) && (
-                      <div
-                        className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
-                        style={{
-                          opacity: artworkOpacity,
-                          transform: `translate(-50%, 0) rotate(${artworkRotation}deg) scale(${artworkScale})`,
-                        }}
-                      >
-                        {printType === "text" ? (
+                    {/* PRINT BOUNDARY GUIDE (SUBTLE DASHED AREA) */}
+                    <div className={`printable-boundary-box placement-${placement} size-${printSize.toLowerCase()}`} />
+
+                    {/* DYNAMIC ARTWORK OVERLAY */}
+                    {isArtworkVisible &&
+                      ((placement === "back" && viewSide === "back") ||
+                        (placement !== "back" && viewSide !== "back")) && (
+                        <div
+                          className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                          style={{
+                            opacity: artworkOpacity,
+                            transform: `translate(calc(-50% + ${artworkOffsetX}px), ${artworkOffsetY}px) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                          }}
+                        >
+                          <img
+                            src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                            alt="Custom Print"
+                            className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
+                          />
+                        </div>
+                      )}
+
+                    {/* DYNAMIC CUSTOM TEXT OVERLAY */}
+                    {isTextVisible && customText &&
+                      ((placement === "back" && viewSide === "back") ||
+                        (placement !== "back" && viewSide !== "back")) && (
+                        <div
+                          className={`tee-text-overlay placement-${placement} view-${viewSide}`}
+                          style={{
+                            transform: `translate(-50%, ${textOffsetY}px)`,
+                          }}
+                        >
                           <div
-                            className={`tee-custom-text-rendered font-${textFont} text-sz-${textSize}`}
+                            className={`tee-custom-text-rendered font-${textFont} text-sz-${textSize} text-align-${textAlignment} ${isTextBold ? "is-bold" : ""} ${isTextItalic ? "is-italic" : ""}`}
                             style={{ color: textColor }}
                           >
-                            {customText || "MORE THAN A MOMENT"}
+                            {customText}
                           </div>
-                        ) : uploadedDesign && uploadedDesign.isImage ? (
-                          <img
-                            src={uploadedDesign.dataUrl}
-                            alt="Custom Upload"
-                            className="print-graphic-img"
-                          />
-                        ) : (
-                          <img
-                            src={STUDIO_ARTWORK}
-                            alt="ENYTM Studio Print"
-                            className="print-graphic-img"
-                          />
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      )}
 
-                    {/* FLIP VIEW NOTIFICATION PILLS */}
+                    {/* VIEW FLIP NOTIFICATION PILLS */}
                     {placement === "back" && viewSide === "front" && (
                       <button
                         type="button"
@@ -5650,7 +5975,7 @@ MORE THAN A MOMENT.`;
                   ))}
                 </div>
 
-                {/* PRINT PLACEMENT GUIDE (DESKTOP REFERENCE MOCKUP) */}
+                {/* PRINT PLACEMENT GUIDE (VISUAL MOCKUP CARDS) */}
                 <div className="print-placement-guide-section">
                   <h4 className="guide-heading">Print Placement Guide</h4>
                   <div className="guide-cards-grid">
@@ -5726,10 +6051,12 @@ MORE THAN A MOMENT.`;
             </div>
           </div>
 
-          {/* RIGHT COLUMN: CONFIGURATOR PANEL */}
+          {/* ======================================================== */}
+          {/* RIGHT COLUMN: CONFIGURATOR STUDIO & ORDER CONTROLS (52%)  */}
+          {/* ======================================================== */}
           <div className="customize-right-section">
             <div className="configurator-box">
-              {/* HEADER WITH WOVEN PATCH */}
+              {/* STUDIO HEADER WITH WOVEN PATCH */}
               <div className="configurator-head">
                 <div className="configurator-titles">
                   <span className="custom-eyebrow">CUSTOM T-SHIRT</span>
@@ -5745,44 +6072,42 @@ MORE THAN A MOMENT.`;
                 />
               </div>
 
-              {/* TABS BAR (DESKTOP) */}
+              {/* TABS BAR: DESIGN, TEXT, LOGO, TEMPLATES, PLACEMENT */}
               <div className="configurator-tabs-bar">
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === "design" ? "is-active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("design");
-                    setPrintType("artwork");
-                  }}
+                  onClick={() => setActiveTab("design")}
                 >
-                  <Shirt size={15} /> <span>Design</span>
+                  <Shirt size={14} /> <span>Design</span>
                 </button>
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === "text" ? "is-active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("text");
-                    setPrintType("text");
-                  }}
+                  onClick={() => setActiveTab("text")}
                 >
-                  <Type size={15} /> <span>Text</span>
+                  <Type size={14} /> <span>Text</span>
                 </button>
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === "logo" ? "is-active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("logo");
-                    setPrintType("artwork");
-                  }}
+                  onClick={() => setActiveTab("logo")}
                 >
-                  <ImageIcon size={15} /> <span>Logo / Image</span>
+                  <ImageIcon size={14} /> <span>Logo</span>
+                </button>
+                <button
+                  type="button"
+                  className={`tab-btn ${activeTab === "templates" ? "is-active" : ""}`}
+                  onClick={() => setActiveTab("templates")}
+                >
+                  <Sparkles size={14} /> <span>Library</span>
                 </button>
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === "placement" ? "is-active" : ""}`}
                   onClick={() => setActiveTab("placement")}
                 >
-                  <Target size={15} /> <span>Placement</span>
+                  <Target size={14} /> <span>Placement</span>
                 </button>
               </div>
 
@@ -5790,7 +6115,7 @@ MORE THAN A MOMENT.`;
               <div className="config-grid-row">
                 <div className="config-field-group">
                   <label className="config-label">
-                    <Palette size={14} className="mobile-only-icon" /> T-Shirt Color
+                    <Palette size={13} className="mobile-only-icon" /> T-Shirt Color: <span className="highlight-val">{currentColorObj.name}</span>
                   </label>
                   <div className="color-swatches-inline">
                     {colors.map((c) => {
@@ -5810,7 +6135,7 @@ MORE THAN A MOMENT.`;
                               border: c.id === "offwhite" ? "1px solid #ddd" : undefined,
                             }}
                           >
-                            {c.isAsShown && <span className="as-shown-plus">+</span>}
+                            {isSel && <Check size={11} className={c.id === "offwhite" ? "dark-check" : "light-check"} />}
                           </span>
                         </button>
                       );
@@ -5820,7 +6145,7 @@ MORE THAN A MOMENT.`;
 
                 <div className="config-field-group fabric-group-desktop">
                   <label className="config-label">
-                    Fabric <HelpCircle size={13} className="info-icon" />
+                    Fabric <HelpCircle size={12} className="info-icon" />
                   </label>
                   <div className="select-wrapper">
                     <select
@@ -5828,51 +6153,121 @@ MORE THAN A MOMENT.`;
                       value={selectedFabric}
                       onChange={(e) => setSelectedFabric(e.target.value)}
                     >
-                      <option value="240gsm">Premium Cotton (240 GSM)</option>
-                      <option value="280gsm">Luxury Heavyweight (280 GSM)</option>
-                      <option value="french-terry">French Terry (300 GSM)</option>
+                      <option value="240gsm">Premium Combed Cotton (240 GSM)</option>
+                      <option value="280gsm">Heavyweight Luxury (280 GSM)</option>
+                      <option value="french-terry">French Terry Streetwear (300 GSM)</option>
                     </select>
                     <ChevronDown size={14} className="select-chevron" />
                   </div>
                 </div>
               </div>
 
-              {/* ROW 2: SELECT SIZE & QUANTITY */}
-              <div className="config-grid-row">
-                <div className="config-field-group">
-                  <div className="label-with-action">
-                    <label className="config-label">
-                      <Shirt size={14} className="mobile-only-icon" /> Select Size
-                    </label>
-                    <Link to="/size-guide" className="size-guide-inline-link">
-                      <Ruler size={13} /> <span>Size Guide</span>
-                    </Link>
-                  </div>
-                  <div className="size-pills-row">
-                    {["S", "M", "L", "XL", "XXL"].map((sz) => (
-                      <button
-                        key={sz}
-                        type="button"
-                        className={`size-pill-btn ${selectedSize === sz ? "is-selected" : ""}`}
-                        onClick={() => setSelectedSize(sz)}
-                      >
-                        {sz}
-                      </button>
-                    ))}
-                  </div>
+              {/* ROW 2: CUSTOMIZATION PACKAGE & SIZES */}
+              <div className="config-packages-row">
+                <label className="config-label">Customization Package</label>
+                <div className="packages-toggle-grid">
+                  <button
+                    type="button"
+                    className={`package-opt-btn ${packageType === "single" ? "is-active" : ""}`}
+                    onClick={() => {
+                      setPackageType("single");
+                      setQuantity(1);
+                    }}
+                  >
+                    <div className="pkg-meta">
+                      <span className="pkg-title">1 T-Shirt</span>
+                      <span className="pkg-fee">+₹79 Customization</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`package-opt-btn ${packageType === "double" ? "is-active" : ""}`}
+                    onClick={() => {
+                      setPackageType("double");
+                      setQuantity(1);
+                    }}
+                  >
+                    <span className="best-value-badge">Best Value</span>
+                    <div className="pkg-meta">
+                      <span className="pkg-title">2 T-Shirts</span>
+                      <span className="pkg-fee">+₹129 Customization</span>
+                    </div>
+                  </button>
                 </div>
+              </div>
+
+              {/* ROW 3: SIZE SELECTION (SEPARATE IF 2 TEES) */}
+              <div className="config-grid-row">
+                {packageType === "single" ? (
+                  <div className="config-field-group">
+                    <div className="label-with-action">
+                      <label className="config-label">Select Size</label>
+                      <button
+                        type="button"
+                        className="size-guide-modal-btn"
+                        onClick={() => setShowSizeGuide(true)}
+                      >
+                        <Ruler size={12} /> <span>Size Guide</span>
+                      </button>
+                    </div>
+                    <div className="size-pills-row">
+                      {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          className={`size-pill-btn ${sizeTee1 === sz ? "is-selected" : ""}`}
+                          onClick={() => setSizeTee1(sz)}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="double-size-selection-grid">
+                    <div className="double-size-col">
+                      <span className="sub-label">T-Shirt 1 Size:</span>
+                      <div className="size-pills-row">
+                        {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            className={`size-pill-btn mini ${sizeTee1 === sz ? "is-selected" : ""}`}
+                            onClick={() => setSizeTee1(sz)}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="double-size-col">
+                      <span className="sub-label">T-Shirt 2 Size:</span>
+                      <div className="size-pills-row">
+                        {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            className={`size-pill-btn mini ${sizeTee2 === sz ? "is-selected" : ""}`}
+                            onClick={() => setSizeTee2(sz)}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="config-field-group qty-group">
-                  <label className="config-label">
-                    <Layers size={14} className="mobile-only-icon" /> Quantity
-                  </label>
+                  <label className="config-label">Sets</label>
                   <div className="stepper-box">
                     <button
                       type="button"
                       className="stepper-btn"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     >
-                      <Minus size={14} />
+                      <Minus size={13} />
                     </button>
                     <span className="stepper-val">{quantity}</span>
                     <button
@@ -5880,18 +6275,22 @@ MORE THAN A MOMENT.`;
                       className="stepper-btn"
                       onClick={() => setQuantity((q) => q + 1)}
                     >
-                      <Plus size={14} />
+                      <Plus size={13} />
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* TAB CONTENT: DESIGN OVERVIEW */}
+              {/* ======================================================== */}
+              {/* TAB PANELS                                               */}
+              {/* ======================================================== */}
+
+              {/* TAB 1: DESIGN OVERVIEW */}
               {activeTab === "design" && (
                 <div className="config-design-row">
                   {/* UPLOAD DROPZONE */}
                   <div className="add-design-card">
-                    <label className="config-label">Add Your Design</label>
+                    <label className="config-label">Upload Your Design</label>
                     {!uploadedDesign ? (
                       <div
                         className={`upload-dropzone-v2 ${isDragging ? "is-dragging" : ""}`}
@@ -5905,13 +6304,14 @@ MORE THAN A MOMENT.`;
                       >
                         <UploadCloud size={24} className="upload-icon" />
                         <p className="upload-prompt-text">
-                          Drag & drop your design here or click to upload
+                          Drag & drop your artwork here or click to browse
                         </p>
                         <div className="format-pills-row">
                           <span className="format-pill">PNG</span>
                           <span className="format-pill">JPG</span>
+                          <span className="format-pill">SVG</span>
                           <span className="format-pill">PDF</span>
-                          <span className="format-pill">Max 50 MB</span>
+                          <span className="format-pill">300 DPI Rec.</span>
                         </div>
                       </div>
                     ) : (
@@ -5933,15 +6333,15 @@ MORE THAN A MOMENT.`;
                           onClick={() => setUploadedDesign(null)}
                           title="Remove artwork"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* QUICK CUSTOMIZATIONS LIST */}
+                  {/* QUICK CUSTOMIZATIONS */}
                   <div className="quick-customizations-card">
-                    <label className="config-label">Quick Customizations</label>
+                    <label className="config-label">Canvas Controls</label>
                     <div className="quick-actions-list">
                       <button
                         type="button"
@@ -5949,22 +6349,23 @@ MORE THAN A MOMENT.`;
                         onClick={() => fileInputRef.current && fileInputRef.current.click()}
                       >
                         <div className="quick-action-left">
-                          <Pencil size={14} />
-                          <span>Edit / Replace Design</span>
+                          <Pencil size={13} />
+                          <span>Replace Artwork</span>
                         </div>
-                        <ChevronRight size={13} />
+                        <span className="action-badge-mini">Browse</span>
                       </button>
 
                       <button
                         type="button"
                         className="quick-action-row"
                         onClick={() => {
+                          pushState();
                           setPrintSize((s) => (s === "A3" ? "A4" : "A3"));
-                          setArtworkScale((prev) => (prev === 1 ? 1.15 : 1));
+                          setArtworkScale((s) => (s === 1 ? 1.15 : 1));
                         }}
                       >
                         <div className="quick-action-left">
-                          <Sliders size={14} />
+                          <Sliders size={13} />
                           <span>Size: {printSize} ({printSize === "A3" ? "29.7×42cm" : "21×29.7cm"})</span>
                         </div>
                         <span className="action-badge-mini">Toggle</span>
@@ -5973,11 +6374,14 @@ MORE THAN A MOMENT.`;
                       <button
                         type="button"
                         className="quick-action-row"
-                        onClick={() => setArtworkRotation((r) => (r + 90) % 360)}
+                        onClick={() => {
+                          pushState();
+                          setArtworkRotation((r) => (r + 90) % 360);
+                        }}
                       >
                         <div className="quick-action-left">
-                          <RotateCw size={14} />
-                          <span>Rotate / Flip ({artworkRotation}°)</span>
+                          <RotateCw size={13} />
+                          <span>Rotate ({artworkRotation}°)</span>
                         </div>
                         <span className="action-badge-mini">+90°</span>
                       </button>
@@ -5986,25 +6390,26 @@ MORE THAN A MOMENT.`;
                         type="button"
                         className="quick-action-row"
                         onClick={() => {
+                          pushState();
                           setArtworkOpacity((prev) => (prev >= 1 ? 0.85 : prev >= 0.85 ? 0.70 : prev >= 0.70 ? 0.50 : 1));
                         }}
                       >
                         <div className="quick-action-left">
-                          <Droplet size={14} />
+                          <Droplet size={13} />
                           <span>Opacity: {Math.round(artworkOpacity * 100)}%</span>
                         </div>
-                        <span className="action-badge-mini">Adjust</span>
+                        <span className="action-badge-mini">Cycle</span>
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB CONTENT: CUSTOM TEXT */}
+              {/* TAB 2: CUSTOM TEXT EDITOR */}
               {activeTab === "text" && (
                 <div className="tab-custom-panel">
                   <div className="text-editor-box">
-                    <label className="config-label">Enter Custom Text</label>
+                    <label className="config-label">Personalized Text</label>
                     <div className="input-with-counter">
                       <input
                         type="text"
@@ -6012,23 +6417,20 @@ MORE THAN A MOMENT.`;
                         placeholder="e.g. MORE THAN A MOMENT"
                         maxLength={30}
                         value={customText}
-                        onChange={(e) => {
-                          setCustomText(e.target.value);
-                          setPrintType("text");
-                        }}
+                        onChange={(e) => setCustomText(e.target.value)}
                       />
                       <span className="char-count">{customText.length}/30</span>
                     </div>
 
                     <div className="text-styling-grid">
                       <div className="text-style-col">
-                        <span className="sub-label">Font Style:</span>
+                        <span className="sub-label">Font Family:</span>
                         <div className="font-options-row">
                           {[
-                            { id: "sans", label: "Modern Sans" },
+                            { id: "montserrat", label: "Montserrat" },
+                            { id: "poppins", label: "Poppins" },
                             { id: "streetwear", label: "Street Bold" },
-                            { id: "serif", label: "Vintage Serif" },
-                            { id: "display", label: "Display" },
+                            { id: "serif", label: "Playfair Serif" },
                           ].map((f) => (
                             <button
                               key={f.id}
@@ -6048,7 +6450,7 @@ MORE THAN A MOMENT.`;
                           {[
                             { hex: "#ffffff", label: "White" },
                             { hex: "#181818", label: "Black" },
-                            { hex: "#d8be9b", label: "Champagne" },
+                            { hex: "#d8be9b", label: "Champagne Gold" },
                             { hex: "#ef4444", label: "Crimson" },
                             { hex: "#3b82f6", label: "Royal Blue" },
                           ].map((col) => (
@@ -6064,37 +6466,75 @@ MORE THAN A MOMENT.`;
                         </div>
                       </div>
                     </div>
+
+                    <div className="text-formatting-bar">
+                      <button
+                        type="button"
+                        className={`format-toggle-btn ${isTextBold ? "is-active" : ""}`}
+                        onClick={() => setIsTextBold(!isTextBold)}
+                        title="Bold"
+                      >
+                        <strong>B</strong>
+                      </button>
+                      <button
+                        type="button"
+                        className={`format-toggle-btn ${isTextItalic ? "is-active" : ""}`}
+                        onClick={() => setIsTextItalic(!isTextItalic)}
+                        title="Italic"
+                      >
+                        <em>I</em>
+                      </button>
+                      <div className="text-align-group">
+                        <button
+                          type="button"
+                          className={`format-toggle-btn ${textAlignment === "left" ? "is-active" : ""}`}
+                          onClick={() => setTextAlignment("left")}
+                        >
+                          <AlignLeft size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`format-toggle-btn ${textAlignment === "center" ? "is-active" : ""}`}
+                          onClick={() => setTextAlignment("center")}
+                        >
+                          <AlignCenter size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`format-toggle-btn ${textAlignment === "right" ? "is-active" : ""}`}
+                          onClick={() => setTextAlignment("right")}
+                        >
+                          <AlignRight size={13} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB CONTENT: LOGO / IMAGE */}
+              {/* TAB 3: LOGO & ADVANCED POSITIONING */}
               {activeTab === "logo" && (
                 <div className="tab-custom-panel">
                   <div className="logo-controls-card">
-                    <label className="config-label">Upload & Adjust Logo</label>
-                    <div
-                      className="upload-dropzone-compact"
-                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                    >
-                      <UploadCloud size={20} />
-                      <span>{uploadedDesign ? `Replace: ${uploadedDesign.name}` : "Click to upload Logo / Graphic (PNG, SVG, JPG)"}</span>
-                    </div>
-
+                    <label className="config-label">Fine-Tune Positioning</label>
                     <div className="fine-tune-row">
                       <div className="tune-col">
-                        <span className="sub-label">Scale:</span>
+                        <span className="sub-label">Scale ({Math.round(artworkScale * 100)}%):</span>
                         <div className="scale-pills">
                           {[
-                            { label: "85% (Compact)", val: 0.85 },
-                            { label: "100% (Standard)", val: 1 },
-                            { label: "115% (Oversized)", val: 1.15 },
+                            { label: "80%", val: 0.8 },
+                            { label: "100%", val: 1.0 },
+                            { label: "120%", val: 1.2 },
+                            { label: "140%", val: 1.4 },
                           ].map((sc) => (
                             <button
                               key={sc.label}
                               type="button"
                               className={`tune-btn ${artworkScale === sc.val ? "is-active" : ""}`}
-                              onClick={() => setArtworkScale(sc.val)}
+                              onClick={() => {
+                                pushState();
+                                setArtworkScale(sc.val);
+                              }}
                             >
                               {sc.label}
                             </button>
@@ -6103,40 +6543,130 @@ MORE THAN A MOMENT.`;
                       </div>
 
                       <div className="tune-col">
-                        <span className="sub-label">Opacity:</span>
-                        <div className="scale-pills">
-                          {[
-                            { label: "100%", val: 1 },
-                            { label: "85%", val: 0.85 },
-                            { label: "70%", val: 0.70 },
-                          ].map((op) => (
-                            <button
-                              key={op.label}
-                              type="button"
-                              className={`tune-btn ${artworkOpacity === op.val ? "is-active" : ""}`}
-                              onClick={() => setArtworkOpacity(op.val)}
-                            >
-                              {op.label}
-                            </button>
-                          ))}
+                        <span className="sub-label">Position Alignment:</span>
+                        <div className="position-align-buttons">
+                          <button
+                            type="button"
+                            className="tune-btn"
+                            onClick={() => {
+                              setArtworkOffsetX(0);
+                              setArtworkOffsetY(0);
+                            }}
+                          >
+                            Center
+                          </button>
+                          <button
+                            type="button"
+                            className="tune-btn"
+                            onClick={() => setArtworkOffsetY((y) => Math.max(-40, y - 10))}
+                          >
+                            Nudge Up ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="tune-btn"
+                            onClick={() => setArtworkOffsetY((y) => Math.min(40, y + 10))}
+                          >
+                            Nudge Down ↓
+                          </button>
+                          <button
+                            type="button"
+                            className={`tune-btn ${artworkFlipped ? "is-active" : ""}`}
+                            onClick={() => setArtworkFlipped(!artworkFlipped)}
+                          >
+                            Flip X
+                          </button>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="layer-management-box">
+                      <span className="sub-label">Layer Manager:</span>
+                      <div className="layer-item-row">
+                        <span className="layer-name">Artwork Graphic</span>
+                        <button
+                          type="button"
+                          className="layer-eye-btn"
+                          onClick={() => setIsArtworkVisible(!isArtworkVisible)}
+                        >
+                          {isArtworkVisible ? <Eye size={13} /> : <EyeOff size={13} />}
+                        </button>
+                      </div>
+                      {customText && (
+                        <div className="layer-item-row">
+                          <span className="layer-name">Text ("{customText}")</span>
+                          <button
+                            type="button"
+                            className="layer-eye-btn"
+                            onClick={() => setIsTextVisible(!isTextVisible)}
+                          >
+                            {isTextVisible ? <Eye size={13} /> : <EyeOff size={13} />}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB CONTENT: PLACEMENT */}
+              {/* TAB 4: TEMPLATE LIBRARY */}
+              {activeTab === "templates" && (
+                <div className="tab-custom-panel">
+                  <div className="templates-category-tabs">
+                    {["all", "Nature", "Streetwear", "Typography", "Minimalist"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        className={`tmpl-cat-btn ${activeTemplateCategory === cat ? "is-active" : ""}`}
+                        onClick={() => setActiveTemplateCategory(cat)}
+                      >
+                        {cat.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="template-cards-grid">
+                    {templateLibrary
+                      .filter((t) => activeTemplateCategory === "all" || t.category === activeTemplateCategory)
+                      .map((tmpl) => (
+                        <div
+                          key={tmpl.id}
+                          className="template-card-item"
+                          onClick={() => {
+                            pushState();
+                            if (tmpl.text) {
+                              setCustomText(tmpl.text);
+                              if (tmpl.font) setTextFont(tmpl.font);
+                            }
+                            if (tmpl.image) {
+                              setUploadedDesign(null);
+                            }
+                          }}
+                        >
+                          {tmpl.image ? (
+                            <img src={tmpl.image} alt={tmpl.title} className="tmpl-preview-img" />
+                          ) : (
+                            <div className="tmpl-text-preview">{tmpl.text}</div>
+                          )}
+                          <span className="tmpl-card-title">{tmpl.title}</span>
+                          <span className="tmpl-apply-tag">Click to Apply</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: PLACEMENT CARDS */}
               {activeTab === "placement" && (
                 <div className="tab-custom-panel">
-                  <label className="config-label">Choose Targeted Placement</label>
+                  <label className="config-label">Choose Targeted Print Placement</label>
                   <div className="placement-large-grid">
                     {[
-                      { id: "chest-centre", label: "Chest (Centre)", sub: "Centered clean statement chest print" },
-                      { id: "left-chest", label: "Side Chest (Left)", sub: "Left pocket crest streetwear placement" },
-                      { id: "right-chest", label: "Side Chest (Right)", sub: "Minimalist right chest icon" },
-                      { id: "back", label: "Back Print", sub: "High-impact oversized streetwear back art" },
-                      { id: "full-front", label: "Full Front", sub: "Bold torso-covering graphic" },
+                      { id: "chest-centre", label: "Chest (Centre)", sub: "Balanced centered statement chest placement", fee: "Free" },
+                      { id: "left-chest", label: "Side Chest (Left)", sub: "Classic streetwear left pocket crest placement", fee: "Free" },
+                      { id: "right-chest", label: "Side Chest (Right)", sub: "Minimalist right chest branding placement", fee: "Free" },
+                      { id: "back", label: "Back Print", sub: "High-impact oversized streetwear back art", fee: printSize === "A4" ? "+₹29" : "+₹49" },
+                      { id: "full-front", label: "Full Front", sub: "Bold torso-covering oversized graphic", fee: "Free" },
                     ].map((pl) => (
                       <button
                         key={pl.id}
@@ -6148,7 +6678,10 @@ MORE THAN A MOMENT.`;
                           else setViewSide("front");
                         }}
                       >
-                        <span className="pl-card-title">{pl.label}</span>
+                        <div className="pl-card-header">
+                          <span className="pl-card-title">{pl.label}</span>
+                          <span className="pl-card-fee">{pl.fee}</span>
+                        </div>
                         <span className="pl-card-sub">{pl.sub}</span>
                       </button>
                     ))}
@@ -6173,7 +6706,7 @@ MORE THAN A MOMENT.`;
               <div className="config-placement-size-row">
                 <div className="placement-selector-block">
                   <label className="config-label">
-                    Select Placement <HelpCircle size={13} className="info-icon" />
+                    Print Placement <HelpCircle size={12} className="info-icon" />
                   </label>
                   <div className="placement-icons-row">
                     {[
@@ -6232,7 +6765,7 @@ MORE THAN A MOMENT.`;
 
                 <div className="print-size-block">
                   <label className="config-label">
-                    Print Size <HelpCircle size={13} className="info-icon" />
+                    Print Size {placement === "back" ? "(Back Only)" : "(Standard)"}
                   </label>
                   <div className="print-size-radios">
                     <button
@@ -6243,7 +6776,7 @@ MORE THAN A MOMENT.`;
                       <div className="radio-dot" />
                       <div className="radio-size-meta">
                         <span className="radio-name">A4</span>
-                        <span className="radio-dim">21 × 29.7 cm</span>
+                        <span className="radio-dim">21 × 29.7 cm {placement === "back" ? "(+₹29)" : ""}</span>
                       </div>
                     </button>
 
@@ -6255,88 +6788,274 @@ MORE THAN A MOMENT.`;
                       <div className="radio-dot" />
                       <div className="radio-size-meta">
                         <span className="radio-name">A3</span>
-                        <span className="radio-dim">29.7 × 42 cm</span>
+                        <span className="radio-dim">29.7 × 42 cm {placement === "back" ? "(+₹49)" : ""}</span>
                       </div>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* ROW 5: PRICING & ACTIONS (ALWAYS VISIBLE) */}
-              <div className="config-actions-row">
-                <div className="charges-col">
-                  <span className="charges-label">
-                    Customization Charges <HelpCircle size={12} className="info-icon" />
-                  </span>
-                  <span className="charges-val">+₹{customizationFee}</span>
+              {/* ROW 5: DETAILED ORDER SUMMARY BREAKDOWN */}
+              <div className="order-summary-breakdown-card">
+                <div className="summary-line-item">
+                  <span>{currentColorObj.name} T-Shirt ({numTees})</span>
+                  <span>₹{baseTeePrice * numTees}</span>
                 </div>
+                <div className="summary-line-item">
+                  <span>Customization Fee ({packageType === "double" ? "2 Tees" : "1 Tee"})</span>
+                  <span>+₹{customizationFee}</span>
+                </div>
+                {printPlacementFee > 0 && (
+                  <div className="summary-line-item">
+                    <span>{printSize} Back Print Charge</span>
+                    <span>+₹{printPlacementFee}</span>
+                  </div>
+                )}
+                <div className="summary-line-item highlight-delivery">
+                  <span>Standard Pan-India Shipping</span>
+                  <span className="free-text">FREE</span>
+                </div>
+              </div>
 
+              {/* ROW 6: ACTIONS & WHATSAPP EXCLUSIVE ORDERING */}
+              <div className="config-actions-row">
                 <div className="total-col">
                   <span className="total-label">Total Price</span>
                   <div className="total-amount-box">
                     <span className="currency-symbol">₹</span>
                     <span className="total-num">{orderTotal}</span>
-                    <span className="qty-tag">({quantity} Tee{quantity > 1 ? "s" : ""})</span>
+                    <span className="qty-tag">({numTees} Tee{numTees > 1 ? "s" : ""})</span>
                   </div>
                 </div>
 
                 <div className="cta-btn-col">
-                  <a
-                    href={generateWhatsAppLink()}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="send-whatsapp-main-btn"
+                  <button
+                    type="button"
+                    className="whatsapp-main-send-btn"
+                    onClick={() => setShowConfirmModal(true)}
                   >
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                       <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.02.592 1.849.883 2.806.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.766-5.768-5.766zm9.965 5.765c0 5.514-4.482 9.996-9.965 9.996-1.706 0-3.32-.44-4.737-1.218l-5.294 1.387 1.41-5.155c-.887-1.488-1.379-3.21-1.379-5.01 0-5.514 4.482-9.996 9.965-9.996 5.483 0 9.965 4.482 9.965 9.996z"/>
                     </svg>
                     <span>Send Everything on WhatsApp →</span>
-                  </a>
+                  </button>
+                  <p className="whatsapp-help-note">
+                    Your design, selections and order details will be sent to us on WhatsApp for confirmation and production.
+                  </p>
                 </div>
               </div>
-              <p className="whatsapp-help-note">
-                Your design, selections and order details will be sent to us on WhatsApp for confirmation and production.
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM GUARANTEE & PRODUCTION TIME STRIP */}
+        <div className="customize-bottom-features">
+          <div className="bottom-feature-item">
+            <Clock size={20} className="feature-icon" />
+            <div className="feature-text">
+              <h4 className="feature-title">Production Time</h4>
+              <p className="feature-desc">7–10 Business Days</p>
+            </div>
+          </div>
+
+          <div className="bottom-feature-item">
+            <Truck size={20} className="feature-icon" />
+            <div className="feature-text">
+              <h4 className="feature-title">Estimated Delivery</h4>
+              <p className="feature-desc">~1 Week after dispatch</p>
+            </div>
+          </div>
+
+          <div className="bottom-feature-item">
+            <Layers size={20} className="feature-icon" />
+            <div className="feature-text">
+              <h4 className="feature-title">Premium Print Quality</h4>
+              <p className="feature-desc">Vibrant, durable & wash-resistant</p>
+            </div>
+          </div>
+
+          <div className="bottom-feature-item">
+            <ShieldCheck size={20} className="feature-icon" />
+            <div className="feature-text">
+              <h4 className="feature-title">Free Chest & Side Logo</h4>
+              <p className="feature-desc">Included in your package</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* MODAL 1: DESIGN CONFIRMATION & ORDER MODAL               */}
+        {/* ======================================================== */}
+        {showConfirmModal && (
+          <div className="studio-modal-overlay" onClick={() => setShowConfirmModal(false)}>
+            <div className="studio-modal-box confirmation-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setShowConfirmModal(false)}
+              >
+                <X size={18} />
+              </button>
+
+              <div className="confirm-modal-header">
+                <span className="confirm-eyebrow">FINAL REVIEW</span>
+                <h3 className="confirm-modal-title">Confirm Your Customization</h3>
+                <p className="confirm-modal-sub">
+                  Please verify your design details before placing your customized order.
+                </p>
+              </div>
+
+              {/* DUAL FRONT & BACK MOCKUP PREVIEW */}
+              <div className="confirm-previews-split">
+                <div className="confirm-preview-col">
+                  <span className="col-label">Front View</span>
+                  <div className="mini-tee-frame">
+                    <img
+                      src={PLAIN_TEE_FRONT}
+                      alt="Front"
+                      style={{ filter: currentColorObj.filter }}
+                    />
+                    {placement !== "back" && (
+                      <div className={`mini-overlay placement-${placement}`}>
+                        <img
+                          src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          alt="Front Print"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="confirm-preview-col">
+                  <span className="col-label">Back View</span>
+                  <div className="mini-tee-frame">
+                    <img
+                      src={PLAIN_TEE_BACK}
+                      alt="Back"
+                      style={{ filter: currentColorObj.filter }}
+                    />
+                    {placement === "back" && (
+                      <div className="mini-overlay placement-back">
+                        <img
+                          src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          alt="Back Print"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* SPECIFICATION SUMMARY LIST */}
+              <div className="confirm-specs-list">
+                <div className="spec-row">
+                  <span>Product:</span>
+                  <strong>Oversized Streetwear T-Shirt</strong>
+                </div>
+                <div className="spec-row">
+                  <span>Garment Color:</span>
+                  <strong>{currentColorObj.name}</strong>
+                </div>
+                <div className="spec-row">
+                  <span>Sizes Selected:</span>
+                  <strong>{packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1}</strong>
+                </div>
+                <div className="spec-row">
+                  <span>Print Placement:</span>
+                  <strong>{placement.toUpperCase()} ({printSize})</strong>
+                </div>
+                {customText && (
+                  <div className="spec-row">
+                    <span>Personalized Text:</span>
+                    <strong>"{customText}"</strong>
+                  </div>
+                )}
+                <div className="spec-row total-highlight">
+                  <span>Total Amount:</span>
+                  <strong>₹{orderTotal}</strong>
+                </div>
+              </div>
+
+              {/* MANDATORY VERIFICATION CHECKBOX */}
+              <label className="mandatory-verify-check">
+                <input
+                  type="checkbox"
+                  checked={hasConfirmedCheckbox}
+                  onChange={(e) => setHasConfirmedCheckbox(e.target.checked)}
+                />
+                <span>
+                  I have reviewed my design, spelling, colours, size and print placement, and confirm that the customization details are correct. (Actual printed colours may vary slightly from screen).
+                </span>
+              </label>
+
+              {/* EXCLUSIVE WHATSAPP CONFIRMATION ACTION */}
+              <div className="confirm-actions-group">
+                <button
+                  type="button"
+                  className="confirm-whatsapp-btn full-width"
+                  disabled={!hasConfirmedCheckbox || isSavingDesign}
+                  onClick={handleWhatsAppOrder}
+                >
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.02.592 1.849.883 2.806.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.766-5.768-5.766zm9.965 5.765c0 5.514-4.482 9.996-9.965 9.996-1.706 0-3.32-.44-4.737-1.218l-5.294 1.387 1.41-5.155c-.887-1.488-1.379-3.21-1.379-5.01 0-5.514 4.482-9.996 9.965-9.996 5.483 0 9.965 4.482 9.965 9.996z"/>
+                  </svg>
+                  <span>{isSavingDesign ? "Saving & Preparing WhatsApp..." : "Send Everything on WhatsApp →"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* MODAL 2: GARMENT MEASUREMENT SIZE GUIDE MODAL            */}
+        {/* ======================================================== */}
+        {showSizeGuide && (
+          <div className="studio-modal-overlay" onClick={() => setShowSizeGuide(false)}>
+            <div className="studio-modal-box size-guide-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setShowSizeGuide(false)}
+              >
+                <X size={18} />
+              </button>
+              <div className="size-guide-head">
+                <Ruler size={20} className="champagne-icon" />
+                <h3>Oversized Tee Measurements</h3>
+                <p>All dimensions in inches (Inches). Tailored engineered drop shoulder fit.</p>
+              </div>
+
+              <div className="size-table-wrapper">
+                <table className="measurements-table">
+                  <thead>
+                    <tr>
+                      <th>Size</th>
+                      <th>Chest</th>
+                      <th>Length</th>
+                      <th>Shoulder</th>
+                      <th>Sleeve</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>S</strong></td><td>42"</td><td>28"</td><td>20"</td><td>9"</td></tr>
+                    <tr><td><strong>M</strong></td><td>44"</td><td>29"</td><td>21"</td><td>9.5"</td></tr>
+                    <tr className="recommended-row"><td><strong>L (Standard)</strong></td><td>46"</td><td>30"</td><td>22"</td><td>10"</td></tr>
+                    <tr><td><strong>XL</strong></td><td>48"</td><td>31"</td><td>23"</td><td>10.5"</td></tr>
+                    <tr><td><strong>XXL</strong></td><td>50"</td><td>32"</td><td>24"</td><td>11"</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="size-tip-note">
+                💡 <em>Tip: Our oversized tees are designed with relaxed chest ease. If you prefer a fitted streetwear cut, consider sizing down.</em>
               </p>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* BOTTOM GUARANTEE FEATURES BAR */}
-        <div className="customize-bottom-features">
-          <div className="bottom-feature-item">
-            <Zap size={22} className="feature-icon" />
-            <div className="feature-text">
-              <h4 className="feature-title">Easy Customization</h4>
-              <p className="feature-desc">Design, edit and preview</p>
-            </div>
-          </div>
-
-          <div className="bottom-feature-item">
-            <Layers size={22} className="feature-icon" />
-            <div className="feature-text">
-              <h4 className="feature-title">High-Quality Print</h4>
-              <p className="feature-desc">Long-lasting and vibrant</p>
-            </div>
-          </div>
-
-          <div className="bottom-feature-item">
-            <ShieldCheck size={22} className="feature-icon" />
-            <div className="feature-text">
-              <h4 className="feature-title">Premium Fabric</h4>
-              <p className="feature-desc">240 GSM, breathable & durable</p>
-            </div>
-          </div>
-
-          <div className="bottom-feature-item">
-            <Truck size={22} className="feature-icon" />
-            <div className="feature-text">
-              <h4 className="feature-title">Production & Delivery</h4>
-              <p className="feature-desc">7–10 Days production | ~1 Week delivery</p>
-            </div>
-          </div>
-        </div>
-
-        {/* EXPAND MODAL ZOOM PREVIEW */}
+        {/* ======================================================== */}
+        {/* MODAL 3: FULL SCREEN ZOOM PREVIEW                        */}
+        {/* ======================================================== */}
         {isZoomed && (
           <div className="canvas-zoom-modal" onClick={() => setIsZoomed(false)}>
             <div className="canvas-zoom-content" onClick={(e) => e.stopPropagation()}>
@@ -6354,37 +7073,23 @@ MORE THAN A MOMENT.`;
                   className="tee-base-img"
                   style={{ filter: currentColorObj.filter }}
                 />
-                {((placement === "back" && viewSide === "back") ||
-                  (placement !== "back" && viewSide !== "back")) && (
-                  <div
-                    className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
-                    style={{
-                      opacity: artworkOpacity,
-                      transform: `translate(-50%, 0) rotate(${artworkRotation}deg) scale(${artworkScale})`,
-                    }}
-                  >
-                    {printType === "text" ? (
-                      <div
-                        className={`tee-custom-text-rendered font-${textFont} text-sz-${textSize}`}
-                        style={{ color: textColor }}
-                      >
-                        {customText || "MORE THAN A MOMENT"}
-                      </div>
-                    ) : uploadedDesign && uploadedDesign.isImage ? (
+                {isArtworkVisible &&
+                  ((placement === "back" && viewSide === "back") ||
+                    (placement !== "back" && viewSide !== "back")) && (
+                    <div
+                      className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                      style={{
+                        opacity: artworkOpacity,
+                        transform: `translate(-50%, 0) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                      }}
+                    >
                       <img
-                        src={uploadedDesign.dataUrl}
-                        alt="Custom Artwork Zoomed"
-                        className="print-graphic-img"
+                        src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                        alt="Custom Print Zoomed"
+                        className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
                       />
-                    ) : (
-                      <img
-                        src={STUDIO_ARTWORK}
-                        alt="ENYTM Studio Print Zoomed"
-                        className="print-graphic-img"
-                      />
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
               </div>
             </div>
           </div>

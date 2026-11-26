@@ -22,7 +22,8 @@ const COLLECTIONS = [
   "coupons",
   "pendingOtps",
   "passwordResetOtps",
-  "walletTopups"
+  "walletTopups",
+  "customDesigns"
 ];
 
 class MongoDatabase {
@@ -50,7 +51,8 @@ class MongoDatabase {
       },
       pendingOtps: [],
       passwordResetOtps: [],
-      walletTopups: []
+      walletTopups: [],
+      customDesigns: []
     };
   }
 
