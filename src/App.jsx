@@ -5328,16 +5328,16 @@ function CustomizeTeePage() {
   // MULTIPLE DESIGNS PER PLACEMENT STATE
   const [placementDesigns, setPlacementDesigns] = useState({
     "front-center": {
-      enabled: true,
-      artwork: "/customize/mountain-artwork-pure.png?v=2",
-      name: "Alpine Sunrise Graphic",
+      enabled: false,
+      artwork: null,
+      name: "Front Center Graphic",
       offsetX: 0,
       offsetY: 0,
       scale: 1.0,
       rotation: 0,
       flipped: false,
       opacity: 1,
-      isImage: true,
+      isImage: false,
     },
     "back-center": {
       enabled: false,
@@ -5392,7 +5392,7 @@ function CustomizeTeePage() {
   const artworkFlipped = currentActiveDesign?.flipped ?? false;
   const artworkOffsetX = currentActiveDesign?.offsetX ?? 0;
   const artworkOffsetY = currentActiveDesign?.offsetY ?? 0;
-  const isArtworkVisible = currentActiveDesign?.enabled ?? true;
+  const isArtworkVisible = (currentActiveDesign?.enabled && Boolean(currentActiveDesign?.artwork)) || false;
 
   const setArtworkScale = (val) => {
     setPlacementDesigns((prev) => ({
@@ -5510,7 +5510,7 @@ function CustomizeTeePage() {
   const canvasRef = useRef(null);
 
   // REAL-TIME DIRECT MANIPULATION CANVAS STATE
-  const [selectedElement, setSelectedElement] = useState("front-center"); // "front-center" | "back-center" | "sleeves" | "right-logo" | "text" | null
+  const [selectedElement, setSelectedElement] = useState(null); // "front-center" | "back-center" | "sleeves" | "right-logo" | "text" | null
   const [isTransforming, setIsTransforming] = useState(null); // "move" | "resize-nw" | "resize-ne" | "resize-se" | "resize-sw" | "rotate" | null
   const [isSnappedToCenter, setIsSnappedToCenter] = useState(false);
   const [isFabricBlend, setIsFabricBlend] = useState(true);
@@ -6019,14 +6019,7 @@ function CustomizeTeePage() {
           downloadCanvas();
         };
       } else {
-        const art = new Image();
-        art.crossOrigin = "anonymous";
-        art.src = STUDIO_ARTWORK;
-        art.onload = () => {
-          ctx.globalAlpha = artworkOpacity;
-          ctx.drawImage(art, 348, 368, 328 * artworkScale, 328 * artworkScale);
-          downloadCanvas();
-        };
+        downloadCanvas();
       }
     };
     const downloadCanvas = () => {
@@ -6086,7 +6079,7 @@ function CustomizeTeePage() {
       customPrintSize: printSize,
       customFabric: selectedFabric,
       customText: customText || null,
-      customDesign: uploadedDesign ? uploadedDesign.name : "Alpine Sunrise Artwork",
+      customDesign: uploadedDesign ? uploadedDesign.name : (customText ? "Custom Typography" : "Blank Oversized T-Shirt"),
       customOpacity: artworkOpacity,
       isCustom: true,
     };
@@ -6117,7 +6110,7 @@ function CustomizeTeePage() {
 
     const placementsSummaryText = activePlacementsList.length > 0
       ? activePlacementsList.join("\n")
-      : "• Front (Center): Alpine Sunrise Graphic";
+      : (customText ? `• Custom Text: "${customText}"` : "• Plain Garment (No Artwork Added)");
 
     const text = `Hi ENYTM™️! 👋
 
@@ -6809,24 +6802,7 @@ MORE THAN A MOMENT.`;
                             setActivePlacement(p.id);
                             setPlacement(p.id);
                             setViewSide(p.side);
-                            setSelectedElement(p.id);
-                            // Enable placement if not enabled
-                            setPlacementDesigns((prev) => {
-                              const curr = prev[p.id] || {};
-                              if (!curr.enabled) {
-                                return {
-                                  ...prev,
-                                  [p.id]: {
-                                    ...curr,
-                                    enabled: true,
-                                    artwork: curr.artwork || "/customize/mountain-artwork-pure.png?v=2",
-                                    name: curr.name || `${p.label} Graphic`,
-                                    isImage: true,
-                                  },
-                                };
-                              }
-                              return prev;
-                            });
+                            setSelectedElement(placementDesigns[p.id]?.artwork ? p.id : null);
                           }}
                         >
                           <svg
@@ -6973,10 +6949,10 @@ MORE THAN A MOMENT.`;
                       alt="Front"
                       style={{ filter: currentColorObj.filter }}
                     />
-                    {placement !== "back" && placement !== "back-center" && (
+                    {placement !== "back" && placement !== "back-center" && uploadedDesign?.dataUrl && (
                       <div className={`mini-overlay placement-${placement}`}>
                         <img
-                          src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          src={uploadedDesign.dataUrl}
                           alt="Front Print"
                         />
                       </div>
@@ -6992,10 +6968,10 @@ MORE THAN A MOMENT.`;
                       alt="Back"
                       style={{ filter: currentColorObj.filter }}
                     />
-                    {(placement === "back" || placement === "back-center") && (
+                    {(placement === "back" || placement === "back-center") && uploadedDesign?.dataUrl && (
                       <div className="mini-overlay placement-back">
                         <img
-                          src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          src={uploadedDesign.dataUrl}
                           alt="Back Print"
                         />
                       </div>
@@ -7133,7 +7109,7 @@ MORE THAN A MOMENT.`;
                 />
                 {isArtworkVisible &&
                   ((placement === "back" && viewSide === "back") ||
-                    (placement !== "back" && viewSide !== "back")) && (
+                    (placement !== "back" && viewSide !== "back")) && uploadedDesign?.dataUrl && (
                     <div
                       className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
                       style={{
@@ -7142,7 +7118,7 @@ MORE THAN A MOMENT.`;
                       }}
                     >
                       <img
-                        src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                        src={uploadedDesign.dataUrl}
                         alt="Custom Print Zoomed"
                         className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
                       />
