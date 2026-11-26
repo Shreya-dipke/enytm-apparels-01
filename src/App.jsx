@@ -4512,7 +4512,149 @@ function Account() {
     </main>
   );
 }
-function Wishlist() { const products = useProducts(); const { wishlist } = useCart(); const items = products.filter(p => wishlist.includes(p.id)); return <main className="shop-page"><div className="page-heading"><p className="eyebrow">SAVED FOR LATER</p><h1>WISHLIST</h1></div>{items.length ? <div className="product-grid shop-grid">{items.map(p => <ProductCard key={p.id} product={p} />)}</div> : <div className="empty"><Heart size={50} /><h2>Your wishlist is empty.</h2><Link className="btn primary" to="/shop">EXPLORE PRODUCTS</Link></div>}</main> }
+function Wishlist() {
+  const products = useProducts();
+  const { wishlist, toggleWishlist, addToCart } = useCart();
+  const [movedItems, setMovedItems] = useState({});
+
+  const items = products.filter(p => wishlist.some(id => String(id) === String(p.id)));
+
+  const handleMoveToCart = (p) => {
+    const chosenSize = (p.sizes && p.sizes.length > 0) ? p.sizes[0] : "M";
+    addToCart(p, chosenSize);
+    setMovedItems(prev => ({ ...prev, [p.id]: true }));
+    setTimeout(() => {
+      toggleWishlist(p.id);
+    }, 450);
+  };
+
+  return (
+    <main className="wishlist-page">
+      <div className="wishlist-hero-section">
+        <p className="wishlist-eyebrow">SAVED FOR LATER</p>
+        <h1 className="wishlist-title">WISHLIST</h1>
+        <div className="wishlist-accent-line" />
+        <p className="wishlist-sub">Your handpicked styles, all in one place.</p>
+      </div>
+
+      <div className="wishlist-container">
+        {items.length > 0 ? (
+          <div className="wishlist-items-list">
+            {items.map(p => {
+              const currentPrice = Number(p.price) || 0;
+              const originalPrice = Number(p.oldPrice) || Math.round(currentPrice * 1.85);
+              const hasDiscount = originalPrice > currentPrice;
+              const discountPct = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 46;
+              const isMoved = movedItems[p.id];
+
+              return (
+                <div key={p.id} className="wishlist-card">
+                  {/* Left Column: Image with badges & dots */}
+                  <div className="wishlist-card-media">
+                    <Link to={`/product/${p.id}`} className="wishlist-img-link">
+                      <img
+                        src={normalizeImageUrl(p.image)}
+                        alt={p.name}
+                        className="wishlist-card-img"
+                        loading="lazy"
+                      />
+                    </Link>
+                    <span className="wishlist-pill-badge">{p.badge || "NEW"}</span>
+                    <button
+                      type="button"
+                      className="wishlist-heart-btn"
+                      onClick={() => toggleWishlist(p.id)}
+                      title="Remove from wishlist"
+                      aria-label="Remove from wishlist"
+                    >
+                      <Heart size={16} fill="#ffffff" color="#ffffff" />
+                    </button>
+                    <div className="wishlist-dots" aria-hidden="true">
+                      <span className="wishlist-dot active" />
+                      <span className="wishlist-dot" />
+                      <span className="wishlist-dot" />
+                      <span className="wishlist-dot" />
+                    </div>
+                  </div>
+
+                  {/* Right Column: Info & Actions */}
+                  <div className="wishlist-card-content">
+                    <Link to={`/product/${p.id}`} className="wishlist-item-title-link">
+                      <h2 className="wishlist-item-title">{p.name}</h2>
+                    </Link>
+                    <div className="wishlist-price-row">
+                      <span className="wishlist-curr-price">₹{currentPrice.toLocaleString("en-IN")}</span>
+                      {originalPrice > currentPrice && (
+                        <span className="wishlist-old-price">₹{originalPrice.toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+                    {discountPct > 0 && (
+                      <div className="wishlist-discount-wrap">
+                        <span className="wishlist-discount-pill">{discountPct}% OFF</span>
+                      </div>
+                    )}
+
+                    <div className="wishlist-card-actions">
+                      <button
+                        type="button"
+                        className="wishlist-move-btn"
+                        onClick={() => handleMoveToCart(p)}
+                        disabled={isMoved}
+                      >
+                        <ShoppingCart size={15} />
+                        <span>{isMoved ? "Added to Cart" : "Move to Cart"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="wishlist-remove-btn"
+                        onClick={() => toggleWishlist(p.id)}
+                      >
+                        <Trash2 size={14} />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="wishlist-empty-state">
+            <div className="wishlist-empty-icon">
+              <Heart size={44} />
+            </div>
+            <h2>Your wishlist is empty.</h2>
+            <p>Save items you love here and explore them anytime.</p>
+            <Link to="/shop" className="wishlist-empty-btn">
+              EXPLORE PRODUCTS
+            </Link>
+          </div>
+        )}
+
+        {/* Explore More Styles Card */}
+        <Link to="/shop" className="wishlist-explore-card">
+          <div className="wishlist-explore-left">
+            <div className="wishlist-explore-icon">
+              <Heart size={18} />
+            </div>
+            <div>
+              <div className="wishlist-explore-title">Explore More Styles</div>
+              <div className="wishlist-explore-desc">Discover new arrivals and add your favorites.</div>
+            </div>
+          </div>
+          <ArrowRight size={18} className="wishlist-explore-arrow" />
+        </Link>
+
+        {/* Continue Shopping Button */}
+        <div className="wishlist-footer-cta">
+          <Link to="/shop" className="wishlist-continue-btn">
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
 function About() { return <main className="enytm-about-page"><section className="about-hero"><img src="/enytm-story-hero.jpg" alt="ENYTM store collection - More Than A Moment" /><div><p className="eyebrow">THE STORY</p><h1>MORE THAN<br /><em>A MOMENT.</em></h1></div></section><section className="about-quality-section"><div className="about-quality-heading"><p className="eyebrow">THE DETAILS MATTER</p><h2>FEEL THE<br /><em>DIFFERENCE.</em></h2><p>Premium-feeling fabrics. Thoughtful construction. Everyday pieces made to be reached for again and again.</p></div><img className="about-quality-triptych" src="/enytm-quality-triptych.png" alt="Close-up details of ENYTM garment fabric, collar, folded clothing and stitching" /><div className="about-quality-caption"><span>FABRIC, FIT & FINISH</span><span>MADE FOR EVERYDAY WEAR</span></div></section><section className="about-copy"><p className="eyebrow">01 / A LITTLE ABOUT ENYTM</p><h2>MADE FOR THE<br /><em>WAY YOU LIVE.</em></h2><p>ENYTM APPARELS began with a simple belief: what you wear should feel as natural as being yourself. We create everyday streetwear with considered silhouettes, comfortable fabrics and clean details.</p><p>From oversized tees and polos to heavyweight layers, each piece is designed to bring together ease, character and lasting versatility—without unnecessary noise.</p><div className="about-vision"><p className="eyebrow">OUR VISION</p><p>To make everyday clothing feel more personal: pieces that move with you, fit into your life and let your confidence speak quietly.</p></div></section><section className="about-why"><p className="eyebrow">02 / WHY ENYTM</p><h2>LESS NOISE.<br /><em>MORE YOU.</em></h2><div className="about-why-grid"><div><span>01</span><h3>CONSIDERED FITS</h3><p>Relaxed silhouettes and balanced proportions made for everyday movement.</p></div><div><span>02</span><h3>BETTER-FEELING FABRICS</h3><p>We pay attention to fabric weight, texture and the way a garment feels in use.</p></div><div><span>03</span><h3>DETAILS THAT LAST</h3><p>Clean finishes and versatile design, made to be worn, styled and worn again.</p></div></div><Link className="btn outline" to="/shop">EXPLORE THE COLLECTION <ArrowRight size={16} /></Link></section></main> }
 function PrivacyPolicyPage() {
   return (
