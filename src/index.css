@@ -19355,7 +19355,7 @@ a.btn.outline {
 .tee-print-overlay.placement-chest-centre {
   top: 32% !important;
   left: 50% !important;
-  transform: translate(-50%, -20%) !important;
+  /* transform inline */
   width: 38% !important;
   max-height: 34% !important;
 }
@@ -19363,7 +19363,7 @@ a.btn.outline {
 .tee-print-overlay.placement-left-chest {
   top: 29% !important;
   left: 36% !important;
-  transform: translate(-50%, -20%) !important;
+  /* transform inline */
   width: 17% !important;
   max-height: 17% !important;
 }
@@ -19371,7 +19371,7 @@ a.btn.outline {
 .tee-print-overlay.placement-right-chest {
   top: 29% !important;
   left: 64% !important;
-  transform: translate(-50%, -20%) !important;
+  /* transform inline */
   width: 17% !important;
   max-height: 17% !important;
 }
@@ -19379,7 +19379,7 @@ a.btn.outline {
 .tee-print-overlay.placement-back {
   top: 25% !important;
   left: 50% !important;
-  transform: translate(-50%, -10%) !important;
+  /* transform inline */
   width: 48% !important;
   max-height: 52% !important;
 }
@@ -19387,32 +19387,20 @@ a.btn.outline {
 .tee-print-overlay.placement-full-front {
   top: 26% !important;
   left: 50% !important;
-  transform: translate(-50%, -10%) !important;
+  /* transform inline */
   width: 52% !important;
   max-height: 58% !important;
 }
 
 /* Sizing Modifiers */
-.tee-print-overlay.size-a4 {
-  transform: translate(-50%, -10%) scale(0.85) !important;
-}
-.tee-print-overlay.size-a3 {
-  transform: translate(-50%, -10%) scale(1.05) !important;
-}
+/* size transform inline */
+/* size transform inline */
 .tee-print-overlay.placement-left-chest.size-a4,
-.tee-print-overlay.placement-right-chest.size-a4 {
-  transform: translate(-50%, -20%) scale(0.9) !important;
-}
+/* size transform inline */
 .tee-print-overlay.placement-left-chest.size-a3,
-.tee-print-overlay.placement-right-chest.size-a3 {
-  transform: translate(-50%, -20%) scale(1.1) !important;
-}
-.tee-print-overlay.placement-chest-centre.size-a4 {
-  transform: translate(-50%, -20%) scale(0.88) !important;
-}
-.tee-print-overlay.placement-chest-centre.size-a3 {
-  transform: translate(-50%, -20%) scale(1.08) !important;
-}
+/* size transform inline */
+/* size transform inline */
+/* size transform inline */
 
 /* VIEW PILL (FRONT / BACK / LEFT / RIGHT) */
 .view-selector-pills {
@@ -20761,7 +20749,7 @@ a.btn.outline {
 .tee-print-overlay.placement-chest-centre {
   top: 36% !important;
   left: 50% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 32% !important;
   max-height: 32% !important;
 }
@@ -20769,7 +20757,7 @@ a.btn.outline {
 .tee-print-overlay.placement-left-chest {
   top: 34% !important;
   left: 39% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 14% !important;
   max-height: 14% !important;
 }
@@ -20777,7 +20765,7 @@ a.btn.outline {
 .tee-print-overlay.placement-right-chest {
   top: 34% !important;
   left: 61% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 14% !important;
   max-height: 14% !important;
 }
@@ -20785,7 +20773,7 @@ a.btn.outline {
 .tee-print-overlay.placement-back {
   top: 31% !important;
   left: 50% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 36% !important;
   max-height: 42% !important;
 }
@@ -20793,32 +20781,20 @@ a.btn.outline {
 .tee-print-overlay.placement-full-front {
   top: 34% !important;
   left: 50% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 44% !important;
   max-height: 48% !important;
 }
 
 /* Sizing Modifiers */
-.tee-print-overlay.size-a4 {
-  transform: translate(-50%, 0) scale(0.85) !important;
-}
-.tee-print-overlay.size-a3 {
-  transform: translate(-50%, 0) scale(1.1) !important;
-}
+/* size transform inline */
+/* size transform inline */
 .tee-print-overlay.placement-left-chest.size-a4,
-.tee-print-overlay.placement-right-chest.size-a4 {
-  transform: translate(-50%, 0) scale(0.88) !important;
-}
+/* size transform inline */
 .tee-print-overlay.placement-left-chest.size-a3,
-.tee-print-overlay.placement-right-chest.size-a3 {
-  transform: translate(-50%, 0) scale(1.12) !important;
-}
-.tee-print-overlay.placement-chest-centre.size-a4 {
-  transform: translate(-50%, 0) scale(0.86) !important;
-}
-.tee-print-overlay.placement-chest-centre.size-a3 {
-  transform: translate(-50%, 0) scale(1.1) !important;
-}
+/* size transform inline */
+/* size transform inline */
+/* size transform inline */
 
 /* VIEW SIDE HINT PILL */
 .view-side-hint-pill {
@@ -23657,7 +23633,7 @@ a.btn.outline {
 .printable-boundary-box.placement-front-center {
   top: 36% !important;
   left: 50% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 32% !important;
   max-height: 32% !important;
 }
@@ -23666,7 +23642,7 @@ a.btn.outline {
 .printable-boundary-box.placement-back-center {
   top: 31% !important;
   left: 50% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 36% !important;
   max-height: 42% !important;
 }
@@ -23675,7 +23651,7 @@ a.btn.outline {
 .printable-boundary-box.placement-sleeves {
   top: 33% !important;
   left: 23% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 17% !important;
   max-height: 22% !important;
 }
@@ -23684,7 +23660,7 @@ a.btn.outline {
 .printable-boundary-box.placement-right-logo {
   top: 34% !important;
   left: 61% !important;
-  transform: translate(-50%, 0) !important;
+  /* transform inline */
   width: 14% !important;
   max-height: 14% !important;
 }
@@ -23865,4 +23841,39 @@ a.btn.outline {
 
 .canvas-handle-ne, .canvas-handle-sw {
   cursor: nesw-resize !important;
+}
+
+/* ======================================================== */
+/* ENABLE DIRECT MANIPULATION ON INTERACTIVE CANVAS         */
+/* ======================================================== */
+
+.tee-interactive-overlay,
+.tee-print-overlay {
+  pointer-events: auto !important;
+  cursor: grab !important;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: none !important;
+}
+
+.tee-interactive-overlay:active,
+.tee-print-overlay:active {
+  cursor: grabbing !important;
+}
+
+.canvas-bounding-box {
+  cursor: grab !important;
+  pointer-events: auto !important;
+}
+
+.canvas-bounding-box:active {
+  cursor: grabbing !important;
+}
+
+.print-graphic-img {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -webkit-user-select: none !important;
 }

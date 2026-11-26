@@ -5413,7 +5413,7 @@ function CustomizeTeePage() {
       centerY = rect.top + rect.height / 2;
     }
 
-    const initialDist = Math.hypot(clientX - centerX, clientY - centerY) || 1;
+    const initialDist = Math.hypot(clientX - centerX, clientY - centerY) || 60;
     const initialAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
 
     transformRef.current = {
@@ -5427,12 +5427,12 @@ function CustomizeTeePage() {
       startRot: element === "artwork" ? artworkRotation : textRotation,
       centerX,
       centerY,
-      initialDist,
+      initialDist: Math.max(20, initialDist),
       initialAngle,
     };
   };
 
-  // Global pointer & touch tracking for buttery smooth 60fps direct manipulation
+  // Global pointer & touch tracking for buttery smooth direct manipulation
   useEffect(() => {
     const onPointerMove = (e) => {
       if (!isTransforming) return;
@@ -5446,9 +5446,9 @@ function CustomizeTeePage() {
         let newX = startOffsetX + dx;
         let newY = startOffsetY + dy;
 
-        // Constraint check - limit to canvas boundary +/- 160px horizontal, +/- 170px vertical
-        newX = Math.max(-160, Math.min(160, newX));
-        newY = Math.max(-170, Math.min(170, newY));
+        // Wide bounds allowing print to be positioned anywhere on the garment
+        newX = Math.max(-180, Math.min(180, newX));
+        newY = Math.max(-190, Math.min(190, newY));
 
         // Magnetic snap to center within 8px
         if (Math.abs(newX) < 8) {
@@ -5468,7 +5468,7 @@ function CustomizeTeePage() {
       } else if (type.startsWith("resize")) {
         const currDist = Math.hypot(clientX - centerX, clientY - centerY);
         const ratio = currDist / initialDist;
-        const newScale = Math.min(2.0, Math.max(0.4, Number((startScale * ratio).toFixed(2))));
+        const newScale = Math.min(2.5, Math.max(0.3, Number((startScale * ratio).toFixed(2))));
         if (element === "artwork") {
           setArtworkScale(newScale);
         } else {
@@ -6139,9 +6139,29 @@ MORE THAN A MOMENT.`;
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    setArtworkScale((s) => Math.max(0.3, Number((s - 0.15).toFixed(2))));
+                                  }}
+                                  title="Make Smaller (-15%)"
+                                >
+                                  Smaller -
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArtworkScale((s) => Math.min(2.5, Number((s + 0.15).toFixed(2))));
+                                  }}
+                                  title="Make Bigger (+15%)"
+                                >
+                                  Bigger +
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setArtworkOffsetX(0);
                                   }}
-                                  title="Align Center"
+                                  title="Center Alignment"
                                 >
                                   Center
                                 </button>
