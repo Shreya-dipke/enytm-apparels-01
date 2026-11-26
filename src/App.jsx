@@ -5998,36 +5998,169 @@ function CustomizeTeePage() {
   const printPlacementFee = hasBackPrint ? (printSize === "A4" ? 29 : 49) * numTees : 0;
   const orderTotal = (baseTeePrice * numTees) + customizationFee + printPlacementFee;
 
-  // Mockup Download as image
-  const handleDownloadMockup = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext("2d");
-    const teeImg = new Image();
-    teeImg.crossOrigin = "anonymous";
-    teeImg.src = getStageTeeImage(viewSide);
-    teeImg.onload = () => {
-      ctx.drawImage(teeImg, 0, 0, 1024, 1024);
-      if (uploadedDesign && uploadedDesign.dataUrl) {
-        const art = new Image();
-        art.crossOrigin = "anonymous";
-        art.src = uploadedDesign.dataUrl;
-        art.onload = () => {
-          ctx.globalAlpha = artworkOpacity;
-          ctx.drawImage(art, 348, 368, 328 * artworkScale, 328 * artworkScale);
-          downloadCanvas();
-        };
-      } else {
-        downloadCanvas();
+  // State for download mockup indicator
+  const [isDownloadingMockup, setIsDownloadingMockup] = useState(false);
+
+  // Mockup Download as image - exact 1024x1024 composite as rendered on screen
+  const handleDownloadMockup = async () => {
+    if (isDownloadingMockup) return;
+    setIsDownloadingMockup(true);
+
+    try {
+      const stageEl = canvasRef.current;
+      const stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
+      const S = stageRect && stageRect.width > 0 ? 1024 / stageRect.width : 1;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setIsDownloadingMockup(false);
+        return;
       }
-    };
-    const downloadCanvas = () => {
+
+      // Helper to load an image via Promise
+      const loadImage = (src) => {
+        return new Promise((resolve) => {
+          if (!src) return resolve(null);
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+      };
+
+      // 1. Draw base T-shirt garment with active color filter
+      const teeSrc = getStageTeeImage(viewSide);
+      const teeImg = await loadImage(teeSrc);
+      if (teeImg) {
+        if (currentColorObj && currentColorObj.filter && currentColorObj.filter !== "none") {
+          ctx.filter = currentColorObj.filter;
+        } else {
+          ctx.filter = "none";
+        }
+        ctx.drawImage(teeImg, 0, 0, 1024, 1024);
+        ctx.filter = "none";
+      }
+
+      // 2. Base placement layout percentages (relative to 1024x1024 canvas)
+      const placementConfigs = {
+        "front-center": { left: 0.50, top: 0.36, width: 0.32, height: 0.32 },
+        "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
+        "sleeves":      { left: 0.23, top: 0.33, width: 0.18, height: 0.22 },
+        "right-logo":   { left: 0.61, top: 0.34, width: 0.15, height: 0.15 },
+      };
+
+      // 3. Collect and draw all active artwork placements for the current view
+      const activeEntries = Object.entries(placementDesigns).filter(([placeKey, d]) => {
+        if (!d || !d.enabled || !d.artwork) return false;
+        const isBackItem = placeKey === "back-center" || placeKey === "back";
+        if (viewSide === "front" && isBackItem) return false;
+        if (viewSide === "back" && !isBackItem) return false;
+        if ((viewSide === "left" || viewSide === "right") && placeKey !== "sleeves") return false;
+        return true;
+      });
+
+      // Load all artwork images in parallel
+      const loadedArtworks = await Promise.all(
+        activeEntries.map(async ([placeKey, d]) => {
+          const img = await loadImage(d.artwork);
+          return { placeKey, design: d, img };
+        })
+      );
+
+      // Render each artwork onto canvas
+      for (const { placeKey, design, img } of loadedArtworks) {
+        if (!img) continue;
+        const cfg = placementConfigs[placeKey] || placementConfigs["front-center"];
+        const boxW = 1024 * cfg.width;
+        const boxH = 1024 * cfg.height;
+        const centerX = (1024 * cfg.left) + ((design.offsetX || 0) * S);
+        const centerY = (1024 * cfg.top) + (boxH / 2) + ((design.offsetY || 0) * S);
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+
+        if (design.rotation) {
+          ctx.rotate((design.rotation * Math.PI) / 180);
+        }
+
+        const scaleX = (design.scale || 1) * (design.flipped ? -1 : 1);
+        const scaleY = design.scale || 1;
+        ctx.scale(scaleX, scaleY);
+        ctx.globalAlpha = design.opacity ?? 1;
+
+        if (isFabricBlend && selectedColor !== "black") {
+          ctx.globalCompositeOperation = "multiply";
+        }
+
+        const natW = img.naturalWidth || img.width;
+        const natH = img.naturalHeight || img.height;
+        let drawW = boxW;
+        let drawH = boxH;
+        if (natW && natH) {
+          const imgAspect = natW / natH;
+          const boxAspect = boxW / boxH;
+          if (imgAspect > boxAspect) {
+            drawW = boxW;
+            drawH = boxW / imgAspect;
+          } else {
+            drawH = boxH;
+            drawW = boxH * imgAspect;
+          }
+        }
+
+        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+      }
+
+      // 4. Render Custom Text if active on this view side
+      const isTextForView = isTextVisible && customText &&
+        (((placement === "back" || placement === "back-center") && viewSide === "back") ||
+         (placement !== "back" && placement !== "back-center" && viewSide !== "back"));
+
+      if (isTextForView) {
+        const textCfg = placementConfigs[placement] || placementConfigs["front-center"];
+        const textCenterX = (1024 * textCfg.left) + ((textOffsetX || 0) * S);
+        const textCenterY = (1024 * textCfg.top) + ((1024 * textCfg.height) / 2) + ((textOffsetY || 0) * S);
+
+        ctx.save();
+        ctx.translate(textCenterX, textCenterY);
+        if (textRotation) {
+          ctx.rotate((textRotation * Math.PI) / 180);
+        }
+        ctx.scale(textScale || 1, textScale || 1);
+
+        const basePx = textSize === "lg" ? 44 : textSize === "sm" ? 24 : 32;
+        const fontPx = Math.round(basePx * S);
+        const fontFam = textFont === "streetwear" ? "Impact, sans-serif"
+          : textFont === "serif" ? "'Playfair Display', Georgia, serif"
+          : textFont === "display" ? "'Bebas Neue', Impact, sans-serif"
+          : "'Montserrat', sans-serif";
+
+        ctx.font = `${isTextItalic ? "italic " : ""}${isTextBold ? "bold " : ""}${fontPx}px ${fontFam}`;
+        ctx.fillStyle = textColor || "#ffffff";
+        ctx.textAlign = textAlignment || "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(customText, 0, 0);
+        ctx.restore();
+      }
+
+      // 5. Trigger download of the completed composite
+      const downloadName = `enytm-custom-tee-${(currentColorObj?.name || "garment").toLowerCase().replace(/\s+/g, "-")}-${viewSide}.png`;
       const a = document.createElement("a");
-      a.download = `enytm-custom-tee-${selectedColor}-${viewSide}.png`;
+      a.download = downloadName;
       a.href = canvas.toDataURL("image/png");
+      document.body.appendChild(a);
       a.click();
-    };
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Mockup download error:", err);
+    } finally {
+      setIsDownloadingMockup(false);
+    }
   };
 
   // Save design to backend API
@@ -6256,7 +6389,8 @@ MORE THAN A MOMENT.`;
                         type="button"
                         className="canvas-icon-btn"
                         onClick={handleDownloadMockup}
-                        title="Download Mockup PNG"
+                        disabled={isDownloadingMockup}
+                        title={isDownloadingMockup ? "Generating Mockup..." : "Download Mockup PNG"}
                       >
                         <Download size={15} />
                       </button>
