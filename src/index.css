@@ -23147,21 +23147,22 @@ a.btn.outline {
 
 .whatsapp-main-send-btn {
   width: auto !important;
-  min-width: 210px !important;
+  min-width: unset !important;
   background: linear-gradient(180deg, #25D366 0%, #1EBE5B 100%) !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 9999px !important;
-  padding: 9px 18px !important;
-  font-size: 12px !important;
+  padding: 6px 14px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.4px !important;
+  letter-spacing: 0.3px !important;
+  white-space: nowrap !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
-  box-shadow: 0 3px 14px rgba(37, 211, 102, 0.35) !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.35) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-transform: uppercase !important;
 }
