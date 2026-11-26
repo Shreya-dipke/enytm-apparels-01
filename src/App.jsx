@@ -5315,9 +5315,9 @@ function CustomizeTeePage() {
   const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
 
   const galleryThumbs = [
-    { id: 0, title: "Front View", img: "/customize/thumb-front.jpg", view: "front" },
+    { id: 0, title: "Front View", img: "/customize/plain-tee-hanger.jpg", view: "front" },
     { id: 1, title: "Side View", img: "/customize/thumb-side.jpg", view: "left" },
-    { id: 2, title: "Back View", img: "/customize/thumb-back.jpg", view: "back" },
+    { id: 2, title: "Back View", img: "/customize/plain-tee-back.jpg", view: "back" },
     { id: 3, title: "Collar Ribbing", img: "/customize/thumb-collar.jpg", view: "front" },
     { id: 4, title: "Fabric Weave", img: "/customize/thumb-fabric.jpg", view: "front" },
     { id: 5, title: "360° View", is360: true },
@@ -5371,8 +5371,8 @@ function CustomizeTeePage() {
       originalPrice: 1299,
       discount: "40% OFF",
       badge: "CUSTOM",
-      images: ["/customize/tee-hanger-desktop.jpg"],
-      image: "/customize/tee-hanger-desktop.jpg",
+      images: ["/customize/plain-tee-hanger.jpg"],
+      image: "/customize/plain-tee-hanger.jpg",
       category: "Custom",
       color: currentColorObj.name,
       customColor: currentColorObj.name,
@@ -5540,37 +5540,60 @@ MORE THAN A MOMENT.`;
                   {/* TEE STAGE WITH HANGER & GRAPHIC */}
                   <div className="tee-stage-viewport">
                     <img
-                      src="/customize/tee-hanger-desktop.jpg"
-                      alt="ENYTM Oversized Tee"
+                      src={viewSide === "back" ? "/customize/plain-tee-back.jpg" : "/customize/plain-tee-hanger.jpg"}
+                      alt="ENYTM Oversized Plain Tee"
                       className="tee-desktop-img"
                       style={{ filter: currentColorObj.filter }}
                     />
 
                     {/* DYNAMIC PRINT GRAPHIC / TEXT OVERLAY */}
-                    <div
-                      className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
-                    >
-                      {printType === "text" && customText ? (
-                        <div
-                          className="tee-custom-text-rendered"
-                          style={{ color: textColor }}
-                        >
-                          {customText}
-                        </div>
-                      ) : uploadedDesign && uploadedDesign.isImage ? (
-                        <img
-                          src={uploadedDesign.dataUrl}
-                          alt="Custom Upload"
-                          className="print-graphic-img"
-                        />
-                      ) : (
-                        <img
-                          src="/customize/mountain-artwork.png"
-                          alt="ENYTM Studio Print"
-                          className="print-graphic-img"
-                        />
-                      )}
-                    </div>
+                    {((placement === "back" && viewSide === "back") ||
+                      (placement !== "back" && viewSide !== "back")) && (
+                      <div
+                        className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                      >
+                        {printType === "text" && customText ? (
+                          <div
+                            className="tee-custom-text-rendered"
+                            style={{ color: textColor }}
+                          >
+                            {customText}
+                          </div>
+                        ) : uploadedDesign && uploadedDesign.isImage ? (
+                          <img
+                            src={uploadedDesign.dataUrl}
+                            alt="Custom Upload"
+                            className="print-graphic-img"
+                          />
+                        ) : (
+                          <img
+                            src="/customize/mountain-artwork.png"
+                            alt="ENYTM Studio Print"
+                            className="print-graphic-img"
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    {/* FLIP VIEW NOTIFICATION PILLS */}
+                    {placement === "back" && viewSide === "front" && (
+                      <button
+                        type="button"
+                        className="view-side-hint-pill"
+                        onClick={() => setViewSide("back")}
+                      >
+                        Back Print Chosen · Click to View Back →
+                      </button>
+                    )}
+                    {placement !== "back" && viewSide === "back" && (
+                      <button
+                        type="button"
+                        className="view-side-hint-pill"
+                        onClick={() => setViewSide("front")}
+                      >
+                        Front Print Chosen · Click to View Front →
+                      </button>
+                    )}
                   </div>
 
                   {/* 360 ROTATE BADGE */}
@@ -5592,6 +5615,79 @@ MORE THAN A MOMENT.`;
                       {side.charAt(0).toUpperCase() + side.slice(1)}
                     </button>
                   ))}
+                </div>
+
+                {/* PRINT PLACEMENT GUIDE (MATCHING REFERENCE MOCKUP) */}
+                <div className="print-placement-guide-section">
+                  <h4 className="guide-heading">Print Placement Guide</h4>
+                  <div className="guide-cards-grid">
+                    <button
+                      type="button"
+                      className={`guide-card-btn ${placement === "chest-centre" ? "is-active" : ""}`}
+                      onClick={() => {
+                        setPlacement("chest-centre");
+                        setViewSide("front");
+                      }}
+                      title="Chest (Centre)"
+                    >
+                      <img src="/customize/guide-chest-centre.jpg" alt="Chest (Centre)" />
+                      <span className="guide-card-label">Chest<br />(Centre)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`guide-card-btn ${placement === "left-chest" ? "is-active" : ""}`}
+                      onClick={() => {
+                        setPlacement("left-chest");
+                        setViewSide("front");
+                      }}
+                      title="Side Chest (Left)"
+                    >
+                      <img src="/customize/guide-side-left.jpg" alt="Side Chest (Left)" />
+                      <span className="guide-card-label">Side Chest<br />(Left)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`guide-card-btn ${placement === "right-chest" ? "is-active" : ""}`}
+                      onClick={() => {
+                        setPlacement("right-chest");
+                        setViewSide("front");
+                      }}
+                      title="Side Chest (Right)"
+                    >
+                      <img src="/customize/guide-side-right.jpg" alt="Side Chest (Right)" />
+                      <span className="guide-card-label">Side Chest<br />(Right)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`guide-card-btn ${placement === "back" && printSize === "A4" ? "is-active" : ""}`}
+                      onClick={() => {
+                        setPlacement("back");
+                        setPrintSize("A4");
+                        setViewSide("back");
+                      }}
+                      title="A4 Back Print (21 × 29.7 cm)"
+                    >
+                      <img src="/customize/guide-back-a4.jpg" alt="A4 Back Print" />
+                      <span className="guide-card-label">A4 Back Print<br /><small>(21 × 29.7 cm)</small></span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`guide-card-btn ${placement === "back" && printSize === "A3" ? "is-active" : ""}`}
+                      onClick={() => {
+                        setPlacement("back");
+                        setPrintSize("A3");
+                        setViewSide("back");
+                      }}
+                      title="A3 Back Print (29.7 × 42 cm)"
+                    >
+                      <img src="/customize/guide-back-a3.jpg" alt="A3 Back Print" />
+                      <span className="guide-card-label">A3 Back Print<br /><small>(29.7 × 42 cm)</small></span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* MOBILE CAROUSEL DOTS */}
@@ -6139,32 +6235,35 @@ MORE THAN A MOMENT.`;
               </button>
               <div className="tee-stage-zoomed">
                 <img
-                  src="/customize/tee-hanger-desktop.jpg"
+                  src={viewSide === "back" ? "/customize/plain-tee-back.jpg" : "/customize/plain-tee-hanger.jpg"}
                   alt="ENYTM Tee Preview Zoomed"
                   className="tee-base-img"
                   style={{ filter: currentColorObj.filter }}
                 />
-                <div
-                  className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
-                >
-                  {printType === "text" && customText ? (
-                    <div className="tee-custom-text-rendered" style={{ color: textColor }}>
-                      {customText}
-                    </div>
-                  ) : uploadedDesign && uploadedDesign.isImage ? (
-                    <img
-                      src={uploadedDesign.dataUrl}
-                      alt="Custom Artwork Zoomed"
-                      className="print-graphic-img"
-                    />
-                  ) : (
-                    <img
-                      src="/customize/mountain-artwork.png"
-                      alt="ENYTM Studio Print Zoomed"
-                      className="print-graphic-img"
-                    />
-                  )}
-                </div>
+                {((placement === "back" && viewSide === "back") ||
+                  (placement !== "back" && viewSide !== "back")) && (
+                  <div
+                    className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                  >
+                    {printType === "text" && customText ? (
+                      <div className="tee-custom-text-rendered" style={{ color: textColor }}>
+                        {customText}
+                      </div>
+                    ) : uploadedDesign && uploadedDesign.isImage ? (
+                      <img
+                        src={uploadedDesign.dataUrl}
+                        alt="Custom Artwork Zoomed"
+                        className="print-graphic-img"
+                      />
+                    ) : (
+                      <img
+                        src="/customize/mountain-artwork.png"
+                        alt="ENYTM Studio Print Zoomed"
+                        className="print-graphic-img"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

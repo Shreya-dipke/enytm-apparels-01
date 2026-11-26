@@ -321,67 +321,162 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
 }
 
-/* Placements */
+/* Placements - Tuned for 1024x1024 Plain Streetwear Tee */
 .tee-print-overlay.placement-chest-centre {
-  top: 32% !important;
+  top: 36% !important;
   left: 50% !important;
-  transform: translate(-50%, -20%) !important;
-  width: 38% !important;
-  max-height: 34% !important;
+  transform: translate(-50%, 0) !important;
+  width: 32% !important;
+  max-height: 32% !important;
 }
 
 .tee-print-overlay.placement-left-chest {
-  top: 29% !important;
-  left: 36% !important;
-  transform: translate(-50%, -20%) !important;
-  width: 17% !important;
-  max-height: 17% !important;
+  top: 34% !important;
+  left: 39% !important;
+  transform: translate(-50%, 0) !important;
+  width: 14% !important;
+  max-height: 14% !important;
 }
 
 .tee-print-overlay.placement-right-chest {
-  top: 29% !important;
-  left: 64% !important;
-  transform: translate(-50%, -20%) !important;
-  width: 17% !important;
-  max-height: 17% !important;
+  top: 34% !important;
+  left: 61% !important;
+  transform: translate(-50%, 0) !important;
+  width: 14% !important;
+  max-height: 14% !important;
 }
 
 .tee-print-overlay.placement-back {
-  top: 25% !important;
+  top: 31% !important;
   left: 50% !important;
-  transform: translate(-50%, -10%) !important;
-  width: 48% !important;
-  max-height: 52% !important;
+  transform: translate(-50%, 0) !important;
+  width: 36% !important;
+  max-height: 42% !important;
 }
 
 .tee-print-overlay.placement-full-front {
-  top: 26% !important;
+  top: 34% !important;
   left: 50% !important;
-  transform: translate(-50%, -10%) !important;
-  width: 52% !important;
-  max-height: 58% !important;
+  transform: translate(-50%, 0) !important;
+  width: 44% !important;
+  max-height: 48% !important;
 }
 
 /* Sizing Modifiers */
 .tee-print-overlay.size-a4 {
-  transform: translate(-50%, -10%) scale(0.85) !important;
+  transform: translate(-50%, 0) scale(0.85) !important;
 }
 .tee-print-overlay.size-a3 {
-  transform: translate(-50%, -10%) scale(1.05) !important;
+  transform: translate(-50%, 0) scale(1.1) !important;
 }
 .tee-print-overlay.placement-left-chest.size-a4,
 .tee-print-overlay.placement-right-chest.size-a4 {
-  transform: translate(-50%, -20%) scale(0.9) !important;
+  transform: translate(-50%, 0) scale(0.88) !important;
 }
 .tee-print-overlay.placement-left-chest.size-a3,
 .tee-print-overlay.placement-right-chest.size-a3 {
-  transform: translate(-50%, -20%) scale(1.1) !important;
+  transform: translate(-50%, 0) scale(1.12) !important;
 }
 .tee-print-overlay.placement-chest-centre.size-a4 {
-  transform: translate(-50%, -20%) scale(0.88) !important;
+  transform: translate(-50%, 0) scale(0.86) !important;
 }
 .tee-print-overlay.placement-chest-centre.size-a3 {
-  transform: translate(-50%, -20%) scale(1.08) !important;
+  transform: translate(-50%, 0) scale(1.1) !important;
+}
+
+/* VIEW SIDE HINT PILL */
+.view-side-hint-pill {
+  position: absolute !important;
+  bottom: 14px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: rgba(18, 17, 16, 0.92) !important;
+  color: #d8be9b !important;
+  border: 1px solid rgba(216, 190, 155, 0.45) !important;
+  padding: 7px 16px !important;
+  border-radius: 20px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  backdrop-filter: blur(6px) !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.2s ease !important;
+}
+
+.view-side-hint-pill:hover {
+  background: #d8be9b !important;
+  color: #141312 !important;
+}
+
+/* PRINT PLACEMENT GUIDE (DESKTOP) */
+.print-placement-guide-section {
+  width: 100% !important;
+  max-width: 520px !important;
+  margin-top: 20px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.guide-heading {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #c9c3b7 !important;
+  margin: 0 0 10px 0 !important;
+  text-align: left !important;
+  letter-spacing: 0.5px !important;
+}
+
+.guide-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+}
+
+.guide-card-btn {
+  background: #141312 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 6px 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  color: #a39e94 !important;
+}
+
+.guide-card-btn:hover {
+  border-color: rgba(216, 190, 155, 0.5) !important;
+  background: #1c1a18 !important;
+}
+
+.guide-card-btn.is-active {
+  border-color: #d8be9b !important;
+  background: #221f1b !important;
+  color: #f5f2eb !important;
+  box-shadow: 0 0 12px rgba(216, 190, 155, 0.22) !important;
+}
+
+.guide-card-btn img {
+  width: 100% !important;
+  height: 52px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  margin-bottom: 5px !important;
+}
+
+.guide-card-label {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+}
+
+.guide-card-label small {
+  font-size: 9.5px !important;
+  opacity: 0.75 !important;
 }
 
 /* VIEW PILL (FRONT / BACK / LEFT / RIGHT) */
