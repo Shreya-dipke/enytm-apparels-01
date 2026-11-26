@@ -3451,6 +3451,14 @@ function Cart() {
     </main>
   );
 }
+function getUserInitials(name) {
+  if (!name || typeof name !== "string") return "U";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function Account() {
   const { wishlist, logoutUser } = useCart();
   const nav = useNavigate();
@@ -3873,17 +3881,9 @@ function Account() {
           <div className="card-kicker">01 / PROFILE</div>
 
           <div className="profile-identity-row">
-            <div className="profile-avatar-circle">
-              <img
-                src="/account-avatar-model.jpg"
-                alt={user.name || "User"}
-                className="profile-avatar-img"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              <span className="profile-avatar-fallback">
-                {user.name?.charAt(0).toUpperCase() || "U"}
+            <div className="profile-avatar-circle" aria-label={`Profile initials for ${user.name || "User"}`}>
+              <span className="profile-avatar-initials">
+                {getUserInitials(user.name)}
               </span>
             </div>
 

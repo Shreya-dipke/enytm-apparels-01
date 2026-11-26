@@ -16066,24 +16066,25 @@ a.btn.outline {
   height: 74px !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  border: 1.5px solid #333333 !important;
-  background: #181818 !important;
+  border: 1.5px solid rgba(212, 184, 134, 0.45) !important;
+  background: radial-gradient(circle at 35% 35%, #23201a 0%, #100f0d 85%) !important;
   flex-shrink: 0 !important;
   position: relative !important;
-  display: grid !important;
-  place-items: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5) !important;
 }
 
-.profile-avatar-img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-}
-
-.profile-avatar-fallback {
-  font-size: 26px !important;
-  font-weight: 700 !important;
-  color: #d4b886 !important;
+.profile-avatar-initials {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  color: #ebd8be !important;
+  text-transform: uppercase !important;
+  user-select: none !important;
+  display: block !important;
+  line-height: 1 !important;
 }
 
 .profile-identity-details {
