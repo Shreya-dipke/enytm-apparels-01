@@ -5351,13 +5351,37 @@ function CustomizeTeePage() {
       opacity: 1,
       isImage: false,
     },
+    "sleeve-left": {
+      enabled: false,
+      artwork: null,
+      name: "Left Sleeve Print",
+      offsetX: 0,
+      offsetY: 0,
+      scale: 0.85,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: false,
+    },
+    "sleeve-right": {
+      enabled: false,
+      artwork: null,
+      name: "Right Sleeve Print",
+      offsetX: 0,
+      offsetY: 0,
+      scale: 0.85,
+      rotation: 0,
+      flipped: false,
+      opacity: 1,
+      isImage: false,
+    },
     "sleeves": {
       enabled: false,
       artwork: null,
-      name: "Sleeve Crest Print",
-      offsetX: -118,
-      offsetY: -20,
-      scale: 0.65,
+      name: "Sleeve Print",
+      offsetX: 0,
+      offsetY: 0,
+      scale: 0.85,
       rotation: 0,
       flipped: false,
       opacity: 1,
@@ -6086,7 +6110,9 @@ function CustomizeTeePage() {
       const placementConfigs = {
         "front-center": { left: 0.50, top: 0.36, width: 0.32, height: 0.32 },
         "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
-        "sleeves":      { left: 0.23, top: 0.33, width: 0.18, height: 0.22 },
+        "sleeve-left":  { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
+        "sleeve-right": { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
+        "sleeves":      { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
         "right-logo":   { left: 0.61, top: 0.34, width: 0.15, height: 0.15 },
       };
 
@@ -6096,7 +6122,8 @@ function CustomizeTeePage() {
         const isBackItem = placeKey === "back-center" || placeKey === "back";
         if (viewSide === "front" && isBackItem) return false;
         if (viewSide === "back" && !isBackItem) return false;
-        if ((viewSide === "left" || viewSide === "right") && placeKey !== "sleeves") return false;
+        if (viewSide === "left" && placeKey !== "sleeve-left" && placeKey !== "sleeves") return false;
+        if (viewSide === "right" && placeKey !== "sleeve-right" && placeKey !== "sleeves") return false;
         return true;
       });
 
@@ -6297,7 +6324,7 @@ function CustomizeTeePage() {
     const activePlacementsList = Object.entries(placementDesigns)
       .filter(([_, d]) => d.enabled && d.artwork)
       .map(([k, d]) => {
-        const title = k === "front-center" ? "Front (Center)" : k === "back-center" ? `Back Center (${printSize})` : k === "sleeves" ? "Sleeves" : "Right Logo";
+        const title = k === "front-center" ? "Front (Center)" : k === "back-center" ? `Back Center (${printSize})` : k === "sleeve-left" ? "Left Sleeve" : k === "sleeve-right" ? "Right Sleeve" : k === "sleeves" ? "Sleeves" : "Right Logo";
         return `• ${title}: ${d.name || "Custom Design"}`;
       });
 
@@ -6341,10 +6368,20 @@ MORE THAN A MOMENT.`;
     setIs360Playing(false);
     const views = ["front", "left", "back", "right"];
     const idx = views.indexOf(viewSide);
-    if (dir === "next") {
-      setViewSide(views[(idx + 1) % views.length]);
-    } else {
-      setViewSide(views[(idx - 1 + views.length) % views.length]);
+    const nextView = dir === "next" ? views[(idx + 1) % views.length] : views[(idx - 1 + views.length) % views.length];
+    setViewSide(nextView);
+    if (nextView === "left") {
+      setActivePlacement("sleeve-left");
+      setPlacement("sleeve-left");
+    } else if (nextView === "right") {
+      setActivePlacement("sleeve-right");
+      setPlacement("sleeve-right");
+    } else if (nextView === "back") {
+      setActivePlacement("back-center");
+      setPlacement("back-center");
+    } else if (nextView === "front") {
+      setActivePlacement("front-center");
+      setPlacement("front-center");
     }
   };
 
@@ -6410,7 +6447,22 @@ MORE THAN A MOMENT.`;
                         setIs360Playing((p) => !p);
                       } else {
                         setIs360Playing(false);
-                        if (thumb.view) setViewSide(thumb.view);
+                        if (thumb.view) {
+                          setViewSide(thumb.view);
+                          if (thumb.view === "left") {
+                            setActivePlacement("sleeve-left");
+                            setPlacement("sleeve-left");
+                          } else if (thumb.view === "right") {
+                            setActivePlacement("sleeve-right");
+                            setPlacement("sleeve-right");
+                          } else if (thumb.view === "back") {
+                            setActivePlacement("back-center");
+                            setPlacement("back-center");
+                          } else if (thumb.view === "front") {
+                            setActivePlacement("front-center");
+                            setPlacement("front-center");
+                          }
+                        }
                       }
                     }}
                     title={thumb.title}
@@ -6512,7 +6564,8 @@ MORE THAN A MOMENT.`;
                       const isBackItem = placeKey === "back-center" || placeKey === "back";
                       if (viewSide === "front" && isBackItem) return null;
                       if (viewSide === "back" && !isBackItem) return null;
-                      if ((viewSide === "left" || viewSide === "right") && placeKey !== "sleeves") return null;
+                      if (viewSide === "left" && placeKey !== "sleeve-left" && placeKey !== "sleeves") return null;
+                      if (viewSide === "right" && placeKey !== "sleeve-right" && placeKey !== "sleeves") return null;
 
                       const isSelected = selectedElement === placeKey;
 
@@ -6860,7 +6913,7 @@ MORE THAN A MOMENT.`;
                   <div className="add-design-card">
                     <div className="label-with-active-tag">
                     <label className="config-label">
-                      Design for {activePlacement === "front-center" ? "Front (Center)" : activePlacement === "back-center" ? "Back Center" : activePlacement === "sleeves" ? "Sleeves" : "Right Logo"}
+                      Design for {activePlacement === "front-center" ? "Front (Center)" : activePlacement === "back-center" ? "Back Center" : activePlacement === "sleeve-left" ? "Left Sleeve" : activePlacement === "sleeve-right" ? "Right Sleeve" : activePlacement === "sleeves" ? "Sleeves" : "Right Logo"}
                     </label>
                     <span className="current-target-tag">Target Placement</span>
                   </div>
@@ -6935,7 +6988,7 @@ MORE THAN A MOMENT.`;
                     </label>
                     <span className="placement-interactive-hint">Moveable print</span>
                   </div>
-                  <div className="placement-icons-row four-options">
+                  <div className="placement-icons-row five-options">
                     {[
                       {
                         id: "front-center",
@@ -6950,15 +7003,16 @@ MORE THAN A MOMENT.`;
                         renderRect: () => <rect x="13.5" y="12" width="9" height="11" rx="1" fill="#d8be9b" />,
                       },
                       {
-                        id: "sleeves",
-                        label: "Sleeves",
-                        side: "front",
-                        renderRect: () => (
-                          <>
-                            <rect x="4" y="13" width="5" height="5" rx="1" fill="#d8be9b" />
-                            <rect x="27" y="13" width="5" height="5" rx="1" fill="#d8be9b" />
-                          </>
-                        ),
+                        id: "sleeve-left",
+                        label: "Left Sleeve",
+                        side: "left",
+                        renderRect: () => <rect x="4" y="13" width="5" height="5" rx="1" fill="#d8be9b" />,
+                      },
+                      {
+                        id: "sleeve-right",
+                        label: "Right Sleeve",
+                        side: "right",
+                        renderRect: () => <rect x="27" y="13" width="5" height="5" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "right-logo",
