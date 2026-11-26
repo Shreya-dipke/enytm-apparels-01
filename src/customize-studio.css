@@ -1761,3 +1761,62 @@
     margin-top: 2px !important;
   }
 }
+
+
+/* ============================================================
+   EXCLUSIVE WHATSAPP ORDER BUTTON (NO ADD TO CART)
+   ============================================================ */
+.cta-btn-col {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 320px !important;
+}
+
+.send-whatsapp-main-btn {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 30px !important;
+  padding: 12px 24px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.4) !important;
+  transition: all 0.25s ease !important;
+  letter-spacing: 0.3px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.send-whatsapp-main-btn:hover {
+  background: linear-gradient(135deg, #2ee06f 0%, #17a090 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 22px rgba(37, 211, 102, 0.55) !important;
+  color: #ffffff !important;
+}
+
+.send-whatsapp-main-btn svg {
+  flex-shrink: 0 !important;
+}
+
+.whatsapp-help-note {
+  font-size: 11px !important;
+  color: #8c877e !important;
+  text-align: center !important;
+  margin: 6px 0 0 !important;
+  line-height: 1.4 !important;
+}
+
+.add-to-cart-gold-btn {
+  display: none !important;
+}
+.whatsapp-order-pill-link {
+  display: none !important;
+}

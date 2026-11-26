@@ -6281,26 +6281,22 @@ MORE THAN A MOMENT.`;
                 </div>
 
                 <div className="cta-btn-col">
-                  <button
-                    type="button"
-                    className="add-to-cart-gold-btn"
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart size={17} />
-                    <span>{addedToast ? "Added to Bag! ✓" : "ADD TO CART"}</span>
-                  </button>
-
                   <a
                     href={generateWhatsAppLink()}
                     target="_blank"
                     rel="noreferrer"
-                    className="whatsapp-order-pill-link"
-                    title="Send order specs on WhatsApp"
+                    className="send-whatsapp-main-btn"
                   >
-                    Send on WhatsApp →
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.02.592 1.849.883 2.806.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.766-5.768-5.766zm9.965 5.765c0 5.514-4.482 9.996-9.965 9.996-1.706 0-3.32-.44-4.737-1.218l-5.294 1.387 1.41-5.155c-.887-1.488-1.379-3.21-1.379-5.01 0-5.514 4.482-9.996 9.965-9.996 5.483 0 9.965 4.482 9.965 9.996z"/>
+                    </svg>
+                    <span>Send Everything on WhatsApp →</span>
                   </a>
                 </div>
               </div>
+              <p className="whatsapp-help-note">
+                Your design, selections and order details will be sent to us on WhatsApp for confirmation and production.
+              </p>
             </div>
           </div>
         </div>
