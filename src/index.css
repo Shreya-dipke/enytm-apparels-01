@@ -18488,6 +18488,7 @@ a.btn.outline {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  object-position: top center !important;
   display: block !important;
 }
 
@@ -18815,5 +18816,166 @@ a.btn.outline {
   .wishlist-remove-btn {
     font-size: 12px !important;
     padding: 8px 10px !important;
+  }
+}
+
+/* ========================================================
+   LAPTOP & DESKTOP ENHANCEMENTS FOR LUXURY CARDS
+======================================================== */
+@media (min-width: 769px) {
+  .wishlist-page {
+    padding-top: 40px !important;
+    padding-bottom: 90px !important;
+  }
+
+  .wishlist-container {
+    max-width: 860px !important;
+    padding: 0 24px !important;
+  }
+
+  .wishlist-card {
+    grid-template-columns: 210px minmax(0, 1fr) !important;
+    gap: 24px !important;
+    padding: 16px 20px !important;
+    border-radius: 22px !important;
+  }
+
+  .wishlist-card-media {
+    border-radius: 16px !important;
+    aspect-ratio: 1 / 1.18 !important;
+  }
+
+  .wishlist-card-img {
+    object-position: top center !important;
+  }
+
+  .wishlist-pill-badge {
+    top: 10px !important;
+    left: 10px !important;
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    border-radius: 7px !important;
+  }
+
+  .wishlist-heart-btn {
+    top: 10px !important;
+    right: 10px !important;
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .wishlist-dots {
+    bottom: 10px !important;
+    gap: 6px !important;
+  }
+
+  .wishlist-dot {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .wishlist-dot.active {
+    width: 7px !important;
+    height: 7px !important;
+  }
+
+  .wishlist-card-content {
+    padding: 4px 0 !important;
+  }
+
+  .wishlist-item-title {
+    font-size: 18px !important;
+    line-height: 1.35 !important;
+    margin: 0 0 8px !important;
+  }
+
+  .wishlist-price-row {
+    gap: 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .wishlist-curr-price {
+    font-size: 20px !important;
+  }
+
+  .wishlist-old-price {
+    font-size: 15px !important;
+  }
+
+  .wishlist-discount-wrap {
+    margin-bottom: 16px !important;
+  }
+
+  .wishlist-discount-pill {
+    font-size: 11.5px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  .wishlist-card-actions {
+    gap: 10px !important;
+  }
+
+  .wishlist-move-btn {
+    font-size: 14px !important;
+    padding: 12px 18px !important;
+    border-radius: 12px !important;
+  }
+
+  .wishlist-remove-btn {
+    font-size: 13.5px !important;
+    padding: 10px 18px !important;
+    border-radius: 12px !important;
+  }
+
+  .wishlist-explore-card {
+    padding: 18px 24px !important;
+    border-radius: 18px !important;
+    margin-top: 26px !important;
+  }
+
+  .wishlist-explore-title {
+    font-size: 16px !important;
+  }
+
+  .wishlist-explore-desc {
+    font-size: 13px !important;
+  }
+
+  .wishlist-continue-btn {
+    font-size: 14px !important;
+    padding: 13px 36px !important;
+  }
+
+  /* Shop List View on Laptop */
+  .shop-grid.is-list-view {
+    max-width: 860px !important;
+  }
+
+  .shop-grid.is-list-view .product-card {
+    grid-template-columns: 210px minmax(0, 1fr) !important;
+    gap: 24px !important;
+    padding: 16px 20px !important;
+    border-radius: 22px !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-image {
+    aspect-ratio: 1 / 1.18 !important;
+    border-radius: 16px !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-image img {
+    object-position: top center !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-card-title-link h3 {
+    font-size: 18px !important;
+  }
+
+  .shop-grid.is-list-view .product-card button.btn,
+  .shop-grid.is-list-view .product-card .product-add-cart-btn {
+    font-size: 14px !important;
+    padding: 12px 18px !important;
+    border-radius: 12px !important;
   }
 }
