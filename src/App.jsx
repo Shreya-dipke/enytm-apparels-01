@@ -4150,7 +4150,6 @@ function Account() {
             </div>
 
             <div className="orders-title">
-
               <div>
                 <h2>SAVED ADDRESSES</h2>
                 <p className="muted">
@@ -4160,7 +4159,8 @@ function Account() {
 
               <div className="orders-header-actions">
                 <button
-                  className="btn primary"
+                  type="button"
+                  className="modern-add-address-btn"
                   onClick={startAddAddress}
                 >
                   + ADD ADDRESS
@@ -4174,9 +4174,7 @@ function Account() {
                   <X size={14} /> CLOSE
                 </button>
               </div>
-
             </div>
-
 
             {addressError && (
               <div className="error">
@@ -4184,118 +4182,126 @@ function Account() {
               </div>
             )}
 
-
             {showAddressForm && (
-
               <form
-                className="address-form"
+                className="address-form modern-address-form"
                 onSubmit={saveAddress}
               >
+                <div className="modern-form-grid">
+                  <div className="modern-input-field">
+                    <label>FULL NAME</label>
+                    <input
+                      required
+                      placeholder="e.g. Vedant Darokar"
+                      value={addressForm.name}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          name: e.target.value
+                        })
+                      }
+                    />
+                  </div>
 
-                <div className="form-grid">
+                  <div className="modern-input-field">
+                    <label>PHONE NUMBER</label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={addressForm.phone}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          phone: e.target.value
+                        })
+                      }
+                    />
+                  </div>
 
-                  <input
-                    required
-                    placeholder="Full name"
-                    value={addressForm.name}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        name: e.target.value
-                      })
-                    }
-                  />
+                  <div className="modern-input-field wide">
+                    <label>STREET ADDRESS</label>
+                    <input
+                      required
+                      placeholder="House / Flat / Block No., Apartment, Street name"
+                      value={addressForm.address}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          address: e.target.value
+                        })
+                      }
+                    />
+                  </div>
 
-                  <input
-                    required
-                    placeholder="Phone"
-                    value={addressForm.phone}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        phone: e.target.value
-                      })
-                    }
-                  />
+                  <div className="modern-input-field">
+                    <label>CITY</label>
+                    <input
+                      required
+                      placeholder="e.g. Pune"
+                      value={addressForm.city}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          city: e.target.value
+                        })
+                      }
+                    />
+                  </div>
 
-                  <input
-                    required
-                    className="wide"
-                    placeholder="Complete address"
-                    value={addressForm.address}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        address: e.target.value
-                      })
-                    }
-                  />
+                  <div className="modern-input-field">
+                    <label>STATE</label>
+                    <input
+                      required
+                      placeholder="e.g. Maharashtra"
+                      value={addressForm.state}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          state: e.target.value
+                        })
+                      }
+                    />
+                  </div>
 
-                  <input
-                    required
-                    placeholder="City"
-                    value={addressForm.city}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        city: e.target.value
-                      })
-                    }
-                  />
+                  <div className="modern-input-field">
+                    <label>PINCODE</label>
+                    <input
+                      required
+                      inputMode="numeric"
+                      maxLength="6"
+                      placeholder="6-digit pincode"
+                      value={addressForm.pincode}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          pincode: e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 6)
+                        })
+                      }
+                    />
+                  </div>
 
-                  <input
-                    required
-                    placeholder="State"
-                    value={addressForm.state}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        state: e.target.value
-                      })
-                    }
-                  />
-
-                  <input
-                    required
-                    inputMode="numeric"
-                    maxLength="6"
-                    placeholder="Pincode"
-                    value={addressForm.pincode}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        pincode: e.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 6)
-                      })
-                    }
-                  />
-
-                  <select
-                    value={addressForm.label}
-                    onChange={e =>
-                      setAddressForm({
-                        ...addressForm,
-                        label: e.target.value
-                      })
-                    }
-                  >
-                    <option value="Home">
-                      Home
-                    </option>
-
-                    <option value="Work">
-                      Work
-                    </option>
-
-                    <option value="Other">
-                      Other
-                    </option>
-                  </select>
-
+                  <div className="modern-input-field">
+                    <label>ADDRESS TYPE</label>
+                    <select
+                      value={addressForm.label}
+                      onChange={e =>
+                        setAddressForm({
+                          ...addressForm,
+                          label: e.target.value
+                        })
+                      }
+                    >
+                      <option value="Home">Home (All-day delivery)</option>
+                      <option value="Work">Work (10 AM - 6 PM)</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
 
-                <label className="check">
+                <label className="modern-checkbox-row">
                   <input
                     type="checkbox"
                     checked={addressForm.isDefault}
@@ -4306,15 +4312,13 @@ function Account() {
                       })
                     }
                   />
-
-                  Make this my default address
+                  <span>Make this my default delivery address</span>
                 </label>
 
-                <div className="account-actions">
-
+                <div className="modern-form-actions">
                   <button
                     type="submit"
-                    className="btn primary"
+                    className="modern-save-btn"
                     disabled={addressLoading}
                   >
                     {addressLoading
@@ -4326,7 +4330,7 @@ function Account() {
 
                   <button
                     type="button"
-                    className="btn outline"
+                    className="modern-cancel-btn"
                     onClick={() => {
                       setShowAddressForm(false);
                       setEditingId(null);
@@ -4335,11 +4339,8 @@ function Account() {
                   >
                     CANCEL
                   </button>
-
                 </div>
-
               </form>
-
             )}
 
 
