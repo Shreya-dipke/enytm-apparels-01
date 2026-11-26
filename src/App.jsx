@@ -413,6 +413,16 @@ function LaunchCountdown() {
 function Home() {
   const products = useProducts();
   const [activeTab, setActiveTab] = useState("all");
+  const [showFilmModal, setShowFilmModal] = useState(false);
+
+  useEffect(() => {
+    if (!showFilmModal) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setShowFilmModal(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showFilmModal]);
 
   const collections = [
     { title: "T-Shirts", link: "/shop?category=Oversized", img: "/categories/tshirts.jpg?v=2" },
@@ -438,19 +448,93 @@ function Home() {
 
   return (
     <main className="home-black-label home-v3">
-      <section className="hero hero-v2 hero-campaign-section">
-        <Link
-          to="/shop"
-          className="hero-campaign-link"
-          aria-label="Shop The Collection - Your Everyday. Redefined."
-        >
-          <img
-            src="/enytm-hero-campaign.jpg"
-            alt="ENYTM - Your Everyday. Redefined. Oversized T-Shirts & Premium Polos"
-            className="hero-campaign-img"
-          />
-        </Link>
+      <section className="hero hero-v2 hero-fullscreen-campaign">
+        {/* Background media: wide clean model image for desktop, mobile banner for mobile */}
+        <div className="hero-bg-container">
+          <picture className="hero-responsive-pic">
+            <source media="(max-width: 768px)" srcSet="/enytm-hero-campaign.jpg" />
+            <img
+              src="/enytm-hero-desktop.jpg"
+              alt="ENYTM - Your Everyday. Redefined."
+              className="hero-main-bg-img"
+            />
+          </picture>
+          <div className="hero-gradient-overlay" />
+          <Link to="/shop" className="hero-mobile-link-overlay" aria-label="Shop The Collection" />
+        </div>
+
+        {/* Content on Desktop (Left aligned with high contrast) */}
+        <div className="hero-desktop-content">
+          <p className="hero-eyebrow-text">OVERSIZED T-SHIRTS &nbsp;/&nbsp; PREMIUM POLOS</p>
+          <h1 className="hero-main-title">
+            YOUR<br />
+            EVERYDAY.<br />
+            <em>REDEFINED.</em>
+          </h1>
+          <div className="hero-accent-divider" />
+          <p className="hero-subline-text">
+            Quiet confidence. Considered details.<br />
+            Premium oversized essentials and refined polos.
+          </p>
+          <div className="hero-action-buttons">
+            <Link to="/shop" className="hero-cta-btn-primary">
+              SHOP THE COLLECTION <ArrowRight size={15} />
+            </Link>
+            <button
+              type="button"
+              className="hero-cta-btn-film"
+              onClick={() => setShowFilmModal(true)}
+            >
+              <Play size={13} fill="currentColor" /> VIEW FILM
+            </button>
+          </div>
+          <p className="hero-footer-tagline">
+            MORE THAN A MOMENT · DESIGNED TO STAY.
+          </p>
+        </div>
+
+        {/* Mobile View Film Floating Button */}
+        <div className="hero-mobile-floating-film">
+          <button
+            type="button"
+            className="hero-mobile-film-btn"
+            onClick={() => setShowFilmModal(true)}
+          >
+            <Play size={12} fill="currentColor" /> VIEW FILM
+          </button>
+        </div>
       </section>
+
+      {/* Cinematic Film Modal */}
+      {showFilmModal && (
+        <div className="film-lightbox-overlay" onClick={() => setShowFilmModal(false)}>
+          <div className="film-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <div className="film-lightbox-header">
+              <span className="film-lightbox-title">ENYTM / THE FILM</span>
+              <button
+                type="button"
+                className="film-lightbox-close"
+                onClick={() => setShowFilmModal(false)}
+                aria-label="Close video"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="film-lightbox-video-wrap">
+              <video
+                src="/enytm-hero.mp4"
+                controls
+                autoPlay
+                playsInline
+                className="film-lightbox-video"
+              >
+                <source src="/enytm-hero.mp4" type="video/mp4" />
+                <source src="/enytm-hero_01.mp4" type="video/mp4" />
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* 3 Category Quick Tiles */}
