@@ -220,12 +220,48 @@ function Navbar({ onSearch }) {
         </Link>
 
         <nav className={`nav-links ${open ? "mobile-open" : ""}`}>
-          <Link to="/shop" onClick={() => setOpen(false)}>SHOP</Link>
-          <Link to="/customize" className={location.pathname === "/customize" ? "nav-link-customize-active" : ""} onClick={() => setOpen(false)}>CUSTOMIZE</Link>
-          <Link to="/shop?category=Oversized" onClick={() => setOpen(false)}>OVERSIZED</Link>
-          <Link to="/shop?category=Polos" onClick={() => setOpen(false)}>POLOS</Link>
-          <Link to={token ? "/account" : "/login"} onClick={() => setOpen(false)}>ORDERS</Link>
-          <Link to="/about" onClick={() => setOpen(false)}>ABOUT</Link>
+          <Link
+            to="/shop"
+            className={location.pathname === "/shop" && (!location.search || location.search === "?category=All") ? "active-nav-tab" : ""}
+            onClick={() => setOpen(false)}
+          >
+            SHOP
+          </Link>
+          <Link
+            to="/customize"
+            className={["/customize", "/customise"].includes(location.pathname) ? "active-nav-tab nav-link-customize-active" : ""}
+            onClick={() => setOpen(false)}
+          >
+            CUSTOMIZE
+          </Link>
+          <Link
+            to="/shop?category=Oversized"
+            className={location.pathname === "/shop" && location.search.toLowerCase().includes("oversized") ? "active-nav-tab" : ""}
+            onClick={() => setOpen(false)}
+          >
+            OVERSIZED
+          </Link>
+          <Link
+            to="/shop?category=Polos"
+            className={location.pathname === "/shop" && location.search.toLowerCase().includes("polos") ? "active-nav-tab" : ""}
+            onClick={() => setOpen(false)}
+          >
+            POLOS
+          </Link>
+          <Link
+            to={token ? "/account" : "/login"}
+            className={["/account", "/orders"].includes(location.pathname) ? "active-nav-tab" : ""}
+            onClick={() => setOpen(false)}
+          >
+            ORDERS
+          </Link>
+          <Link
+            to="/about"
+            className={location.pathname === "/about" ? "active-nav-tab" : ""}
+            onClick={() => setOpen(false)}
+          >
+            ABOUT
+          </Link>
         </nav>
 
         <div className="nav-actions">

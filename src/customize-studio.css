@@ -2941,14 +2941,17 @@
 }
 
 /* ======================================================== */
-/* NAVBAR CUSTOMIZE HIGHLIGHT                               */
+/* NAVBAR ACTIVE HIGHLIGHT FOR ALL TABS                     */
 /* ======================================================== */
+.active-nav-tab,
 .nav-link-customize-active {
   color: #D7BC98 !important;
   font-weight: 700 !important;
   position: relative !important;
+  opacity: 1 !important;
 }
 
+.active-nav-tab::after,
 .nav-link-customize-active::after {
   content: "" !important;
   position: absolute !important;
@@ -2958,6 +2961,30 @@
   height: 2px !important;
   background: #D7BC98 !important;
   border-radius: 2px !important;
+}
+
+.nav-links a {
+  position: relative !important;
+  transition: color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.nav-links a:hover {
+  color: #D7BC98 !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 900px) {
+  .nav-links.mobile-open a.active-nav-tab,
+  .nav-links.mobile-open a.nav-link-customize-active {
+    color: #D7BC98 !important;
+    display: inline-block !important;
+    width: fit-content !important;
+  }
+
+  .nav-links.mobile-open a.active-nav-tab::after,
+  .nav-links.mobile-open a.nav-link-customize-active::after {
+    bottom: -3px !important;
+  }
 }
 
 /* ======================================================== */
