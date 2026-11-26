@@ -5945,19 +5945,91 @@ function CustomizeTeePage() {
   };
 
   const handleResetDesign = () => {
-    if (window.confirm("Reset all customizations and start fresh?")) {
-      setUploadedDesign(null);
-      setCustomText("");
-      setArtworkScale(1);
-      setArtworkRotation(0);
-      setArtworkOpacity(1);
-      setArtworkOffsetX(0);
-      setArtworkOffsetY(0);
-      setArtworkFlipped(false);
-      setPlacement("chest-centre");
-      setPrintSize("A3");
-      localStorage.removeItem("enytm_custom_draft");
-    }
+    // Reset all placement designs back to clean blank garment
+    setPlacementDesigns({
+      "front-center": {
+        enabled: false,
+        artwork: null,
+        name: "Front Center Graphic",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+      "back-center": {
+        enabled: false,
+        artwork: null,
+        name: "Back Center Graphic",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+      "sleeve-left": {
+        enabled: false,
+        artwork: null,
+        name: "Left Sleeve Print",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+      "sleeve-right": {
+        enabled: false,
+        artwork: null,
+        name: "Right Sleeve Print",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+      "sleeves": {
+        enabled: false,
+        artwork: null,
+        name: "Sleeve Print",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+      "right-logo": {
+        enabled: false,
+        artwork: null,
+        name: "Right Chest Emblem",
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotation: 0,
+        flipped: false,
+        opacity: 1,
+        isImage: false,
+      },
+    });
+    setCustomText("");
+    setTextOffsetX(0);
+    setTextOffsetY(0);
+    setTextScale(1);
+    setTextRotation(0);
+    setSelectedElement(null);
+    setIsTransforming(null);
+    setPlacement("front-center");
+    setActivePlacement("front-center");
+    localStorage.removeItem("enytm_custom_draft");
   };
 
     // Upload handler - saves artwork directly to the active placement

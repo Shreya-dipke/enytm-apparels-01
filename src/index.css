@@ -22288,7 +22288,7 @@ a.btn.outline {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  z-index: 15 !important;
+  z-index: 100 !important;
   pointer-events: auto !important;
 }
 
@@ -22296,21 +22296,24 @@ a.btn.outline {
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
+  pointer-events: auto !important;
 }
 
 .canvas-icon-btn {
   background: rgba(20, 20, 20, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   color: #d7bc98 !important;
-  width: 30px !important;
-  height: 30px !important;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 50% !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
+  pointer-events: auto !important;
   transition: all 0.2s ease !important;
   backdrop-filter: blur(4px) !important;
+  touch-action: manipulation !important;
 }
 
 .canvas-icon-btn:hover:not(:disabled) {
