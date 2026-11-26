@@ -5391,9 +5391,9 @@ function CustomizeTeePage() {
       enabled: false,
       artwork: null,
       name: "Right Chest Emblem",
-      offsetX: 52,
-      offsetY: -38,
-      scale: 0.55,
+      offsetX: 0,
+      offsetY: 0,
+      scale: 1,
       rotation: 0,
       flipped: false,
       opacity: 1,
@@ -5791,10 +5791,10 @@ function CustomizeTeePage() {
   }, [selectedElement, activePlacement]);
 
   // Asset paths with cache buster to guarantee fresh loads
-  const PLAIN_TEE_FRONT = "/customize/tee-front.jpg?v=3";
-  const PLAIN_TEE_BACK = "/customize/tee-back.jpg?v=3";
-  const PLAIN_TEE_LEFT = "/customize/tee-left.jpg?v=3";
-  const PLAIN_TEE_RIGHT = "/customize/tee-right.jpg?v=3";
+  const PLAIN_TEE_FRONT = "/customize/tee-front.jpg?v=4";
+  const PLAIN_TEE_BACK = "/customize/tee-back.jpg?v=4";
+  const PLAIN_TEE_LEFT = "/customize/tee-left.jpg?v=4";
+  const PLAIN_TEE_RIGHT = "/customize/tee-right.jpg?v=4";
 
   const getStageTeeImage = (side) => {
     if (side === "back") return PLAIN_TEE_BACK;
@@ -6108,12 +6108,12 @@ function CustomizeTeePage() {
 
       // 3. Fallback layout percentages in case DOM elements are not currently attached
       const placementConfigs = {
-        "front-center": { left: 0.50, top: 0.36, width: 0.32, height: 0.32 },
+        "front-center": { left: 0.50, top: 0.27, width: 0.32, height: 0.32 },
         "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
         "sleeve-left":  { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
         "sleeve-right": { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
         "sleeves":      { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
-        "right-logo":   { left: 0.61, top: 0.34, width: 0.15, height: 0.15 },
+        "right-logo":   { left: 0.63, top: 0.27, width: 0.13, height: 0.13 },
       };
 
       // 4. Collect all active artwork placements for the current view

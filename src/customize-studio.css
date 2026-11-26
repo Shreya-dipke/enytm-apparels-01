@@ -323,7 +323,7 @@
 
 /* Placements - Tuned for 1024x1024 Plain Streetwear Tee */
 .tee-print-overlay.placement-chest-centre {
-  top: 36% !important;
+  top: 27% !important;
   left: 50% !important;
   /* transform inline */
   width: 32% !important;
@@ -331,19 +331,19 @@
 }
 
 .tee-print-overlay.placement-left-chest {
-  top: 34% !important;
-  left: 39% !important;
+  top: 27% !important;
+  left: 37% !important;
   /* transform inline */
-  width: 14% !important;
-  max-height: 14% !important;
+  width: 13% !important;
+  max-height: 13% !important;
 }
 
 .tee-print-overlay.placement-right-chest {
-  top: 34% !important;
-  left: 61% !important;
+  top: 27% !important;
+  left: 63% !important;
   /* transform inline */
-  width: 14% !important;
-  max-height: 14% !important;
+  width: 13% !important;
+  max-height: 13% !important;
 }
 
 .tee-print-overlay.placement-back {
@@ -1912,7 +1912,7 @@
 }
 
 .printable-boundary-box.placement-chest-centre {
-  top: 36% !important;
+  top: 27% !important;
   left: 50% !important;
   transform: translate(-50%, 0) !important;
   width: 32% !important;
@@ -1920,19 +1920,19 @@
 }
 
 .printable-boundary-box.placement-left-chest {
-  top: 34% !important;
-  left: 39% !important;
+  top: 27% !important;
+  left: 37% !important;
   transform: translate(-50%, 0) !important;
-  width: 14% !important;
-  height: 14% !important;
+  width: 13% !important;
+  height: 13% !important;
 }
 
 .printable-boundary-box.placement-right-chest {
-  top: 34% !important;
-  left: 61% !important;
+  top: 27% !important;
+  left: 63% !important;
   transform: translate(-50%, 0) !important;
-  width: 14% !important;
-  height: 14% !important;
+  width: 13% !important;
+  height: 13% !important;
 }
 
 .printable-boundary-box.placement-back {
@@ -3209,7 +3209,7 @@
 /* OVERLAY & BOUNDARY PLACEMENTS */
 .tee-print-overlay.placement-front-center,
 .printable-boundary-box.placement-front-center {
-  top: 36% !important;
+  top: 27% !important;
   left: 50% !important;
   /* transform inline */
   width: 32% !important;
@@ -3236,11 +3236,11 @@
 
 .tee-print-overlay.placement-right-logo,
 .printable-boundary-box.placement-right-logo {
-  top: 34% !important;
-  left: 61% !important;
+  top: 27% !important;
+  left: 63% !important;
   /* transform inline */
-  width: 14% !important;
-  max-height: 14% !important;
+  width: 13% !important;
+  max-height: 13% !important;
 }
 
 /* CANVAS DRAG MOVE HELPER BADGE */
@@ -3293,7 +3293,7 @@
 
 .tee-print-overlay.placement-front-center,
 .tee-print-overlay.placement-chest-centre {
-  top: 36% !important;
+  top: 27% !important;
   left: 50% !important;
   width: 32% !important;
   height: 32% !important;
@@ -3301,7 +3301,7 @@
 
 .printable-boundary-box.placement-front-center,
 .printable-boundary-box.placement-chest-centre {
-  top: 36% !important;
+  top: 27% !important;
   left: 50% !important;
   transform: translate(-50%, 0) !important;
   width: 32% !important;
@@ -3341,18 +3341,18 @@
 }
 
 .tee-print-overlay.placement-right-logo {
-  top: 34% !important;
-  left: 61% !important;
-  width: 15% !important;
-  height: 15% !important;
+  top: 27% !important;
+  left: 63% !important;
+  width: 13% !important;
+  height: 13% !important;
 }
 
 .printable-boundary-box.placement-right-logo {
-  top: 34% !important;
-  left: 61% !important;
+  top: 27% !important;
+  left: 63% !important;
   transform: translate(-50%, 0) !important;
-  width: 15% !important;
-  height: 15% !important;
+  width: 13% !important;
+  height: 13% !important;
 }
 
 .print-graphic-img {
