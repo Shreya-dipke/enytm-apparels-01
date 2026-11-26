@@ -1110,6 +1110,20 @@
   text-align: center !important;
 }
 
+.placement-price-tag {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #d8be9b !important;
+  line-height: 1 !important;
+  margin-top: 2px !important;
+  opacity: 0.9 !important;
+}
+
+.placement-mini-btn.is-selected .placement-price-tag {
+  color: #f5f0e8 !important;
+  opacity: 1 !important;
+}
+
 /* PRINT SIZE RADIOS */
 .print-size-radios {
   display: flex !important;

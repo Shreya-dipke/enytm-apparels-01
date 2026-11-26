@@ -6161,13 +6161,47 @@ function CustomizeTeePage() {
     }
   };
 
-  // Pricing formula matching specification
-  const baseTeePrice = 749;
+  // Pricing formula matching exact specifications:
+  // Base T-Shirt: ₹499
+  // Front Print: ₹79
+  // Right Logo: ₹39
+  // Back Print: ₹99
+  // Left Sleeve: ₹39
+  // Right Sleeve: ₹39
+  const baseTeePrice = 499;
   const numTees = packageType === "double" ? 2 * quantity : 1 * quantity;
-  const customizationFee = packageType === "double" ? 129 * quantity : 79 * quantity;
-  const hasBackPrint = placementDesigns["back-center"]?.enabled && Boolean(placementDesigns["back-center"]?.artwork);
-  const printPlacementFee = hasBackPrint ? (printSize === "A4" ? 29 : 49) * numTees : 0;
-  const orderTotal = (baseTeePrice * numTees) + customizationFee + printPlacementFee;
+
+  const hasFrontPrint = Boolean(
+    (placementDesigns["front-center"]?.enabled && placementDesigns["front-center"]?.artwork) ||
+    (isTextVisible && customText && (placement === "front-center" || placement === "chest-centre"))
+  );
+  const hasLogoPrint = Boolean(
+    (placementDesigns["right-logo"]?.enabled && placementDesigns["right-logo"]?.artwork) ||
+    (isTextVisible && customText && placement === "right-logo")
+  );
+  const hasBackPrint = Boolean(
+    (placementDesigns["back-center"]?.enabled && placementDesigns["back-center"]?.artwork) ||
+    (isTextVisible && customText && (placement === "back-center" || placement === "back"))
+  );
+  const hasLeftSleeve = Boolean(
+    (placementDesigns["sleeve-left"]?.enabled && placementDesigns["sleeve-left"]?.artwork) ||
+    (isTextVisible && customText && (placement === "sleeve-left" || placement === "sleeves"))
+  );
+  const hasRightSleeve = Boolean(
+    (placementDesigns["sleeve-right"]?.enabled && placementDesigns["sleeve-right"]?.artwork) ||
+    (isTextVisible && customText && (placement === "sleeve-right" || placement === "sleeves"))
+  );
+
+  const frontPrintFee = hasFrontPrint ? 79 : 0;
+  const logoPrintFee = hasLogoPrint ? 39 : 0;
+  const backPrintFee = hasBackPrint ? 99 : 0;
+  const leftSleeveFee = hasLeftSleeve ? 39 : 0;
+  const rightSleeveFee = hasRightSleeve ? 39 : 0;
+
+  const totalPrintsFeePerTee = frontPrintFee + logoPrintFee + backPrintFee + leftSleeveFee + rightSleeveFee;
+  const customizationFee = totalPrintsFeePerTee * numTees;
+  const printPlacementFee = 0;
+  const orderTotal = (baseTeePrice * numTees) + customizationFee;
 
   // State for download mockup indicator
   const [isDownloadingMockup, setIsDownloadingMockup] = useState(false);
@@ -6483,7 +6517,7 @@ I want to customize my T-shirt.
 Here are my details:
 
 👕 Product: Oversized T-shirt
-💰 Blank T-shirt: ₹749
+💰 Blank T-shirt: ₹499
 🎨 Colour: ${currentColorObj.name}
 📏 Size: ${sizesText}
 🔢 Quantity: ${numTees}
@@ -6493,9 +6527,10 @@ ${placementsSummaryText}
 ${customText ? `✍️ Custom Text: "${customText}"\n` : ""}
 🆔 Customization ID: ${customId}
 
-Base T-shirt Price: ₹${baseTeePrice * numTees}
-Customization Charges: ₹${customizationFee}
-${printPlacementFee > 0 ? `Additional Back Print Charges: ₹${printPlacementFee}\n` : ""}Total: ₹${orderTotal}
+💰 Price Breakdown:
+• Base T-shirt: ₹${baseTeePrice * numTees} (${numTees} × ₹499)
+${hasFrontPrint ? `• Front (Center) Print: ₹${frontPrintFee * numTees} (${numTees} × ₹79)\n` : ""}${hasLogoPrint ? `• Right Logo Print: ₹${logoPrintFee * numTees} (${numTees} × ₹39)\n` : ""}${hasBackPrint ? `• Back Center Print: ₹${backPrintFee * numTees} (${numTees} × ₹99)\n` : ""}${hasLeftSleeve ? `• Left Sleeve Print: ₹${leftSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}${hasRightSleeve ? `• Right Sleeve Print: ₹${rightSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}• Shipping: FREE
+Total: ₹${orderTotal}
 
 Please check my design and share the final price and confirmation.
 
@@ -7147,30 +7182,35 @@ MORE THAN A MOMENT.`;
                       {
                         id: "front-center",
                         label: "Front (Center)",
+                        price: 79,
                         side: "front",
                         renderRect: () => <rect x="14" y="14" width="8" height="6" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "back-center",
                         label: "Back Center",
+                        price: 99,
                         side: "back",
                         renderRect: () => <rect x="13.5" y="12" width="9" height="11" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "sleeve-left",
                         label: "Left Sleeve",
+                        price: 39,
                         side: "left",
                         renderRect: () => <rect x="4" y="13" width="5" height="5" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "sleeve-right",
                         label: "Right Sleeve",
+                        price: 39,
                         side: "right",
                         renderRect: () => <rect x="27" y="13" width="5" height="5" rx="1" fill="#d8be9b" />,
                       },
                       {
                         id: "right-logo",
                         label: "Right Logo",
+                        price: 39,
                         side: "front",
                         renderRect: () => <rect x="20" y="14" width="4" height="4" rx="1" fill="#d8be9b" />,
                       },
@@ -7204,6 +7244,7 @@ MORE THAN A MOMENT.`;
                             {p.renderRect()}
                           </svg>
                           <span className="placement-label-text">{p.label}</span>
+                          <span className="placement-price-tag">+₹{p.price}</span>
                         </button>
                       );
                     })}
@@ -7216,17 +7257,37 @@ MORE THAN A MOMENT.`;
               {/* ROW 5: DETAILED ORDER SUMMARY BREAKDOWN */}
               <div className="order-summary-breakdown-card">
                 <div className="summary-line-item">
-                  <span>{currentColorObj.name} T-Shirt ({numTees})</span>
+                  <span>Base {currentColorObj.name} T-Shirt ({numTees})</span>
                   <span>₹{baseTeePrice * numTees}</span>
                 </div>
-                <div className="summary-line-item">
-                  <span>Customization Fee ({packageType === "double" ? "2 Tees" : "1 Tee"})</span>
-                  <span>+₹{customizationFee}</span>
-                </div>
-                {printPlacementFee > 0 && (
+                {hasFrontPrint && (
                   <div className="summary-line-item">
-                    <span>{printSize} Back Print Charge</span>
-                    <span>+₹{printPlacementFee}</span>
+                    <span>Front (Center) Print ({numTees})</span>
+                    <span>+₹{frontPrintFee * numTees}</span>
+                  </div>
+                )}
+                {hasLogoPrint && (
+                  <div className="summary-line-item">
+                    <span>Right Logo Print ({numTees})</span>
+                    <span>+₹{logoPrintFee * numTees}</span>
+                  </div>
+                )}
+                {hasBackPrint && (
+                  <div className="summary-line-item">
+                    <span>Back Center Print ({numTees})</span>
+                    <span>+₹{backPrintFee * numTees}</span>
+                  </div>
+                )}
+                {hasLeftSleeve && (
+                  <div className="summary-line-item">
+                    <span>Left Sleeve Print ({numTees})</span>
+                    <span>+₹{leftSleeveFee * numTees}</span>
+                  </div>
+                )}
+                {hasRightSleeve && (
+                  <div className="summary-line-item">
+                    <span>Right Sleeve Print ({numTees})</span>
+                    <span>+₹{rightSleeveFee * numTees}</span>
                   </div>
                 )}
                 <div className="summary-line-item highlight-delivery">
