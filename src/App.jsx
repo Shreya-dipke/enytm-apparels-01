@@ -6633,7 +6633,7 @@ MORE THAN A MOMENT.`;
           {/* ======================================================== */}
           <div className="customize-right-section">
             <div className="configurator-box">
-              {/* STUDIO HEADER WITH WOVEN PATCH */}
+              {/* STUDIO HEADER */}
               <div className="configurator-head">
                 <div className="configurator-titles">
                   <span className="custom-eyebrow">CUSTOM T-SHIRT</span>
@@ -6642,12 +6642,7 @@ MORE THAN A MOMENT.`;
                     Design your own premium oversized T-shirt with your artwork, text or logo.
                   </p>
                 </div>
-                <img
-                  src="/customize/woven-streetwear-patch.jpg"
-                  alt="ENYTM Streetwear"
-                  className="woven-streetwear-patch"
-                />
-              </div>
+                              </div>
 
               {/* ROW 1: T-SHIRT COLOR & FABRIC */}
               <div className="config-grid-row">
