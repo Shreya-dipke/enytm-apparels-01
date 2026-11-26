@@ -6989,9 +6989,7 @@ MORE THAN A MOMENT.`;
                     </svg>
                     <span>Send Everything on WhatsApp →</span>
                   </button>
-                  <p className="whatsapp-help-note">
-                    Your design, selections and order details will be sent to us on WhatsApp for confirmation and production.
-                  </p>
+
                 </div>
               </div>
             </div>
