@@ -5710,7 +5710,7 @@ function CustomizeTeePage() {
     }
   };
 
-  // Upload handler
+    // Upload handler
   const handleFileUpload = (file) => {
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) {
@@ -5718,7 +5718,13 @@ function CustomizeTeePage() {
       return;
     }
     pushState();
-    if (file.type.startsWith("image/")) {
+    setIsArtworkVisible(true);
+    setSelectedElement("artwork");
+    setArtworkOpacity(1);
+
+    const isImg = file.type.startsWith("image/") || /\.(png|jpe?g|webp|svg|gif|bmp)$/i.test(file.name);
+
+    if (isImg) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setUploadedDesign({
@@ -5727,6 +5733,8 @@ function CustomizeTeePage() {
           dataUrl: e.target.result,
           isImage: true,
         });
+        setIsArtworkVisible(true);
+        setSelectedElement("artwork");
       };
       reader.readAsDataURL(file);
     } else {
@@ -5736,6 +5744,8 @@ function CustomizeTeePage() {
         dataUrl: null,
         isImage: false,
       });
+      setIsArtworkVisible(true);
+      setSelectedElement("artwork");
     }
   };
 
@@ -5765,7 +5775,7 @@ function CustomizeTeePage() {
     teeImg.src = viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT;
     teeImg.onload = () => {
       ctx.drawImage(teeImg, 0, 0, 1024, 1024);
-      if (uploadedDesign && uploadedDesign.isImage) {
+      if (uploadedDesign && uploadedDesign.dataUrl) {
         const art = new Image();
         art.crossOrigin = "anonymous";
         art.src = uploadedDesign.dataUrl;
@@ -6113,7 +6123,7 @@ MORE THAN A MOMENT.`;
                           }}
                         >
                           <img
-                            src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                            src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
                             alt="Custom Print"
                             className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
                             draggable={false}
@@ -7251,7 +7261,7 @@ MORE THAN A MOMENT.`;
                     {placement !== "back" && placement !== "back-center" && (
                       <div className={`mini-overlay placement-${placement}`}>
                         <img
-                          src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
                           alt="Front Print"
                         />
                       </div>
@@ -7270,7 +7280,7 @@ MORE THAN A MOMENT.`;
                     {(placement === "back" || placement === "back-center") && (
                       <div className="mini-overlay placement-back">
                         <img
-                          src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                          src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
                           alt="Back Print"
                         />
                       </div>
@@ -7417,7 +7427,7 @@ MORE THAN A MOMENT.`;
                       }}
                     >
                       <img
-                        src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
+                        src={uploadedDesign?.dataUrl ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
                         alt="Custom Print Zoomed"
                         className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
                       />

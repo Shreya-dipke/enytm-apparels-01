@@ -3274,3 +3274,101 @@
   z-index: 22 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
 }
+
+/* ======================================================== */
+/* FIXED 4 CORE PLACEMENT STYLES (EXPLICIT HEIGHT & WIDTH)  */
+/* ======================================================== */
+
+.tee-stage-viewport {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden !important;
+}
+
+.tee-interactive-overlay.tee-print-overlay {
+  position: absolute !important;
+  pointer-events: auto !important;
+  cursor: grab !important;
+  z-index: 20 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  touch-action: none !important;
+}
+
+.tee-interactive-overlay.tee-print-overlay:active {
+  cursor: grabbing !important;
+}
+
+.tee-print-overlay.placement-front-center,
+.tee-print-overlay.placement-chest-centre {
+  top: 36% !important;
+  left: 50% !important;
+  width: 32% !important;
+  height: 32% !important;
+}
+
+.printable-boundary-box.placement-front-center,
+.printable-boundary-box.placement-chest-centre {
+  top: 36% !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  width: 32% !important;
+  height: 32% !important;
+}
+
+.tee-print-overlay.placement-back-center,
+.tee-print-overlay.placement-back {
+  top: 31% !important;
+  left: 50% !important;
+  width: 36% !important;
+  height: 42% !important;
+}
+
+.printable-boundary-box.placement-back-center,
+.printable-boundary-box.placement-back {
+  top: 31% !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  width: 36% !important;
+  height: 42% !important;
+}
+
+.tee-print-overlay.placement-sleeves {
+  top: 33% !important;
+  left: 23% !important;
+  width: 18% !important;
+  height: 22% !important;
+}
+
+.printable-boundary-box.placement-sleeves {
+  top: 33% !important;
+  left: 23% !important;
+  transform: translate(-50%, 0) !important;
+  width: 18% !important;
+  height: 22% !important;
+}
+
+.tee-print-overlay.placement-right-logo {
+  top: 34% !important;
+  left: 61% !important;
+  width: 15% !important;
+  height: 15% !important;
+}
+
+.printable-boundary-box.placement-right-logo {
+  top: 34% !important;
+  left: 61% !important;
+  transform: translate(-50%, 0) !important;
+  width: 15% !important;
+  height: 15% !important;
+}
+
+.print-graphic-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  display: block !important;
+}
