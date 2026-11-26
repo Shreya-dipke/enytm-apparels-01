@@ -6119,12 +6119,11 @@ function CustomizeTeePage() {
       // 4. Collect all active artwork placements for the current view
       const activeEntries = Object.entries(placementDesigns).filter(([placeKey, d]) => {
         if (!d || !d.enabled || !d.artwork) return false;
-        const isBackItem = placeKey === "back-center" || placeKey === "back";
-        if (viewSide === "front" && isBackItem) return false;
-        if (viewSide === "back" && !isBackItem) return false;
-        if (viewSide === "left" && placeKey !== "sleeve-left" && placeKey !== "sleeves") return false;
-        if (viewSide === "right" && placeKey !== "sleeve-right" && placeKey !== "sleeves") return false;
-        return true;
+        if (viewSide === "front") return placeKey === "front-center" || placeKey === "right-logo" || placeKey === "chest-centre";
+        if (viewSide === "back") return placeKey === "back-center" || placeKey === "back";
+        if (viewSide === "left") return placeKey === "sleeve-left" || placeKey === "sleeves";
+        if (viewSide === "right") return placeKey === "sleeve-right" || placeKey === "sleeves";
+        return false;
       });
 
       // Load all artwork images in parallel
@@ -6194,9 +6193,12 @@ function CustomizeTeePage() {
       }
 
       // 5. Render Custom Text if active on this view side
-      const isTextForView = isTextVisible && customText &&
-        (((placement === "back" || placement === "back-center") && viewSide === "back") ||
-         (placement !== "back" && placement !== "back-center" && viewSide !== "back"));
+      const isTextForView = isTextVisible && customText && (
+        (viewSide === "front" && (placement === "front-center" || placement === "right-logo" || placement === "chest-centre")) ||
+        (viewSide === "back" && (placement === "back" || placement === "back-center")) ||
+        (viewSide === "left" && (placement === "sleeve-left" || placement === "sleeves")) ||
+        (viewSide === "right" && (placement === "sleeve-right" || placement === "sleeves"))
+      );
 
       if (isTextForView) {
         const textEl = stageEl ? stageEl.querySelector(".tee-text-overlay") : null;
@@ -6560,10 +6562,9 @@ MORE THAN A MOMENT.`;
                     {Object.entries(placementDesigns).map(([placeKey, designItem]) => {
                       if (!designItem || !designItem.enabled || !designItem.artwork) return null;
 
-                      // Check view side compatibility
-                      const isBackItem = placeKey === "back-center" || placeKey === "back";
-                      if (viewSide === "front" && isBackItem) return null;
-                      if (viewSide === "back" && !isBackItem) return null;
+                      // Check view side compatibility: strictly isolate placements to their respective views
+                      if (viewSide === "front" && placeKey !== "front-center" && placeKey !== "right-logo" && placeKey !== "chest-centre") return null;
+                      if (viewSide === "back" && placeKey !== "back-center" && placeKey !== "back") return null;
                       if (viewSide === "left" && placeKey !== "sleeve-left" && placeKey !== "sleeves") return null;
                       if (viewSide === "right" && placeKey !== "sleeve-right" && placeKey !== "sleeves") return null;
 
@@ -6642,9 +6643,12 @@ MORE THAN A MOMENT.`;
                     })}
 
                     {/* DYNAMIC INTERACTIVE CUSTOM TEXT OVERLAY */}
-                    {isTextVisible && customText &&
-                      (((placement === "back" || placement === "back-center") && viewSide === "back") ||
-                        (placement !== "back" && placement !== "back-center" && viewSide !== "back")) && (
+                    {isTextVisible && customText && (
+                      (viewSide === "front" && (placement === "front-center" || placement === "right-logo" || placement === "chest-centre")) ||
+                      (viewSide === "back" && (placement === "back" || placement === "back-center")) ||
+                      (viewSide === "left" && (placement === "sleeve-left" || placement === "sleeves")) ||
+                      (viewSide === "right" && (placement === "sleeve-right" || placement === "sleeves"))
+                    ) && (
                         <div
                           className={`tee-interactive-overlay tee-text-overlay placement-${placement} view-${viewSide} ${selectedElement === "text" ? "is-selected" : ""}`}
                           style={{

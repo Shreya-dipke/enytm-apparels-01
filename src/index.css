@@ -23949,20 +23949,18 @@ a.btn.outline {
   height: 22% !important;
 }
 
-/* SLEEVES ON FRONT VIEW (IF VISIBLE FROM FRONT) */
+/* HIDE SLEEVES ON FRONT AND BACK VIEWS */
 .view-front.tee-print-overlay.placement-sleeve-left,
 .view-front .tee-print-overlay.placement-sleeve-left,
-.view-front.tee-print-overlay.placement-sleeves {
-  top: 34% !important;
-  left: 23% !important;
-  width: 14% !important;
-  height: 14% !important;
-}
-
 .view-front.tee-print-overlay.placement-sleeve-right,
-.view-front .tee-print-overlay.placement-sleeve-right {
-  top: 34% !important;
-  left: 77% !important;
-  width: 14% !important;
-  height: 14% !important;
+.view-front .tee-print-overlay.placement-sleeve-right,
+.view-front.tee-print-overlay.placement-sleeves,
+.view-front .tee-print-overlay.placement-sleeves,
+.view-back.tee-print-overlay.placement-sleeve-left,
+.view-back .tee-print-overlay.placement-sleeve-left,
+.view-back.tee-print-overlay.placement-sleeve-right,
+.view-back .tee-print-overlay.placement-sleeve-right,
+.view-back.tee-print-overlay.placement-sleeves,
+.view-back .tee-print-overlay.placement-sleeves {
+  display: none !important;
 }
