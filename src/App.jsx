@@ -6001,7 +6001,7 @@ function CustomizeTeePage() {
   // State for download mockup indicator
   const [isDownloadingMockup, setIsDownloadingMockup] = useState(false);
 
-  // Mockup Download as image - exact 1024x1024 composite as rendered on screen
+  // Mockup Download as image - 100% exact DOM-aligned composite matching screen preview
   const handleDownloadMockup = async () => {
     if (isDownloadingMockup) return;
     setIsDownloadingMockup(true);
@@ -6009,11 +6009,14 @@ function CustomizeTeePage() {
     try {
       const stageEl = canvasRef.current;
       const stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
-      const S = stageRect && stageRect.width > 0 ? 1024 / stageRect.width : 1;
+      const canvasWidth = 1024;
+      const canvasHeight = 1024;
+      const scaleX = stageRect && stageRect.width > 0 ? canvasWidth / stageRect.width : 1;
+      const scaleY = stageRect && stageRect.height > 0 ? canvasHeight / stageRect.height : scaleX;
 
       const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1024;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         setIsDownloadingMockup(false);
@@ -6032,20 +6035,54 @@ function CustomizeTeePage() {
         });
       };
 
-      // 1. Draw base T-shirt garment with active color filter
+      // 1. Fill canvas background to match studio stage
+      ctx.fillStyle = "#090909";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // 2. Draw base T-shirt garment with active color filter & exact screen aspect ratio
       const teeSrc = getStageTeeImage(viewSide);
       const teeImg = await loadImage(teeSrc);
       if (teeImg) {
+        const teeImgEl = stageEl ? stageEl.querySelector(".tee-desktop-img") : null;
+        let teeX = 0;
+        let teeY = 0;
+        let teeW = canvasWidth;
+        let teeH = canvasHeight;
+
+        if (teeImgEl && stageRect) {
+          const tRect = teeImgEl.getBoundingClientRect();
+          teeX = (tRect.left - stageRect.left) * scaleX;
+          teeY = (tRect.top - stageRect.top) * scaleY;
+          teeW = tRect.width * scaleX;
+          teeH = tRect.height * scaleY;
+        } else {
+          // Precise aspect-ratio contain fallback
+          const natW = teeImg.naturalWidth || 819;
+          const natH = teeImg.naturalHeight || 1024;
+          const imgAspect = natW / natH;
+          if (imgAspect < 1) {
+            teeH = canvasHeight;
+            teeW = canvasHeight * imgAspect;
+            teeX = (canvasWidth - teeW) / 2;
+            teeY = 0;
+          } else {
+            teeW = canvasWidth;
+            teeH = canvasWidth / imgAspect;
+            teeX = 0;
+            teeY = (canvasHeight - teeH) / 2;
+          }
+        }
+
         if (currentColorObj && currentColorObj.filter && currentColorObj.filter !== "none") {
           ctx.filter = currentColorObj.filter;
         } else {
           ctx.filter = "none";
         }
-        ctx.drawImage(teeImg, 0, 0, 1024, 1024);
+        ctx.drawImage(teeImg, teeX, teeY, teeW, teeH);
         ctx.filter = "none";
       }
 
-      // 2. Base placement layout percentages (relative to 1024x1024 canvas)
+      // 3. Fallback layout percentages in case DOM elements are not currently attached
       const placementConfigs = {
         "front-center": { left: 0.50, top: 0.36, width: 0.32, height: 0.32 },
         "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
@@ -6053,7 +6090,7 @@ function CustomizeTeePage() {
         "right-logo":   { left: 0.61, top: 0.34, width: 0.15, height: 0.15 },
       };
 
-      // 3. Collect and draw all active artwork placements for the current view
+      // 4. Collect all active artwork placements for the current view
       const activeEntries = Object.entries(placementDesigns).filter(([placeKey, d]) => {
         if (!d || !d.enabled || !d.artwork) return false;
         const isBackItem = placeKey === "back-center" || placeKey === "back";
@@ -6074,11 +6111,24 @@ function CustomizeTeePage() {
       // Render each artwork onto canvas
       for (const { placeKey, design, img } of loadedArtworks) {
         if (!img) continue;
-        const cfg = placementConfigs[placeKey] || placementConfigs["front-center"];
-        const boxW = 1024 * cfg.width;
-        const boxH = 1024 * cfg.height;
-        const centerX = (1024 * cfg.left) + ((design.offsetX || 0) * S);
-        const centerY = (1024 * cfg.top) + (boxH / 2) + ((design.offsetY || 0) * S);
+
+        // Try exact DOM measuring first
+        const overlayEl = stageEl ? stageEl.querySelector(`.tee-print-overlay.placement-${placeKey}`) : null;
+        let centerX, centerY, boxW, boxH;
+
+        if (overlayEl && stageRect) {
+          const elRect = overlayEl.getBoundingClientRect();
+          centerX = (elRect.left - stageRect.left + elRect.width / 2) * scaleX;
+          centerY = (elRect.top - stageRect.top + elRect.height / 2) * scaleY;
+          boxW = overlayEl.offsetWidth * scaleX;
+          boxH = overlayEl.offsetHeight * scaleY;
+        } else {
+          const cfg = placementConfigs[placeKey] || placementConfigs["front-center"];
+          boxW = canvasWidth * cfg.width;
+          boxH = canvasHeight * cfg.height;
+          centerX = (canvasWidth * cfg.left) + ((design.offsetX || 0) * scaleX);
+          centerY = (canvasHeight * cfg.top) + (boxH / 2) + ((design.offsetY || 0) * scaleY);
+        }
 
         ctx.save();
         ctx.translate(centerX, centerY);
@@ -6087,9 +6137,9 @@ function CustomizeTeePage() {
           ctx.rotate((design.rotation * Math.PI) / 180);
         }
 
-        const scaleX = (design.scale || 1) * (design.flipped ? -1 : 1);
-        const scaleY = design.scale || 1;
-        ctx.scale(scaleX, scaleY);
+        const scaleXVal = (design.scale || 1) * (design.flipped ? -1 : 1);
+        const scaleYVal = design.scale || 1;
+        ctx.scale(scaleXVal, scaleYVal);
         ctx.globalAlpha = design.opacity ?? 1;
 
         if (isFabricBlend && selectedColor !== "black") {
@@ -6116,15 +6166,24 @@ function CustomizeTeePage() {
         ctx.restore();
       }
 
-      // 4. Render Custom Text if active on this view side
+      // 5. Render Custom Text if active on this view side
       const isTextForView = isTextVisible && customText &&
         (((placement === "back" || placement === "back-center") && viewSide === "back") ||
          (placement !== "back" && placement !== "back-center" && viewSide !== "back"));
 
       if (isTextForView) {
-        const textCfg = placementConfigs[placement] || placementConfigs["front-center"];
-        const textCenterX = (1024 * textCfg.left) + ((textOffsetX || 0) * S);
-        const textCenterY = (1024 * textCfg.top) + ((1024 * textCfg.height) / 2) + ((textOffsetY || 0) * S);
+        const textEl = stageEl ? stageEl.querySelector(".tee-text-overlay") : null;
+        let textCenterX, textCenterY;
+
+        if (textEl && stageRect) {
+          const tRect = textEl.getBoundingClientRect();
+          textCenterX = (tRect.left - stageRect.left + tRect.width / 2) * scaleX;
+          textCenterY = (tRect.top - stageRect.top + tRect.height / 2) * scaleY;
+        } else {
+          const textCfg = placementConfigs[placement] || placementConfigs["front-center"];
+          textCenterX = (canvasWidth * textCfg.left) + ((textOffsetX || 0) * scaleX);
+          textCenterY = (canvasHeight * textCfg.top) + ((canvasHeight * textCfg.height) / 2) + ((textOffsetY || 0) * scaleY);
+        }
 
         ctx.save();
         ctx.translate(textCenterX, textCenterY);
@@ -6133,22 +6192,23 @@ function CustomizeTeePage() {
         }
         ctx.scale(textScale || 1, textScale || 1);
 
-        const basePx = textSize === "lg" ? 44 : textSize === "sm" ? 24 : 32;
-        const fontPx = Math.round(basePx * S);
-        const fontFam = textFont === "streetwear" ? "Impact, sans-serif"
-          : textFont === "serif" ? "'Playfair Display', Georgia, serif"
-          : textFont === "display" ? "'Bebas Neue', Impact, sans-serif"
-          : "'Montserrat', sans-serif";
+        const renderedTextDiv = textEl ? textEl.querySelector(".tee-custom-text-rendered") : null;
+        const computed = renderedTextDiv ? window.getComputedStyle(renderedTextDiv) : null;
+        const fontFam = computed ? computed.fontFamily : "'Montserrat', sans-serif";
+        const fontSizePx = computed ? parseFloat(computed.fontSize) * scaleY : (textSize === "lg" ? 44 : textSize === "sm" ? 24 : 32) * scaleY;
+        const fontWeight = computed ? computed.fontWeight : (isTextBold ? "bold" : "normal");
+        const fontStyle = computed ? computed.fontStyle : (isTextItalic ? "italic" : "normal");
+        const color = computed ? computed.color : (textColor || "#ffffff");
 
-        ctx.font = `${isTextItalic ? "italic " : ""}${isTextBold ? "bold " : ""}${fontPx}px ${fontFam}`;
-        ctx.fillStyle = textColor || "#ffffff";
-        ctx.textAlign = textAlignment || "center";
+        ctx.font = `${fontStyle} ${fontWeight} ${Math.round(fontSizePx)}px ${fontFam}`;
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(customText, 0, 0);
         ctx.restore();
       }
 
-      // 5. Trigger download of the completed composite
+      // 6. Trigger download of the completed composite
       const downloadName = `enytm-custom-tee-${(currentColorObj?.name || "garment").toLowerCase().replace(/\s+/g, "-")}-${viewSide}.png`;
       const a = document.createElement("a");
       a.download = downloadName;
