@@ -6243,24 +6243,6 @@ MORE THAN A MOMENT.`;
                       <button
                         type="button"
                         className="canvas-icon-btn"
-                        onClick={handleUndo}
-                        disabled={historyIndex <= 0}
-                        title="Undo (Ctrl+Z)"
-                      >
-                        <Undo2 size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        className="canvas-icon-btn"
-                        onClick={handleRedo}
-                        disabled={historyIndex >= history.length - 1}
-                        title="Redo (Ctrl+Y)"
-                      >
-                        <Redo2 size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        className="canvas-icon-btn"
                         onClick={handleResetDesign}
                         title="Reset Design"
                       >
