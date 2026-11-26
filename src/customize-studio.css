@@ -1497,3 +1497,267 @@
     margin-bottom: 50px !important;
   }
 }
+
+
+/* ============================================================
+   TAB-SPECIFIC PANELS & FINE-TUNING CONTROLS
+   ============================================================ */
+.tab-custom-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* TEXT TAB STYLING */
+.text-editor-box {
+  background: #191817 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.text-styling-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+  align-items: flex-start !important;
+}
+
+.text-style-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.sub-label {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #a6a095 !important;
+  letter-spacing: 0.3px !important;
+}
+
+.font-options-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+.font-opt-btn {
+  background: #141312 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #c9c3b7 !important;
+  font-size: 11px !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.font-opt-btn:hover {
+  border-color: rgba(216, 190, 155, 0.4) !important;
+}
+
+.font-opt-btn.is-active {
+  border-color: #d8be9b !important;
+  background: #24211d !important;
+  color: #f7f4ee !important;
+}
+
+/* FONT RENDERING ON TEE */
+.tee-custom-text-rendered.font-sans {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+.tee-custom-text-rendered.font-streetwear {
+  font-family: Impact, "Arial Black", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+}
+.tee-custom-text-rendered.font-serif {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-style: italic !important;
+  letter-spacing: 1px !important;
+}
+.tee-custom-text-rendered.font-display {
+  font-family: "Courier New", monospace !important;
+  letter-spacing: 3px !important;
+  font-weight: 900 !important;
+}
+
+.tee-custom-text-rendered.text-sz-sm {
+  font-size: 13px !important;
+}
+.tee-custom-text-rendered.text-sz-md {
+  font-size: 18px !important;
+}
+.tee-custom-text-rendered.text-sz-lg {
+  font-size: 24px !important;
+}
+
+/* LOGO TAB STYLING */
+.logo-controls-card {
+  background: #191817 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.upload-dropzone-compact {
+  background: #131211 !important;
+  border: 1px dashed rgba(216, 190, 155, 0.4) !important;
+  border-radius: 8px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  color: #d8be9b !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.upload-dropzone-compact:hover {
+  background: #1a1816 !important;
+  border-color: #d8be9b !important;
+}
+
+.fine-tune-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+}
+
+.tune-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.scale-pills {
+  display: flex !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+.tune-btn {
+  background: #141312 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #b5b0a5 !important;
+  font-size: 10.5px !important;
+  padding: 5px 9px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.tune-btn:hover {
+  border-color: rgba(216, 190, 155, 0.4) !important;
+}
+
+.tune-btn.is-active {
+  border-color: #d8be9b !important;
+  background: #24211d !important;
+  color: #f7f4ee !important;
+}
+
+/* PLACEMENT TAB STYLING */
+.placement-large-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+}
+
+.placement-large-card {
+  background: #191817 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: left !important;
+}
+
+.placement-large-card:hover {
+  border-color: rgba(216, 190, 155, 0.4) !important;
+  background: #1e1c1a !important;
+}
+
+.placement-large-card.is-active {
+  border-color: #d8be9b !important;
+  background: #24211d !important;
+  box-shadow: 0 0 10px rgba(216, 190, 155, 0.2) !important;
+}
+
+.pl-card-title {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #f5f2eb !important;
+}
+
+.pl-card-sub {
+  font-size: 10px !important;
+  color: #8c877e !important;
+  line-height: 1.3 !important;
+}
+
+/* ACTION BADGE MINI */
+.action-badge-mini {
+  background: rgba(216, 190, 155, 0.15) !important;
+  color: #d8be9b !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* COMPACT TWEAKS FOR LAPTOP SCREENS */
+@media (min-width: 1025px) {
+  .customize-container {
+    padding: 16px 20px 40px !important;
+  }
+  .customize-main-content {
+    grid-template-columns: 420px minmax(0, 1fr) !important;
+    gap: 24px !important;
+    align-items: start !important;
+  }
+  .customize-canvas-box {
+    max-width: 360px !important;
+  }
+  .configurator-box {
+    padding: 18px 20px !important;
+    gap: 12px !important;
+  }
+  .configurator-head {
+    padding-bottom: 10px !important;
+  }
+  .config-grid-row {
+    gap: 12px !important;
+  }
+  .config-design-row {
+    gap: 12px !important;
+  }
+  .upload-dropzone-v2 {
+    padding: 14px 10px !important;
+    min-height: 84px !important;
+  }
+  .quick-action-row {
+    padding: 6px 8px !important;
+  }
+  .config-actions-row {
+    padding-top: 10px !important;
+    margin-top: 2px !important;
+  }
+}

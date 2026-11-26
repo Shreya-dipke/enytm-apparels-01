@@ -5285,7 +5285,7 @@ function FaqPage() {
 function CustomizeTeePage() {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState("design"); // design, text, logo, placement
-  const [selectedThumb, setSelectedThumb] = useState(0); // 0: front, 1: side, 2: back, 3: collar, 4: fabric, 5: 360
+  const [selectedThumb, setSelectedThumb] = useState(0); // 0..5
   const [viewSide, setViewSide] = useState("front"); // front, back, left, right
   const [selectedColor, setSelectedColor] = useState("offwhite");
   const [selectedFabric, setSelectedFabric] = useState("240gsm");
@@ -5293,14 +5293,25 @@ function CustomizeTeePage() {
   const [quantity, setQuantity] = useState(1);
   const [placement, setPlacement] = useState("chest-centre"); // chest-centre, left-chest, right-chest, back, full-front
   const [printSize, setPrintSize] = useState("A3"); // A4, A3
-  const [printType, setPrintType] = useState("artwork"); // artwork, text (mobile)
+  const [printType, setPrintType] = useState("artwork"); // artwork, text
   const [customText, setCustomText] = useState("");
   const [textColor, setTextColor] = useState("#ffffff");
+  const [textFont, setTextFont] = useState("sans"); // sans, streetwear, serif, display
+  const [textSize, setTextSize] = useState("md"); // sm, md, lg
+  const [artworkOpacity, setArtworkOpacity] = useState(1); // 1, 0.85, 0.70, 0.50
+  const [artworkRotation, setArtworkRotation] = useState(0); // 0, 90, 180, 270
+  const [artworkScale, setArtworkScale] = useState(1); // scale modifier
   const [uploadedDesign, setUploadedDesign] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [is360Playing, setIs360Playing] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Asset paths with cache buster to guarantee fresh loads
+  const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
+  const PLAIN_TEE_BACK = "/customize/plain-tee-back.jpg?v=2";
+  const STUDIO_ARTWORK = "/customize/mountain-artwork-pure.png?v=2";
 
   const colors = [
     { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none" },
@@ -5315,13 +5326,26 @@ function CustomizeTeePage() {
   const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
 
   const galleryThumbs = [
-    { id: 0, title: "Front View", img: "/customize/plain-tee-hanger.jpg", view: "front" },
+    { id: 0, title: "Front View", img: PLAIN_TEE_FRONT, view: "front" },
     { id: 1, title: "Side View", img: "/customize/thumb-side.jpg", view: "left" },
-    { id: 2, title: "Back View", img: "/customize/plain-tee-back.jpg", view: "back" },
+    { id: 2, title: "Back View", img: PLAIN_TEE_BACK, view: "back" },
     { id: 3, title: "Collar Ribbing", img: "/customize/thumb-collar.jpg", view: "front" },
     { id: 4, title: "Fabric Weave", img: "/customize/thumb-fabric.jpg", view: "front" },
     { id: 5, title: "360° View", is360: true },
   ];
+
+  // 360 rotation timer
+  useEffect(() => {
+    if (!is360Playing) return;
+    const views = ["front", "left", "back", "right"];
+    const timer = setInterval(() => {
+      setViewSide((curr) => {
+        const idx = views.indexOf(curr);
+        return views[(idx + 1) % views.length];
+      });
+    }, 1100);
+    return () => clearInterval(timer);
+  }, [is360Playing]);
 
   const handleFileUpload = (file) => {
     if (!file) return;
@@ -5334,6 +5358,7 @@ function CustomizeTeePage() {
           dataUrl: e.target.result,
           isImage: true,
         });
+        setPrintType("artwork");
       };
       reader.readAsDataURL(file);
     } else {
@@ -5354,11 +5379,9 @@ function CustomizeTeePage() {
     }
   };
 
-  // Pricing calculations
-  // Blank tee base price: ₹699, Customization: +₹79 => ₹778 (matches desktop mockup total ₹778!)
+  // Pricing calculations: Blank Tee ₹699 + Customization Fee ₹79 = ₹778
   const baseTeePrice = 699;
   const customizationFee = 79;
-  const printFee = printSize === "A3" ? 0 : 0; // included in promo
   const orderTotal = (baseTeePrice + customizationFee) * quantity;
 
   // Add to Cart handler
@@ -5371,16 +5394,17 @@ function CustomizeTeePage() {
       originalPrice: 1299,
       discount: "40% OFF",
       badge: "CUSTOM",
-      images: ["/customize/plain-tee-hanger.jpg"],
-      image: "/customize/plain-tee-hanger.jpg",
+      images: [PLAIN_TEE_FRONT],
+      image: PLAIN_TEE_FRONT,
       category: "Custom",
       color: currentColorObj.name,
       customColor: currentColorObj.name,
       customPlacement: placement,
       customPrintSize: printSize,
       customFabric: selectedFabric,
-      customText: customText || null,
-      customDesign: uploadedDesign ? uploadedDesign.name : "Studio Mountain Print",
+      customText: printType === "text" ? customText : null,
+      customDesign: uploadedDesign ? uploadedDesign.name : "Studio Mountain Artwork",
+      customOpacity: artworkOpacity,
       isCustom: true,
     };
 
@@ -5402,8 +5426,8 @@ function CustomizeTeePage() {
 
     const designString = uploadedDesign
       ? `I have attached my artwork (${uploadedDesign.name}).`
-      : customText
-      ? `Custom text on tee: "${customText}"`
+      : printType === "text" && customText
+      ? `Custom text: "${customText}"`
       : `I have attached my artwork.`;
 
     const text = `Hi ENYTM™️! 👋
@@ -5433,14 +5457,13 @@ MORE THAN A MOMENT.`;
 
   // Cycle views
   const cycleView = (dir) => {
+    setIs360Playing(false);
     const views = ["front", "left", "back", "right"];
     const idx = views.indexOf(viewSide);
     if (dir === "next") {
-      const nextIdx = (idx + 1) % views.length;
-      setViewSide(views[nextIdx]);
+      setViewSide(views[(idx + 1) % views.length]);
     } else {
-      const prevIdx = (idx - 1 + views.length) % views.length;
-      setViewSide(views[prevIdx]);
+      setViewSide(views[(idx - 1 + views.length) % views.length]);
     }
   };
 
@@ -5463,7 +5486,6 @@ MORE THAN A MOMENT.`;
       </div>
 
       <div className="customize-container">
-        {/* DESKTOP HEADER & MAIN LAYOUT */}
         <div className="customize-main-content">
           {/* LEFT COLUMN: GALLERY STRIP + TEE STAGE + VIEW PILL */}
           <div className="customize-left-section">
@@ -5475,15 +5497,10 @@ MORE THAN A MOMENT.`;
               <p className="customize-subtitle">
                 Bring your ideas to life on our premium T-shirts.
               </p>
-              <div className="customize-mobile-badges">
-                <span className="customize-feature-badge"><Cloud size={14} /> Premium Fabric</span>
-                <span className="customize-feature-badge"><Layers size={14} /> High-Quality Print</span>
-                <span className="customize-feature-badge"><Zap size={14} /> Easy Customization</span>
-              </div>
             </header>
 
             <div className="customize-stage-wrapper">
-              {/* VERTICAL THUMBNAIL GALLERY (DESKTOP) */}
+              {/* VERTICAL THUMBNAIL GALLERY */}
               <div className="customize-vertical-thumbs">
                 {galleryThumbs.map((thumb) => (
                   <button
@@ -5492,14 +5509,19 @@ MORE THAN A MOMENT.`;
                     className={`vert-thumb-btn ${selectedThumb === thumb.id ? "is-active" : ""}`}
                     onClick={() => {
                       setSelectedThumb(thumb.id);
-                      if (thumb.view) setViewSide(thumb.view);
+                      if (thumb.is360) {
+                        setIs360Playing((p) => !p);
+                      } else {
+                        setIs360Playing(false);
+                        if (thumb.view) setViewSide(thumb.view);
+                      }
                     }}
                     title={thumb.title}
                   >
                     {thumb.is360 ? (
                       <div className="thumb-360-inner">
                         <Play size={16} />
-                        <span>360° View</span>
+                        <span>360°</span>
                       </div>
                     ) : (
                       <img src={thumb.img} alt={thumb.title} />
@@ -5540,7 +5562,7 @@ MORE THAN A MOMENT.`;
                   {/* TEE STAGE WITH HANGER & GRAPHIC */}
                   <div className="tee-stage-viewport">
                     <img
-                      src={viewSide === "back" ? "/customize/plain-tee-back.jpg" : "/customize/plain-tee-hanger.jpg"}
+                      src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
                       alt="ENYTM Oversized Plain Tee"
                       className="tee-desktop-img"
                       style={{ filter: currentColorObj.filter }}
@@ -5551,13 +5573,17 @@ MORE THAN A MOMENT.`;
                       (placement !== "back" && viewSide !== "back")) && (
                       <div
                         className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                        style={{
+                          opacity: artworkOpacity,
+                          transform: `translate(-50%, 0) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                        }}
                       >
-                        {printType === "text" && customText ? (
+                        {printType === "text" ? (
                           <div
-                            className="tee-custom-text-rendered"
+                            className={`tee-custom-text-rendered font-${textFont} text-sz-${textSize}`}
                             style={{ color: textColor }}
                           >
-                            {customText}
+                            {customText || "MORE THAN A MOMENT"}
                           </div>
                         ) : uploadedDesign && uploadedDesign.isImage ? (
                           <img
@@ -5567,7 +5593,7 @@ MORE THAN A MOMENT.`;
                           />
                         ) : (
                           <img
-                            src="/customize/mountain-artwork.png"
+                            src={STUDIO_ARTWORK}
                             alt="ENYTM Studio Print"
                             className="print-graphic-img"
                           />
@@ -5597,9 +5623,13 @@ MORE THAN A MOMENT.`;
                   </div>
 
                   {/* 360 ROTATE BADGE */}
-                  <div className="stage-360-badge">
-                    <RotateCw size={13} />
-                    <span>360° View</span>
+                  <div
+                    className={`stage-360-badge ${is360Playing ? "is-playing" : ""}`}
+                    onClick={() => setIs360Playing((p) => !p)}
+                    title="Toggle 360 Auto-Rotation"
+                  >
+                    <RotateCw size={13} className={is360Playing ? "spin-icon" : ""} />
+                    <span>{is360Playing ? "Playing 360°" : "360° View"}</span>
                   </div>
                 </div>
 
@@ -5610,14 +5640,17 @@ MORE THAN A MOMENT.`;
                       key={side}
                       type="button"
                       className={`view-pill-btn ${viewSide === side ? "is-active" : ""}`}
-                      onClick={() => setViewSide(side)}
+                      onClick={() => {
+                        setViewSide(side);
+                        setIs360Playing(false);
+                      }}
                     >
                       {side.charAt(0).toUpperCase() + side.slice(1)}
                     </button>
                   ))}
                 </div>
 
-                {/* PRINT PLACEMENT GUIDE (MATCHING REFERENCE MOCKUP) */}
+                {/* PRINT PLACEMENT GUIDE (DESKTOP REFERENCE MOCKUP) */}
                 <div className="print-placement-guide-section">
                   <h4 className="guide-heading">Print Placement Guide</h4>
                   <div className="guide-cards-grid">
@@ -5688,14 +5721,6 @@ MORE THAN A MOMENT.`;
                       <span className="guide-card-label">A3 Back Print<br /><small>(29.7 × 42 cm)</small></span>
                     </button>
                   </div>
-                </div>
-
-                {/* MOBILE CAROUSEL DOTS */}
-                <div className="mobile-carousel-dots">
-                  <span className={`dot ${viewSide === "front" ? "active" : ""}`} />
-                  <span className={`dot ${viewSide === "back" ? "active" : ""}`} />
-                  <span className={`dot ${viewSide === "left" ? "active" : ""}`} />
-                  <span className={`dot ${viewSide === "right" ? "active" : ""}`} />
                 </div>
               </div>
             </div>
@@ -5812,76 +5837,6 @@ MORE THAN A MOMENT.`;
                 </div>
               </div>
 
-              {/* MOBILE ONLY: PRINT TYPE SELECTOR (UPLOAD ARTWORK vs ADD TEXT) */}
-              <div className="mobile-print-type-card">
-                <label className="config-label">
-                  <ImageIcon size={14} /> Print Type
-                </label>
-                <div className="print-type-options">
-                  <button
-                    type="button"
-                    className={`print-type-btn ${printType === "artwork" ? "is-active" : ""}`}
-                    onClick={() => {
-                      setPrintType("artwork");
-                      setActiveTab("design");
-                    }}
-                  >
-                    <UploadCloud size={18} />
-                    <div className="print-type-info">
-                      <p className="print-type-title">Upload Artwork</p>
-                      <span className="print-type-sub">PNG, JPG, PDF (Max 50 MB)</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`print-type-btn ${printType === "text" ? "is-active" : ""}`}
-                    onClick={() => {
-                      setPrintType("text");
-                      setActiveTab("text");
-                    }}
-                  >
-                    <Type size={18} />
-                    <div className="print-type-info">
-                      <p className="print-type-title">Add Text</p>
-                      <span className="print-type-sub">Custom text on tee</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* CUSTOM TEXT INPUT (SHOWN ON TEXT TAB OR MOBILE 'ADD TEXT') */}
-              {(activeTab === "text" || printType === "text") && (
-                <div className="custom-text-input-box">
-                  <label className="config-label">
-                    <Type size={14} /> Custom Text (Optional)
-                  </label>
-                  <div className="input-with-counter">
-                    <input
-                      type="text"
-                      className="custom-text-field"
-                      placeholder="Enter your text..."
-                      maxLength={30}
-                      value={customText}
-                      onChange={(e) => setCustomText(e.target.value)}
-                    />
-                    <span className="char-count">{customText.length}/30</span>
-                  </div>
-                  <div className="text-color-picker-row">
-                    <span className="text-color-label">Text Color:</span>
-                    {["#ffffff", "#000000", "#d8be9b", "#ef4444", "#3b82f6"].map((hex) => (
-                      <button
-                        key={hex}
-                        type="button"
-                        className={`text-color-btn ${textColor === hex ? "is-active" : ""}`}
-                        style={{ backgroundColor: hex }}
-                        onClick={() => setTextColor(hex)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* ROW 2: SELECT SIZE & QUANTITY */}
               <div className="config-grid-row">
                 <div className="config-field-group">
@@ -5931,8 +5886,8 @@ MORE THAN A MOMENT.`;
                 </div>
               </div>
 
-              {/* ROW 3: UPLOAD DESIGN & QUICK CUSTOMIZATIONS (SHOWN ON DESIGN/LOGO TABS) */}
-              {(activeTab === "design" || activeTab === "logo") && printType !== "text" && (
+              {/* TAB CONTENT: DESIGN OVERVIEW */}
+              {activeTab === "design" && (
                 <div className="config-design-row">
                   {/* UPLOAD DROPZONE */}
                   <div className="add-design-card">
@@ -5948,7 +5903,7 @@ MORE THAN A MOMENT.`;
                         onDragLeave={() => setIsDragging(false)}
                         onDrop={onDrop}
                       >
-                        <UploadCloud size={28} className="upload-icon" />
+                        <UploadCloud size={24} className="upload-icon" />
                         <p className="upload-prompt-text">
                           Drag & drop your design here or click to upload
                         </p>
@@ -5976,26 +5931,15 @@ MORE THAN A MOMENT.`;
                           type="button"
                           className="file-remove-btn"
                           onClick={() => setUploadedDesign(null)}
+                          title="Remove artwork"
                         >
                           <Trash2 size={15} />
                         </button>
                       </div>
                     )}
-
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      style={{ display: "none" }}
-                      accept="image/*,application/pdf"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handleFileUpload(e.target.files[0]);
-                        }
-                      }}
-                    />
                   </div>
 
-                  {/* QUICK CUSTOMIZATIONS LIST (DESKTOP) */}
+                  {/* QUICK CUSTOMIZATIONS LIST */}
                   <div className="quick-customizations-card">
                     <label className="config-label">Quick Customizations</label>
                     <div className="quick-actions-list">
@@ -6005,53 +5949,227 @@ MORE THAN A MOMENT.`;
                         onClick={() => fileInputRef.current && fileInputRef.current.click()}
                       >
                         <div className="quick-action-left">
-                          <Pencil size={15} />
-                          <span>Edit Design</span>
+                          <Pencil size={14} />
+                          <span>Edit / Replace Design</span>
                         </div>
-                        <ChevronRight size={14} />
+                        <ChevronRight size={13} />
                       </button>
 
                       <button
                         type="button"
                         className="quick-action-row"
-                        onClick={() => setPrintSize((s) => (s === "A3" ? "A4" : "A3"))}
+                        onClick={() => {
+                          setPrintSize((s) => (s === "A3" ? "A4" : "A3"));
+                          setArtworkScale((prev) => (prev === 1 ? 1.15 : 1));
+                        }}
                       >
                         <div className="quick-action-left">
-                          <Sliders size={15} />
-                          <span>Adjust Size & Position</span>
+                          <Sliders size={14} />
+                          <span>Size: {printSize} ({printSize === "A3" ? "29.7×42cm" : "21×29.7cm"})</span>
                         </div>
-                        <ChevronRight size={14} />
+                        <span className="action-badge-mini">Toggle</span>
                       </button>
 
                       <button
                         type="button"
                         className="quick-action-row"
-                        onClick={() => cycleView("next")}
+                        onClick={() => setArtworkRotation((r) => (r + 90) % 360)}
                       >
                         <div className="quick-action-left">
-                          <RotateCw size={15} />
-                          <span>Rotate / Flip</span>
+                          <RotateCw size={14} />
+                          <span>Rotate / Flip ({artworkRotation}°)</span>
                         </div>
-                        <ChevronRight size={14} />
+                        <span className="action-badge-mini">+90°</span>
                       </button>
 
                       <button
                         type="button"
                         className="quick-action-row"
-                        onClick={() => cycleView("prev")}
+                        onClick={() => {
+                          setArtworkOpacity((prev) => (prev >= 1 ? 0.85 : prev >= 0.85 ? 0.70 : prev >= 0.70 ? 0.50 : 1));
+                        }}
                       >
                         <div className="quick-action-left">
-                          <Droplet size={15} />
-                          <span>Change Opacity</span>
+                          <Droplet size={14} />
+                          <span>Opacity: {Math.round(artworkOpacity * 100)}%</span>
                         </div>
-                        <ChevronRight size={14} />
+                        <span className="action-badge-mini">Adjust</span>
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ROW 4: SELECT PLACEMENT & PRINT SIZE */}
+              {/* TAB CONTENT: CUSTOM TEXT */}
+              {activeTab === "text" && (
+                <div className="tab-custom-panel">
+                  <div className="text-editor-box">
+                    <label className="config-label">Enter Custom Text</label>
+                    <div className="input-with-counter">
+                      <input
+                        type="text"
+                        className="custom-text-field"
+                        placeholder="e.g. MORE THAN A MOMENT"
+                        maxLength={30}
+                        value={customText}
+                        onChange={(e) => {
+                          setCustomText(e.target.value);
+                          setPrintType("text");
+                        }}
+                      />
+                      <span className="char-count">{customText.length}/30</span>
+                    </div>
+
+                    <div className="text-styling-grid">
+                      <div className="text-style-col">
+                        <span className="sub-label">Font Style:</span>
+                        <div className="font-options-row">
+                          {[
+                            { id: "sans", label: "Modern Sans" },
+                            { id: "streetwear", label: "Street Bold" },
+                            { id: "serif", label: "Vintage Serif" },
+                            { id: "display", label: "Display" },
+                          ].map((f) => (
+                            <button
+                              key={f.id}
+                              type="button"
+                              className={`font-opt-btn ${textFont === f.id ? "is-active" : ""}`}
+                              onClick={() => setTextFont(f.id)}
+                            >
+                              {f.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="text-style-col">
+                        <span className="sub-label">Text Color:</span>
+                        <div className="text-color-picker-row">
+                          {[
+                            { hex: "#ffffff", label: "White" },
+                            { hex: "#181818", label: "Black" },
+                            { hex: "#d8be9b", label: "Champagne" },
+                            { hex: "#ef4444", label: "Crimson" },
+                            { hex: "#3b82f6", label: "Royal Blue" },
+                          ].map((col) => (
+                            <button
+                              key={col.hex}
+                              type="button"
+                              className={`text-color-btn ${textColor === col.hex ? "is-active" : ""}`}
+                              style={{ backgroundColor: col.hex }}
+                              onClick={() => setTextColor(col.hex)}
+                              title={col.label}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB CONTENT: LOGO / IMAGE */}
+              {activeTab === "logo" && (
+                <div className="tab-custom-panel">
+                  <div className="logo-controls-card">
+                    <label className="config-label">Upload & Adjust Logo</label>
+                    <div
+                      className="upload-dropzone-compact"
+                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    >
+                      <UploadCloud size={20} />
+                      <span>{uploadedDesign ? `Replace: ${uploadedDesign.name}` : "Click to upload Logo / Graphic (PNG, SVG, JPG)"}</span>
+                    </div>
+
+                    <div className="fine-tune-row">
+                      <div className="tune-col">
+                        <span className="sub-label">Scale:</span>
+                        <div className="scale-pills">
+                          {[
+                            { label: "85% (Compact)", val: 0.85 },
+                            { label: "100% (Standard)", val: 1 },
+                            { label: "115% (Oversized)", val: 1.15 },
+                          ].map((sc) => (
+                            <button
+                              key={sc.label}
+                              type="button"
+                              className={`tune-btn ${artworkScale === sc.val ? "is-active" : ""}`}
+                              onClick={() => setArtworkScale(sc.val)}
+                            >
+                              {sc.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="tune-col">
+                        <span className="sub-label">Opacity:</span>
+                        <div className="scale-pills">
+                          {[
+                            { label: "100%", val: 1 },
+                            { label: "85%", val: 0.85 },
+                            { label: "70%", val: 0.70 },
+                          ].map((op) => (
+                            <button
+                              key={op.label}
+                              type="button"
+                              className={`tune-btn ${artworkOpacity === op.val ? "is-active" : ""}`}
+                              onClick={() => setArtworkOpacity(op.val)}
+                            >
+                              {op.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB CONTENT: PLACEMENT */}
+              {activeTab === "placement" && (
+                <div className="tab-custom-panel">
+                  <label className="config-label">Choose Targeted Placement</label>
+                  <div className="placement-large-grid">
+                    {[
+                      { id: "chest-centre", label: "Chest (Centre)", sub: "Centered clean statement chest print" },
+                      { id: "left-chest", label: "Side Chest (Left)", sub: "Left pocket crest streetwear placement" },
+                      { id: "right-chest", label: "Side Chest (Right)", sub: "Minimalist right chest icon" },
+                      { id: "back", label: "Back Print", sub: "High-impact oversized streetwear back art" },
+                      { id: "full-front", label: "Full Front", sub: "Bold torso-covering graphic" },
+                    ].map((pl) => (
+                      <button
+                        key={pl.id}
+                        type="button"
+                        className={`placement-large-card ${placement === pl.id ? "is-active" : ""}`}
+                        onClick={() => {
+                          setPlacement(pl.id);
+                          if (pl.id === "back") setViewSide("back");
+                          else setViewSide("front");
+                        }}
+                      >
+                        <span className="pl-card-title">{pl.label}</span>
+                        <span className="pl-card-sub">{pl.sub}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* HIDDEN FILE INPUT */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept="image/*,application/pdf"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFileUpload(e.target.files[0]);
+                  }
+                }}
+              />
+
+              {/* ROW 4: SELECT PLACEMENT & PRINT SIZE (ALWAYS VISIBLE) */}
               <div className="config-placement-size-row">
                 <div className="placement-selector-block">
                   <label className="config-label">
@@ -6079,8 +6197,8 @@ MORE THAN A MOMENT.`;
                         >
                           <svg
                             viewBox="0 0 36 36"
-                            width="28"
-                            height="28"
+                            width="24"
+                            height="24"
                             fill="none"
                             className="mini-shirt-svg"
                           >
@@ -6144,7 +6262,7 @@ MORE THAN A MOMENT.`;
                 </div>
               </div>
 
-              {/* ROW 5: PRICING & ACTIONS */}
+              {/* ROW 5: PRICING & ACTIONS (ALWAYS VISIBLE) */}
               <div className="config-actions-row">
                 <div className="charges-col">
                   <span className="charges-label">
@@ -6158,7 +6276,7 @@ MORE THAN A MOMENT.`;
                   <div className="total-amount-box">
                     <span className="currency-symbol">₹</span>
                     <span className="total-num">{orderTotal}</span>
-                    <span className="qty-tag">({quantity} T-Shirt{quantity > 1 ? "s" : ""})</span>
+                    <span className="qty-tag">({quantity} Tee{quantity > 1 ? "s" : ""})</span>
                   </div>
                 </div>
 
@@ -6168,7 +6286,7 @@ MORE THAN A MOMENT.`;
                     className="add-to-cart-gold-btn"
                     onClick={handleAddToCart}
                   >
-                    <ShoppingCart size={18} />
+                    <ShoppingCart size={17} />
                     <span>{addedToast ? "Added to Bag! ✓" : "ADD TO CART"}</span>
                   </button>
 
@@ -6187,7 +6305,7 @@ MORE THAN A MOMENT.`;
           </div>
         </div>
 
-        {/* BOTTOM GUARANTEE FEATURES BAR (4 COLUMNS) */}
+        {/* BOTTOM GUARANTEE FEATURES BAR */}
         <div className="customize-bottom-features">
           <div className="bottom-feature-item">
             <Zap size={22} className="feature-icon" />
@@ -6235,7 +6353,7 @@ MORE THAN A MOMENT.`;
               </button>
               <div className="tee-stage-zoomed">
                 <img
-                  src={viewSide === "back" ? "/customize/plain-tee-back.jpg" : "/customize/plain-tee-hanger.jpg"}
+                  src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
                   alt="ENYTM Tee Preview Zoomed"
                   className="tee-base-img"
                   style={{ filter: currentColorObj.filter }}
@@ -6244,10 +6362,17 @@ MORE THAN A MOMENT.`;
                   (placement !== "back" && viewSide !== "back")) && (
                   <div
                     className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                    style={{
+                      opacity: artworkOpacity,
+                      transform: `translate(-50%, 0) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                    }}
                   >
-                    {printType === "text" && customText ? (
-                      <div className="tee-custom-text-rendered" style={{ color: textColor }}>
-                        {customText}
+                    {printType === "text" ? (
+                      <div
+                        className={`tee-custom-text-rendered font-${textFont} text-sz-${textSize}`}
+                        style={{ color: textColor }}
+                      >
+                        {customText || "MORE THAN A MOMENT"}
                       </div>
                     ) : uploadedDesign && uploadedDesign.isImage ? (
                       <img
@@ -6257,7 +6382,7 @@ MORE THAN A MOMENT.`;
                       />
                     ) : (
                       <img
-                        src="/customize/mountain-artwork.png"
+                        src={STUDIO_ARTWORK}
                         alt="ENYTM Studio Print Zoomed"
                         className="print-graphic-img"
                       />
