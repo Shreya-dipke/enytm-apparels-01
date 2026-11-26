@@ -11,6 +11,34 @@ function getActiveUserId() {
   }
 }
 
+function getDeletedCartKeys() {
+  try {
+    const raw = localStorage.getItem("enytm-deleted-cart-keys");
+    const arr = JSON.parse(raw || "[]");
+    return Array.isArray(arr) ? new Set(arr) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function markCartKeyDeleted(key) {
+  if (!key) return;
+  try {
+    const set = getDeletedCartKeys();
+    set.add(String(key));
+    localStorage.setItem("enytm-deleted-cart-keys", JSON.stringify(Array.from(set)));
+  } catch {}
+}
+
+function unmarkCartKeyDeleted(key) {
+  if (!key) return;
+  try {
+    const set = getDeletedCartKeys();
+    set.delete(String(key));
+    localStorage.setItem("enytm-deleted-cart-keys", JSON.stringify(Array.from(set)));
+  } catch {}
+}
+
 export function CartProvider({children}) {
   const initialLoadDone = useRef(false);
 
@@ -19,8 +47,12 @@ export function CartProvider({children}) {
       const uid = getActiveUserId();
       const rawUserCart = uid && uid !== "anon" ? localStorage.getItem(`enytm-cart-${uid}`) : null;
       const rawGlobalCart = localStorage.getItem("enytm-cart");
-      const v = JSON.parse(rawUserCart || rawGlobalCart || "[]");
-      return Array.isArray(v) ? v.map(i => ({ ...i, selected: i.selected !== false })) : [];
+      const raw = rawUserCart !== null ? rawUserCart : rawGlobalCart;
+      const v = JSON.parse(raw || "[]");
+      const deletedKeys = getDeletedCartKeys();
+      return Array.isArray(v)
+        ? v.filter(i => i?.key && !deletedKeys.has(i.key)).map(i => ({ ...i, selected: i.selected !== false }))
+        : [];
     } catch {
       return [];
     }
@@ -31,7 +63,8 @@ export function CartProvider({children}) {
       const uid = getActiveUserId();
       const rawUserWish = uid && uid !== "anon" ? localStorage.getItem(`enytm-wishlist-${uid}`) : null;
       const rawGlobalWish = localStorage.getItem("enytm-wishlist");
-      const v = JSON.parse(rawUserWish || rawGlobalWish || "[]");
+      const raw = rawUserWish !== null ? rawUserWish : rawGlobalWish;
+      const v = JSON.parse(raw || "[]");
       return Array.isArray(v) ? v : [];
     } catch {
       return [];
@@ -40,9 +73,18 @@ export function CartProvider({children}) {
 
   const clearCart = useCallback(() => {
     const uid = getActiveUserId();
-    setCart([]);
-    localStorage.removeItem("enytm-cart");
-    if (uid && uid !== "anon") localStorage.removeItem(`enytm-cart-${uid}`);
+    setCart(items => {
+      if (Array.isArray(items)) {
+        items.forEach(i => { if (i?.key) markCartKeyDeleted(i.key); });
+      }
+      return [];
+    });
+    localStorage.setItem("enytm-cart", "[]");
+    if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, "[]");
+    const token = localStorage.getItem("enytm-token");
+    if (token) {
+      api("/cart/sync", { method: "POST", body: JSON.stringify({ items: [] }) }).catch(() => {});
+    }
   }, []);
 
   const clearWishlist = useCallback(() => {
@@ -55,8 +97,9 @@ export function CartProvider({children}) {
   const logoutUser = useCallback(() => {
     localStorage.removeItem("enytm-token");
     localStorage.removeItem("enytm-user");
-    localStorage.removeItem("enytm-cart");
+    localStorage.setItem("enytm-cart", "[]");
     localStorage.removeItem("enytm-wishlist");
+    localStorage.removeItem("enytm-deleted-cart-keys");
     setCart([]);
     setWishlist([]);
     initialLoadDone.current = false;
@@ -65,20 +108,25 @@ export function CartProvider({children}) {
 
   const loadUserData = useCallback(async () => {
     const uid = getActiveUserId();
+    const deletedKeys = getDeletedCartKeys();
+
     // 1. Immediately read whatever is in local storage so cart is never empty on reload
     let localItems = [];
     try {
       const rawUserCart = uid && uid !== "anon" ? localStorage.getItem(`enytm-cart-${uid}`) : null;
       const rawGlobalCart = localStorage.getItem("enytm-cart");
-      const parsed = JSON.parse(rawUserCart || rawGlobalCart || "[]");
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        localItems = parsed.map(i => ({ ...i, selected: i.selected !== false }));
+      const raw = rawUserCart !== null ? rawUserCart : rawGlobalCart;
+      const parsed = JSON.parse(raw || "[]");
+      if (Array.isArray(parsed)) {
+        localItems = parsed
+          .filter(i => i?.key && !deletedKeys.has(i.key))
+          .map(i => ({ ...i, selected: i.selected !== false }));
         setCart(localItems);
       }
       const rawUserWish = uid && uid !== "anon" ? localStorage.getItem(`enytm-wishlist-${uid}`) : null;
       const rawGlobalWish = localStorage.getItem("enytm-wishlist");
-      const parsedWish = JSON.parse(rawUserWish || rawGlobalWish || "[]");
-      if (Array.isArray(parsedWish) && parsedWish.length > 0) {
+      const parsedWish = JSON.parse(rawUserWish !== null ? rawUserWish : (rawGlobalWish || "[]"));
+      if (Array.isArray(parsedWish)) {
         setWishlist(parsedWish);
       }
     } catch {}
@@ -93,20 +141,23 @@ export function CartProvider({children}) {
     try {
       const [cRes, wRes] = await Promise.allSettled([api("/cart"), api("/wishlist")]);
       if (cRes.status === "fulfilled" && Array.isArray(cRes.value?.items)) {
-        const serverItems = cRes.value.items.map(i => ({ ...i, selected: i.selected !== false }));
-        // Merge server items with any newly added local items by key so nothing is ever dropped
+        // Discard any items that were deleted on this client
+        const serverItems = cRes.value.items
+          .filter(i => i?.key && !deletedKeys.has(i.key))
+          .map(i => ({ ...i, selected: i.selected !== false }));
+
         const itemMap = new Map();
         for (const item of serverItems) {
           if (item?.key) itemMap.set(item.key, item);
         }
         for (const item of localItems) {
-          if (item?.key) itemMap.set(item.key, item);
+          if (item?.key && !deletedKeys.has(item.key)) itemMap.set(item.key, item);
         }
         const merged = Array.from(itemMap.values());
         setCart(merged);
         localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(merged));
         localStorage.setItem("enytm-cart", JSON.stringify(merged));
-        // Keep backend in sync with full merged cart
+        // Keep backend in sync with clean merged cart
         api("/cart/sync", { method: "POST", body: JSON.stringify({ items: merged }) }).catch(() => {});
       }
       if (wRes.status === "fulfilled" && Array.isArray(wRes.value?.items)) {
@@ -162,10 +213,11 @@ export function CartProvider({children}) {
   }, [wishlist]);
 
   const addToCart = (product, size = "M") => {
+    const prodId = product?.id ?? product?._id;
+    const key = `${prodId}-${size}`;
+    unmarkCartKeyDeleted(key);
     setCart(items => {
       const list = Array.isArray(items) ? items : [];
-      const prodId = product?.id ?? product?._id;
-      const key = `${prodId}-${size}`;
       const old = list.find(i => i.key === key);
       const updated = old
         ? list.map(i => i.key === key ? { ...i, qty: i.qty + 1, selected: true } : i)
@@ -188,24 +240,31 @@ export function CartProvider({children}) {
     });
   };
 
-  const updateQty = (key, qty) => setCart(items => {
-    const list = Array.isArray(items) ? items : [];
-    const updated = qty < 1 ? list.filter(i => i.key !== key) : list.map(i => i.key === key ? { ...i, qty } : i);
-    try {
-      const uid = getActiveUserId();
-      localStorage.setItem("enytm-cart", JSON.stringify(updated));
-      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
-      const token = localStorage.getItem("enytm-token");
-      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
-    } catch (e) {}
-    return updated;
-  });
+  const updateQty = (key, qty) => {
+    if (qty < 1) {
+      removeFromCart(key);
+      return;
+    }
+    setCart(items => {
+      const list = Array.isArray(items) ? items : [];
+      const updated = list.map(i => i.key === key ? { ...i, qty } : i);
+      try {
+        const uid = getActiveUserId();
+        localStorage.setItem("enytm-cart", JSON.stringify(updated));
+        if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+        const token = localStorage.getItem("enytm-token");
+        if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+      } catch (e) {}
+      return updated;
+    });
+  };
 
   const updateSize = (key, newSize) => setCart(items => {
     const list = Array.isArray(items) ? items : [];
     const target = list.find(i => i.key === key);
     if (!target || !newSize || target.size === newSize) return list;
     const newKey = `${target.id}-${newSize}`;
+    unmarkCartKeyDeleted(newKey);
     const existing = list.find(i => i.key === newKey);
     let updated;
     if (existing) {
@@ -213,6 +272,7 @@ export function CartProvider({children}) {
     } else {
       updated = list.map(i => i.key === key ? { ...i, size: newSize, key: newKey } : i);
     }
+    markCartKeyDeleted(key);
     try {
       const uid = getActiveUserId();
       localStorage.setItem("enytm-cart", JSON.stringify(updated));
@@ -245,18 +305,24 @@ export function CartProvider({children}) {
     return updated;
   });
 
-  const removeFromCart = key => setCart(items => {
-    const list = Array.isArray(items) ? items : [];
-    const updated = list.filter(i => i.key !== key);
-    try {
-      const uid = getActiveUserId();
-      localStorage.setItem("enytm-cart", JSON.stringify(updated));
-      if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
-      const token = localStorage.getItem("enytm-token");
-      if (token) api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
-    } catch (e) {}
-    return updated;
-  });
+  const removeFromCart = key => {
+    markCartKeyDeleted(key);
+    setCart(items => {
+      const list = Array.isArray(items) ? items : [];
+      const updated = list.filter(i => i.key !== key);
+      try {
+        const uid = getActiveUserId();
+        localStorage.setItem("enytm-cart", JSON.stringify(updated));
+        if (uid && uid !== "anon") localStorage.setItem(`enytm-cart-${uid}`, JSON.stringify(updated));
+        const token = localStorage.getItem("enytm-token");
+        if (token) {
+          api("/cart/sync", { method: "POST", body: JSON.stringify({ items: updated }) }).catch(() => {});
+          api(`/cart/${encodeURIComponent(key)}`, { method: "DELETE" }).catch(() => {});
+        }
+      } catch (e) {}
+      return updated;
+    });
+  };
   const addToWishlist=id=>setWishlist(w=>{
     const list = Array.isArray(w) ? w : [];
     const numId = Number(id) || id;

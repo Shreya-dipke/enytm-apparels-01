@@ -1018,14 +1018,35 @@ app.get("/api/cart", auth, async (req, res) => {
 app.post("/api/cart/sync", auth, async (req, res) => {
   try {
     if (!Array.isArray(db.data.carts)) db.data.carts = [];
-    const existing = db.data.carts.find(c => c && String(c.userId) === String(req.user?.id));
-    const record = { userId: req.user.id, items: Array.isArray(req.body.items) ? req.body.items : [], updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
+    const userId = String(req.user?.id || req.user?._id);
+    const existing = db.data.carts.find(c => c && String(c.userId) === userId);
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const record = { userId, items, updatedAt: Date.now(), remindedAt: existing?.remindedAt || null };
     if (existing) Object.assign(existing, record); else db.data.carts.push(record);
     await db.write("carts");
-    res.json({ ok: true });
+    res.json({ ok: true, items });
   } catch (err) {
     console.error("[Cart Sync Error]:", err);
     res.json({ ok: false });
+  }
+});
+
+app.delete("/api/cart/:key", auth, async (req, res) => {
+  try {
+    if (!Array.isArray(db.data.carts)) db.data.carts = [];
+    const userId = String(req.user?.id || req.user?._id);
+    const existing = db.data.carts.find(c => c && String(c.userId) === userId);
+    const keyToDelete = req.params.key;
+    if (existing && Array.isArray(existing.items)) {
+      existing.items = existing.items.filter(i => i && i.key !== keyToDelete);
+      existing.updatedAt = Date.now();
+      await db.write("carts");
+      return res.json({ ok: true, items: existing.items });
+    }
+    res.json({ ok: true, items: [] });
+  } catch (err) {
+    console.error("[Cart DELETE Error]:", err);
+    res.status(500).json({ ok: false });
   }
 });
 

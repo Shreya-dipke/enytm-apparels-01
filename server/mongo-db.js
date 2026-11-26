@@ -9,7 +9,7 @@ if (process.platform === "win32") {
   } catch (e) { }
 }
 
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://vedantdarokar7_db_user:e8lHSwrq3Y6ORGTa@cluster0.qvwjgqe.mongodb.net/enytm?retryWrites=true&w=majority";
 
@@ -226,26 +226,45 @@ class MongoDatabase {
             const cleanDocs = [];
             for (const item of items) {
               const { _id, ...rest } = item;
-              const idKey = rest.id !== undefined && rest.id !== null ? String(rest.id) : (_id ? String(_id) : null);
+              let idKey;
+              if ((name === "carts" || name === "wishlists") && rest.userId) {
+                idKey = `user_${rest.userId}`;
+              } else {
+                idKey = rest.id !== undefined && rest.id !== null ? String(rest.id) : (_id ? String(_id) : null);
+              }
               if (idKey && seenIds.has(idKey)) continue;
               if (idKey) seenIds.add(idKey);
               cleanDocs.push({ ...rest, id: rest.id ?? idKey });
             }
 
-            const bulkOps = cleanDocs.map(doc => ({
-              replaceOne: {
-                filter: {
+            const bulkOps = cleanDocs.map(doc => {
+              let filter;
+              if ((name === "carts" || name === "wishlists") && doc.userId) {
+                filter = {
+                  $or: [
+                    { userId: String(doc.userId) },
+                    ...(typeof doc.userId === "string" && !isNaN(Number(doc.userId)) ? [{ userId: Number(doc.userId) }] : []),
+                    ...(typeof doc.userId === "number" ? [{ userId: doc.userId }] : [])
+                  ]
+                };
+              } else {
+                filter = {
                   $or: [
                     { id: doc.id },
                     ...(typeof doc.id === "string" && !isNaN(Number(doc.id)) ? [{ id: Number(doc.id) }] : []),
                     ...(typeof doc.id === "number" ? [{ id: String(doc.id) }] : []),
-                    ...(doc._id ? [{ _id: doc._id }] : [])
+                    ...(doc._id && ObjectId.isValid(String(doc._id)) ? [{ _id: new ObjectId(String(doc._id)) }, { _id: String(doc._id) }] : (doc._id ? [{ _id: doc._id }] : []))
                   ]
-                },
-                replacement: doc,
-                upsert: true
+                };
               }
-            }));
+              return {
+                replaceOne: {
+                  filter,
+                  replacement: doc,
+                  upsert: true
+                }
+              };
+            });
 
             if (bulkOps.length > 0) {
               await col.bulkWrite(bulkOps, { ordered: false });
