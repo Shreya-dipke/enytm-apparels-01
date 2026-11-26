@@ -3918,7 +3918,8 @@ function Account() {
           </h1>
           <div className="account-hero-line" />
           <p className="account-hero-sub">
-            Everything you've ordered, saved, and built with us — <strong>all in one place.</strong>
+            Everything you've ordered, saved, and built with us —<br />
+            <strong>all in one place.</strong>
           </p>
           <Link to="/shop" className="account-hero-shop-btn">
             <ShoppingBag size={15} /> SHOP NOW →
