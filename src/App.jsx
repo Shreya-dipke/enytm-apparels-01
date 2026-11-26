@@ -73,6 +73,7 @@ import {
   AlignCenter,
   AlignRight,
   Download,
+  Move,
   Image as ImageIcon
 } from "lucide-react";
 import { useCart } from "./context/useCart";
