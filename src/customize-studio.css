@@ -1048,7 +1048,7 @@
 /* PLACEMENT & PRINT SIZE ROW */
 .config-placement-size-row {
   display: grid !important;
-  grid-template-columns: 1.6fr 1fr !important;
+  grid-template-columns: 1fr !important;
   gap: 16px !important;
   align-items: start !important;
 }

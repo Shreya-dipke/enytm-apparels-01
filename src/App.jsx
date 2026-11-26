@@ -6979,37 +6979,7 @@ MORE THAN A MOMENT.`;
                   </div>
                 </div>
 
-                {/* PRINT SIZE (A4 vs A3) */}
-                <div className="print-size-block">
-                  <label className="config-label">
-                    Print Size {(placement === "back" || placement === "back-center") ? "(Back Only)" : "(Standard)"}
-                  </label>
-                  <div className="print-size-radios">
-                    <button
-                      type="button"
-                      className={`radio-size-btn ${printSize === "A4" ? "is-selected" : ""}`}
-                      onClick={() => setPrintSize("A4")}
-                    >
-                      <div className="radio-dot" />
-                      <div className="radio-size-meta">
-                        <span className="radio-name">A4</span>
-                        <span className="radio-dim">21 × 29.7 cm {(placement === "back" || placement === "back-center") ? "(+₹29)" : ""}</span>
-                      </div>
-                    </button>
 
-                    <button
-                      type="button"
-                      className={`radio-size-btn ${printSize === "A3" ? "is-selected" : ""}`}
-                      onClick={() => setPrintSize("A3")}
-                    >
-                      <div className="radio-dot" />
-                      <div className="radio-size-meta">
-                        <span className="radio-name">A3</span>
-                        <span className="radio-dim">29.7 × 42 cm {(placement === "back" || placement === "back-center") ? "(+₹49)" : ""}</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
               </div>
 
               {/* ROW 5: DETAILED ORDER SUMMARY BREAKDOWN */}
