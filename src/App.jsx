@@ -1419,13 +1419,13 @@ function ProductPage() {
               </summary>
               <div className="acc-content">
                 <p>{product.description || "Crafted for comfort and daily wear with an architectural cut and clean finishes."}</p>
-                <div className="acc-specs-grid">
-                  <div><span>FABRIC</span><b>{product.fabric || "Premium Combed Cotton"}</b></div>
-                  <div><span>WEIGHT / GSM</span><b>{product.fabric?.match(/\d+\s*GSM/i)?.[0] || "240–380 GSM Heavyweight"}</b></div>
-                  <div><span>FIT & CUT</span><b>Streetwear Oversized · Engineered Drop Shoulder</b></div>
-                  <div><span>CONSTRUCTION</span><b>Double-needle stitching, reinforced collar rib, pre-shrunk</b></div>
-                  <div><span>CARE INSTRUCTIONS</span><b>Cold machine wash inside-out · Do not iron on prints · Flat dry</b></div>
-                  <div><span>MODEL FIT</span><b>Model is 6'1" (185 cm) wearing size L</b></div>
+                <div className="product-specs-banner-wrap">
+                  <img
+                    src="/enytm-product-specs.jpg"
+                    alt="ENYTM Boxy Fit Oversized T-Shirt - 240 GSM Heavyweight Fabric & Specifications"
+                    className="product-specs-banner-img"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             </details>
