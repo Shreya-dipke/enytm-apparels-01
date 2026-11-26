@@ -607,12 +607,63 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* FORM ROWS */
+/* FORM ROWS & BALANCED CONFIGURATOR GROUPS */
 .config-grid-row {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 20px !important;
+  gap: 16px !important;
   align-items: start !important;
+}
+
+/* BALANCED FABRIC & QUANTITY ROW */
+.config-fabric-qty-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 140px !important;
+  gap: 16px !important;
+  align-items: flex-end !important;
+  width: 100% !important;
+}
+
+.config-fabric-qty-row .fabric-col {
+  min-width: 0 !important;
+}
+
+.config-fabric-qty-row .qty-col {
+  width: 140px !important;
+  flex-shrink: 0 !important;
+}
+
+.config-fabric-qty-row .select-wrapper,
+.config-fabric-qty-row .custom-select {
+  height: 40px !important;
+}
+
+.config-fabric-qty-row .stepper-box {
+  height: 40px !important;
+  width: 100% !important;
+  max-width: 140px !important;
+}
+
+/* FULL-WIDTH COLOR & SIZE GROUPS */
+.color-field-group {
+  width: 100% !important;
+}
+
+.size-field-group {
+  width: 100% !important;
+}
+
+.size-field-group .size-pills-row {
+  display: flex !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.size-field-group .size-pill-btn {
+  flex: 1 !important;
+  height: 40px !important;
+  font-size: 13px !important;
+  border-radius: 9px !important;
 }
 
 .config-field-group {
@@ -1437,8 +1488,33 @@
     display: inline-block !important;
   }
 
-  .fabric-group-desktop {
-    display: none !important;
+  .config-fabric-qty-row {
+    display: flex !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .config-fabric-qty-row .fabric-col {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .config-fabric-qty-row .qty-col {
+    width: 125px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .size-field-group .size-pills-row {
+    gap: 6px !important;
+  }
+
+  .size-field-group .size-pill-btn {
+    height: 38px !important;
+    font-size: 12px !important;
+  }
+
+  .color-swatches-inline {
+    gap: 8px !important;
   }
 
   .configurator-tabs-bar {
@@ -1741,25 +1817,34 @@
 /* COMPACT TWEAKS FOR LAPTOP SCREENS */
 @media (min-width: 1025px) {
   .customize-container {
+    max-width: 1280px !important;
     padding: 16px 20px 40px !important;
   }
   .customize-main-content {
-    grid-template-columns: 420px minmax(0, 1fr) !important;
-    gap: 24px !important;
+    grid-template-columns: 440px minmax(0, 1fr) !important;
+    gap: 28px !important;
     align-items: start !important;
   }
+  .customize-left-section {
+    position: sticky !important;
+    top: 20px !important;
+    align-self: start !important;
+  }
   .customize-canvas-box {
-    max-width: 360px !important;
+    max-width: 380px !important;
   }
   .configurator-box {
-    padding: 18px 20px !important;
-    gap: 12px !important;
+    padding: 20px 22px !important;
+    gap: 14px !important;
   }
   .configurator-head {
-    padding-bottom: 10px !important;
+    padding-bottom: 12px !important;
   }
   .config-grid-row {
     gap: 12px !important;
+  }
+  .config-fabric-qty-row {
+    gap: 14px !important;
   }
   .config-design-row {
     gap: 12px !important;
@@ -2758,17 +2843,17 @@
   color: #ffffff !important;
   border: none !important;
   border-radius: 9999px !important;
-  padding: 6px 14px !important;
-  font-size: 11px !important;
+  padding: 11px 22px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.3px !important;
+  letter-spacing: 0.4px !important;
   white-space: nowrap !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
-  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.35) !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-transform: uppercase !important;
 }
@@ -3525,13 +3610,22 @@
 
 .placement-icons-row.five-options {
   display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
 }
 
 @media (max-width: 650px) {
   .placement-icons-row.five-options {
     grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .placement-icons-row.five-options {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
   }
 }
 

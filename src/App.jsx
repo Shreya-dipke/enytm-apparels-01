@@ -6943,47 +6943,48 @@ MORE THAN A MOMENT.`;
                 </div>
                               </div>
 
-              {/* ROW 1: T-SHIRT COLOR & FABRIC */}
-              <div className="config-grid-row">
-                <div className="config-field-group">
-                  <label className="config-label">
-                    <Palette size={13} className="mobile-only-icon" /> T-Shirt Color: <span className="highlight-val">{currentColorObj.name}</span>
-                  </label>
-                  <div className="color-swatches-inline">
-                    {colors.map((c) => {
-                      const isSel = selectedColor === c.id;
-                      return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          className={`color-dot-btn ${isSel ? "is-selected" : ""}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedColor(c.id);
+              {/* ROW 1: T-SHIRT COLOR */}
+              <div className="config-field-group color-field-group">
+                <label className="config-label">
+                  <Palette size={13} /> T-Shirt Color: <span className="highlight-val">{currentColorObj.name}</span>
+                </label>
+                <div className="color-swatches-inline">
+                  {colors.map((c) => {
+                    const isSel = selectedColor === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className={`color-dot-btn ${isSel ? "is-selected" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedColor(c.id);
+                        }}
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          setSelectedColor(c.id);
+                        }}
+                        title={c.name}
+                      >
+                        <span
+                          className="color-circle"
+                          style={{
+                            backgroundColor: c.hex,
+                            border: ["offwhite", "beige"].includes(c.id) ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
                           }}
-                          onPointerDown={(e) => {
-                            e.stopPropagation();
-                            setSelectedColor(c.id);
-                          }}
-                          title={c.name}
                         >
-                          <span
-                            className="color-circle"
-                            style={{
-                              backgroundColor: c.hex,
-                              border: ["offwhite", "beige"].includes(c.id) ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
-                            }}
-                          >
-                            {isSel && <Check size={11} className={["offwhite", "beige"].includes(c.id) ? "dark-check" : "light-check"} />}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                          {isSel && <Check size={11} className={["offwhite", "beige"].includes(c.id) ? "dark-check" : "light-check"} />}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
 
-                <div className="config-field-group fabric-group-desktop">
+              {/* ROW 2: FABRIC & QUANTITY (BALANCED PAIR) */}
+              <div className="config-fabric-qty-row">
+                <div className="config-field-group fabric-col">
                   <label className="config-label">
                     Fabric <HelpCircle size={12} className="info-icon" />
                   </label>
@@ -7000,36 +7001,8 @@ MORE THAN A MOMENT.`;
                     <ChevronDown size={14} className="select-chevron" />
                   </div>
                 </div>
-              </div>
 
-              {/* ROW 2: SIZE SELECTION & QUANTITY */}
-              <div className="config-grid-row">
-                <div className="config-field-group">
-                  <div className="label-with-action">
-                    <label className="config-label">Select Size</label>
-                    <button
-                      type="button"
-                      className="size-guide-modal-btn"
-                      onClick={() => setShowSizeGuide(true)}
-                    >
-                      <Ruler size={12} /> <span>Size Guide</span>
-                    </button>
-                  </div>
-                  <div className="size-pills-row">
-                    {["S", "M", "L", "XL", "XXL"].map((sz) => (
-                      <button
-                        key={sz}
-                        type="button"
-                        className={`size-pill-btn ${sizeTee1 === sz ? "is-selected" : ""}`}
-                        onClick={() => setSizeTee1(sz)}
-                      >
-                        {sz}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="config-field-group qty-group">
+                <div className="config-field-group qty-col">
                   <label className="config-label">Quantity</label>
                   <div className="stepper-box">
                     <button
@@ -7050,6 +7023,32 @@ MORE THAN A MOMENT.`;
                       <Plus size={13} />
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* ROW 3: SIZE SELECTION (FULL WIDTH) */}
+              <div className="config-field-group size-field-group">
+                <div className="label-with-action">
+                  <label className="config-label">Select Size</label>
+                  <button
+                    type="button"
+                    className="size-guide-modal-btn"
+                    onClick={() => setShowSizeGuide(true)}
+                  >
+                    <Ruler size={12} /> <span>Size Guide</span>
+                  </button>
+                </div>
+                <div className="size-pills-row">
+                  {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      className={`size-pill-btn ${sizeTee1 === sz ? "is-selected" : ""}`}
+                      onClick={() => setSizeTee1(sz)}
+                    >
+                      {sz}
+                    </button>
+                  ))}
                 </div>
               </div>
 
