@@ -1889,7 +1889,7 @@ function Auth({ register = false }) {
           <form className="auth-form" onSubmit={sendOtp}>
             <input className="auth-input" required autoComplete="name" placeholder="Full name" value={form.name} onChange={e => update("name", e.target.value)} />
             <input className="auth-input" required type="email" inputMode="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e => update("email", e.target.value)} />
-            <input className="auth-input" required inputMode="tel" autoComplete="tel" placeholder="Mobile number" value={form.phone} onChange={e => update("phone", e.target.value.replace(/\D/g, "").slice(-10))} />
+            <input className="auth-input" required inputMode="tel" autoComplete="tel" placeholder="Contact number" value={form.phone} onChange={e => update("phone", e.target.value.replace(/\D/g, "").slice(-10))} />
             <div className="password-field auth-password-field">
               <input className="auth-input" required minLength="6" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Password (min 6 chars)" value={form.password} onChange={e => update("password", e.target.value)} />
               <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
@@ -1921,7 +1921,7 @@ function Auth({ register = false }) {
               {seconds ? `RESEND OTP IN ${seconds}s` : "RESEND OTP"}
             </button>
             <button type="button" className="text-link" onClick={() => { setStep("details"); setError("") }}>
-              ← Change email or mobile number
+              ← Change email or contact number
             </button>
           </form>
         )}
@@ -2263,7 +2263,7 @@ function Checkout() {
       });
       if (!window.Razorpay) throw new Error("Razorpay Checkout could not load. Check your internet connection.");
       const digits = String(form.phone || "").replace(/\D/g, "").slice(-10);
-      if (digits.length !== 10) throw new Error("Please enter a valid 10-digit mobile number.");
+      if (digits.length !== 10) throw new Error("Please enter a valid 10-digit contact number.");
       let paymentCompleted = false;
       const rzp = new window.Razorpay({
         key: data.keyId,
@@ -3969,7 +3969,7 @@ function Account() {
           {profileEditing && (
             <form className="profile-edit-form" onSubmit={saveProfile}>
               <label>FULL NAME<input required maxLength={80} value={profileForm.name} onChange={e => setProfileForm(v => ({ ...v, name: e.target.value }))} /></label>
-              <label>PHONE NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({ ...v, phone: e.target.value }))} /></label>
+              <label>CONTACT NUMBER<input inputMode="tel" maxLength={16} value={profileForm.phone} onChange={e => setProfileForm(v => ({ ...v, phone: e.target.value }))} /></label>
               <label className="check"><input type="checkbox" checked={profileForm.whatsappOptIn} onChange={e => setProfileForm(v => ({ ...v, whatsappOptIn: e.target.checked }))} /> Receive order updates on WhatsApp</label>
               <label className="check"><input type="checkbox" checked={profileForm.emailOptIn} onChange={e => setProfileForm(v => ({ ...v, emailOptIn: e.target.checked }))} /> Receive order updates by email</label>
               <button className="btn primary full" type="submit" disabled={profileSaving}>{profileSaving ? "SAVING PROFILE..." : "SAVE PROFILE"}</button>
@@ -4258,11 +4258,11 @@ function Account() {
                   </div>
 
                   <div className="modern-input-field">
-                    <label>PHONE NUMBER</label>
+                    <label>CONTACT NUMBER</label>
                     <input
                       required
                       type="tel"
-                      placeholder="10-digit mobile number"
+                      placeholder="10-digit contact number"
                       value={addressForm.phone}
                       onChange={e =>
                         setAddressForm({
@@ -4677,7 +4677,7 @@ function PrivacyPolicyPage() {
           <h2>2. Information We Collect</h2>
           <p>We only collect information necessary to fulfill your orders and enhance your shopping journey:</p>
           <ul>
-            <li><b>Contact Details:</b> Name, email address, mobile phone number, and delivery address.</li>
+            <li><b>Contact Details:</b> Name, email address, contact number, and delivery address.</li>
             <li><b>Transactional Data:</b> Order ID, items purchased, chosen sizes, and order totals.</li>
             <li><b>Payment Information:</b> Payments are processed directly through 256-bit bank-grade Razorpay encrypted gateways. <b>ENYTM never stores or has access to your credit/debit card numbers, CVVs, UPI PINs, or banking passwords.</b></li>
             <li><b>Device & Usage:</b> IP address, browser type, and anonymous session telemetry to optimize website performance and detect fraud.</li>
