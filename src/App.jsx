@@ -6313,79 +6313,7 @@ MORE THAN A MOMENT.`;
                   ))}
                 </div>
 
-                {/* PRINT PLACEMENT GUIDE (VISUAL MOCKUP CARDS) */}
-                <div className="print-placement-guide-section">
-                  <h4 className="guide-heading">Print Placement Guide</h4>
-                  <div className="guide-cards-grid">
-                    <button
-                      type="button"
-                      className={`guide-card-btn ${placement === "chest-centre" ? "is-active" : ""}`}
-                      onClick={() => {
-                        setPlacement("chest-centre");
-                        setViewSide("front");
-                      }}
-                      title="Chest (Centre)"
-                    >
-                      <img src="/customize/guide-chest-centre.jpg" alt="Chest (Centre)" />
-                      <span className="guide-card-label">Chest<br />(Centre)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`guide-card-btn ${placement === "left-chest" ? "is-active" : ""}`}
-                      onClick={() => {
-                        setPlacement("left-chest");
-                        setViewSide("front");
-                      }}
-                      title="Side Chest (Left)"
-                    >
-                      <img src="/customize/guide-side-left.jpg" alt="Side Chest (Left)" />
-                      <span className="guide-card-label">Side Chest<br />(Left)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`guide-card-btn ${placement === "right-chest" ? "is-active" : ""}`}
-                      onClick={() => {
-                        setPlacement("right-chest");
-                        setViewSide("front");
-                      }}
-                      title="Side Chest (Right)"
-                    >
-                      <img src="/customize/guide-side-right.jpg" alt="Side Chest (Right)" />
-                      <span className="guide-card-label">Side Chest<br />(Right)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`guide-card-btn ${placement === "back" && printSize === "A4" ? "is-active" : ""}`}
-                      onClick={() => {
-                        setPlacement("back");
-                        setPrintSize("A4");
-                        setViewSide("back");
-                      }}
-                      title="A4 Back Print (21 × 29.7 cm)"
-                    >
-                      <img src="/customize/guide-back-a4.jpg" alt="A4 Back Print" />
-                      <span className="guide-card-label">A4 Back Print<br /><small>(21 × 29.7 cm)</small></span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`guide-card-btn ${placement === "back" && printSize === "A3" ? "is-active" : ""}`}
-                      onClick={() => {
-                        setPlacement("back");
-                        setPrintSize("A3");
-                        setViewSide("back");
-                      }}
-                      title="A3 Back Print (29.7 × 42 cm)"
-                    >
-                      <img src="/customize/guide-back-a3.jpg" alt="A3 Back Print" />
-                      <span className="guide-card-label">A3 Back Print<br /><small>(29.7 × 42 cm)</small></span>
-                    </button>
-                  </div>
                 </div>
-              </div>
             </div>
           </div>
 
