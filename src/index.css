@@ -15567,6 +15567,78 @@ a.btn.outline {
   border-color: #e3d2ba !important;
 }
 
+/* LIST VIEW LAYOUT FOR SHOP RESULTS */
+.shop-grid.is-list-view {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+}
+
+.shop-grid.is-list-view .product-card {
+  display: grid !important;
+  grid-template-columns: 140px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  background: #11100f !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  padding: 13px !important;
+  box-sizing: border-box !important;
+  align-items: stretch !important;
+}
+
+@media (min-width: 640px) {
+  .shop-grid.is-list-view .product-card {
+    grid-template-columns: 180px minmax(0, 1fr) !important;
+    gap: 20px !important;
+    padding: 16px !important;
+  }
+}
+
+.shop-grid.is-list-view .product-card .product-image {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1.15 !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+.shop-grid.is-list-view .product-card .product-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.shop-grid.is-list-view .product-card .product-info {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 4px 4px 4px 0 !important;
+  min-width: 0 !important;
+}
+
+.shop-grid.is-list-view .product-card .product-card-title-link h3 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: #ffffff !important;
+  margin: 0 0 8px !important;
+}
+
+.shop-grid.is-list-view .product-card .product-card-pricing-row {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+.shop-grid.is-list-view .product-card button.btn,
+.shop-grid.is-list-view .product-card .product-add-cart-btn {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+
 @media (max-width: 600px) {
   .product-card .product-info {
     padding: 10px 10px 12px !important;
