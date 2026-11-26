@@ -15640,18 +15640,30 @@ a.btn.outline {
   }
 }
 
-.shop-grid.is-list-view .product-card .product-image {
-  border-radius: 12px !important;
+.product-card-img-link,
+.wishlist-img-link {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
   overflow: hidden !important;
-  aspect-ratio: 1 / 1.15 !important;
+  border-radius: inherit !important;
+}
+
+.shop-grid.is-list-view .product-card .product-image {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  aspect-ratio: 3 / 4 !important;
   height: 100% !important;
   position: relative !important;
+  background: #181716 !important;
 }
 
 .shop-grid.is-list-view .product-card .product-image img {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  object-position: center top !important;
+  display: block !important;
 }
 
 .shop-grid.is-list-view .product-card .product-info {
@@ -18849,11 +18861,11 @@ a.btn.outline {
 
   .wishlist-card-media {
     border-radius: 14px !important;
-    aspect-ratio: 1 / 1.15 !important;
+    aspect-ratio: 3 / 4 !important;
   }
 
   .wishlist-card-img {
-    object-position: top center !important;
+    object-position: center top !important;
   }
 
   .wishlist-pill-badge {
@@ -18980,12 +18992,209 @@ a.btn.outline {
   }
 
   .shop-grid.is-list-view .product-card .product-image {
-    aspect-ratio: 1 / 1.15 !important;
+    aspect-ratio: 3 / 4 !important;
     border-radius: 14px !important;
   }
 
   .shop-grid.is-list-view .product-card .product-image img {
-    object-position: top center !important;
+    object-position: center top !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-card-title-link h3 {
+    font-size: 16.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 6px !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-card-pricing-row {
+    margin-bottom: 12px !important;
+  }
+
+  .shop-grid.is-list-view .product-card button.btn,
+  .shop-grid.is-list-view .product-card .product-add-cart-btn {
+    font-size: 13.5px !important;
+    padding: 11px 16px !important;
+    border-radius: 12px !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .wishlist-card,
+  .shop-grid.is-list-view .product-card {
+    grid-template-columns: 185px minmax(0, 1fr) !important;
+    gap: 20px !important;
+    padding: 16px 20px !important;
+  }
+}
+
+/* ========================================================
+   LAPTOP & DESKTOP ENHANCEMENTS FOR LUXURY CARDS (2 COLUMNS)
+======================================================== */
+@media (min-width: 769px) {
+  .wishlist-page {
+    padding-top: 40px !important;
+    padding-bottom: 90px !important;
+  }
+
+  .wishlist-container {
+    max-width: 1240px !important;
+    padding: 0 24px !important;
+  }
+
+  .wishlist-items-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+  }
+
+  .wishlist-card {
+    grid-template-columns: 165px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    padding: 15px 18px !important;
+    border-radius: 20px !important;
+    align-items: stretch !important;
+  }
+
+  .wishlist-card-media {
+    border-radius: 14px !important;
+    aspect-ratio: 3 / 4 !important;
+  }
+
+  .wishlist-card-img {
+    object-position: center top !important;
+  }
+
+  .wishlist-pill-badge {
+    top: 10px !important;
+    left: 10px !important;
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    border-radius: 7px !important;
+  }
+
+  .wishlist-heart-btn {
+    top: 10px !important;
+    right: 10px !important;
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .wishlist-dots {
+    bottom: 9px !important;
+    gap: 6px !important;
+  }
+
+  .wishlist-dot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  .wishlist-dot.active {
+    width: 6.5px !important;
+    height: 6.5px !important;
+  }
+
+  .wishlist-card-content {
+    padding: 2px 0 !important;
+  }
+
+  .wishlist-item-title {
+    font-size: 16.5px !important;
+    line-height: 1.35 !important;
+    margin: 0 0 6px !important;
+  }
+
+  .wishlist-price-row {
+    gap: 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .wishlist-curr-price {
+    font-size: 18px !important;
+  }
+
+  .wishlist-old-price {
+    font-size: 14px !important;
+  }
+
+  .wishlist-discount-wrap {
+    margin-bottom: 14px !important;
+  }
+
+  .wishlist-discount-pill {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  .wishlist-card-actions {
+    gap: 9px !important;
+  }
+
+  .wishlist-move-btn {
+    font-size: 13.5px !important;
+    padding: 11px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .wishlist-remove-btn {
+    font-size: 13px !important;
+    padding: 9px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .wishlist-explore-card {
+    padding: 18px 24px !important;
+    border-radius: 18px !important;
+    margin-top: 28px !important;
+    max-width: 680px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .wishlist-explore-title {
+    font-size: 16px !important;
+  }
+
+  .wishlist-explore-desc {
+    font-size: 13px !important;
+  }
+
+  .wishlist-continue-btn {
+    font-size: 14px !important;
+    padding: 13px 36px !important;
+  }
+
+  /* Shop List View on Laptop: 2 COLUMNS */
+  .shop-grid.is-list-view {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+    max-width: 1240px !important;
+    margin: 0 auto !important;
+    padding: 0 24px !important;
+  }
+
+  .shop-grid.is-list-view .product-card {
+    display: grid !important;
+    grid-template-columns: 165px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    padding: 15px 18px !important;
+    border-radius: 20px !important;
+    background: #11100f !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box !important;
+    align-items: stretch !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-image {
+    aspect-ratio: 3 / 4 !important;
+    border-radius: 14px !important;
+  }
+
+  .shop-grid.is-list-view .product-card .product-image img {
+    object-position: center top !important;
   }
 
   .shop-grid.is-list-view .product-card .product-card-title-link h3 {
