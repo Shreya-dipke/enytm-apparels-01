@@ -219,7 +219,7 @@ function Navbar({ onSearch }) {
 
         <nav className={`nav-links ${open ? "mobile-open" : ""}`}>
           <Link to="/shop" onClick={() => setOpen(false)}>SHOP</Link>
-          <Link to="/customize" onClick={() => setOpen(false)}>CUSTOMIZE</Link>
+          <Link to="/customize" className={location.pathname === "/customize" ? "nav-link-customize-active" : ""} onClick={() => setOpen(false)}>CUSTOMIZE</Link>
           <Link to="/shop?category=Oversized" onClick={() => setOpen(false)}>OVERSIZED</Link>
           <Link to="/shop?category=Polos" onClick={() => setOpen(false)}>POLOS</Link>
           <Link to={token ? "/account" : "/login"} onClick={() => setOpen(false)}>ORDERS</Link>
@@ -7378,8 +7378,163 @@ function Admin() {
     finally { setBusy(false) }
   };
   if (!logged) return <main className="admin-login"><div className="auth-card"><p className="eyebrow">ENYTM CONTROL</p><h1>ADMIN LOGIN</h1><p className="muted">Use the ADMIN_EMAIL and ADMIN_PASSWORD from your server .env file.</p><input autoComplete="username" placeholder="Admin email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} /><input autoComplete="current-password" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} />{error && <div className="admin-login-error">{error}</div>}<button className="btn primary full" disabled={busy} onClick={login}>{busy ? "CHECKING..." : "LOGIN"}</button></div></main>;
-  return <main className="admin-page"><aside className="admin-side"><div className="logo"><BrandLogo /></div>{["dashboard", "orders", "customers", "products", "coupons", "settings"].map(t => <button className={tab === t ? "active" : ""} onClick={() => setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={() => { localStorage.removeItem("enytm-admin"); setLogged(false) }}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab === "dashboard" && data && <div className="metric-grid">{[["REVENUE", `₹${data.revenue.toLocaleString("en-IN")}`], ["ORDERS", data.orders], ["PAID", data.paidOrders], ["CUSTOMERS", data.customers], ["PRODUCTS", data.products], ["PENDING", data.pendingPayments]].map(([a, b]) => <div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab === "orders" && <AdminOrders orders={orders} reload={load} />} {tab === "customers" && <AdminTable headers={["NAME", "EMAIL", "PHONE", "CREATED", "WHATSAPP", "EMAIL"]} rows={customers.map(c => [c.name, c.email, c.phone || "—", new Date(c.createdAt).toLocaleDateString(), c.whatsappOptIn ? "ON" : "OFF", c.emailOptIn ? "ON" : "OFF"])} />} {tab === "products" && <AdminProducts products={products} reload={load} />} {tab === "coupons" && <AdminCoupons products={products} />} {tab === "settings" && <AdminSettings />}</section></main>
+  return <main className="admin-page"><aside className="admin-side"><div className="logo"><BrandLogo /></div>{["dashboard", "orders", "custom designs", "customers", "products", "coupons", "settings"].map(t => <button className={tab === t ? "active" : ""} onClick={() => setTab(t)} key={t}>{t.toUpperCase()}</button>)}<button onClick={() => { localStorage.removeItem("enytm-admin"); setLogged(false) }}>LOG OUT</button></aside><section className="admin-content"><div className="admin-top"><div><p className="eyebrow">ENYTM APPARELS</p><h1>{tab.toUpperCase()}</h1></div><Link className="btn outline" to="/">VIEW STORE</Link></div>{tab === "dashboard" && data && <div className="metric-grid">{[["REVENUE", `₹${data.revenue.toLocaleString("en-IN")}`], ["ORDERS", data.orders], ["PAID", data.paidOrders], ["CUSTOMERS", data.customers], ["PRODUCTS", data.products], ["PENDING", data.pendingPayments]].map(([a, b]) => <div className="metric" key={a}><span>{a}</span><strong>{b}</strong></div>)}</div>}{tab === "orders" && <AdminOrders orders={orders} reload={load} />} {tab === "custom designs" && <AdminCustomDesigns />}  {tab === "customers" && <AdminTable headers={["NAME", "EMAIL", "PHONE", "CREATED", "WHATSAPP", "EMAIL"]} rows={customers.map(c => [c.name, c.email, c.phone || "—", new Date(c.createdAt).toLocaleDateString(), c.whatsappOptIn ? "ON" : "OFF", c.emailOptIn ? "ON" : "OFF"])} />} {tab === "products" && <AdminProducts products={products} reload={load} />} {tab === "coupons" && <AdminCoupons products={products} />} {tab === "settings" && <AdminSettings />}</section></main>
 }
+
+function AdminCustomDesigns() {
+  const [designs, setDesigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+
+  const loadDesigns = async () => {
+    try {
+      setLoading(true);
+      const res = await api("/admin/custom-designs");
+      if (res && res.designs) setDesigns(res.designs);
+      else if (Array.isArray(res)) setDesigns(res);
+    } catch (err) {
+      console.error("Failed to load custom designs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDesigns();
+  }, []);
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      setUpdatingId(id);
+      await api(`/admin/custom-designs/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setDesigns((prev) =>
+        prev.map((d) => ((d.customId === id || d.id === id) ? { ...d, status: newStatus } : d))
+      );
+    } catch (err) {
+      alert("Failed to update design status: " + (err.message || "Unknown error"));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  return (
+    <div className="admin-custom-designs-pane">
+      <div className="admin-editor-head">
+        <div>
+          <p className="eyebrow">STUDIO ARCHIVE</p>
+          <h2>Custom T-Shirt Orders ({designs.length})</h2>
+          <p className="muted">
+            Inspect customer-submitted designs, view uploaded high-res graphics, and manage production workflow.
+          </p>
+        </div>
+        <button type="button" className="admin-text-btn" onClick={loadDesigns}>
+          REFRESH
+        </button>
+      </div>
+
+      {loading ? (
+        <p className="admin-order-muted">Loading custom design orders...</p>
+      ) : designs.length === 0 ? (
+        <div className="admin-empty-pane">
+          <p className="admin-order-muted">No custom designs submitted yet.</p>
+        </div>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-designs-table">
+            <thead>
+              <tr>
+                <th>CUSTOM ID</th>
+                <th>DATE</th>
+                <th>GARMENT & SIZES</th>
+                <th>PRINT SPEC</th>
+                <th>ARTWORK / TEXT</th>
+                <th>TOTAL</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {designs.map((d) => {
+                const idVal = d.customId || d.id;
+                const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString("en-IN") : "Recent";
+                const isDouble = d.packageType === "double" || (d.sizes && d.sizes.length > 1);
+                const sizesStr = isDouble && d.sizes ? d.sizes.join(", ") : (d.size || (d.sizes && d.sizes[0]) || "L");
+                const artworkUrl = d.uploadedDesign && d.uploadedDesign.dataUrl ? d.uploadedDesign.dataUrl : d.uploadedDesignUrl || null;
+
+                return (
+                  <tr key={idVal}>
+                    <td>
+                      <strong className="champagne-text">{idVal}</strong>
+                    </td>
+                    <td>{dateStr}</td>
+                    <td>
+                      <div className="admin-garment-cell">
+                        <span className="cell-bold">{d.color || "Off White"}</span>
+                        <span className="cell-sub">{isDouble ? "2 Tees" : "1 Tee"} (Size: {sizesStr})</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="admin-print-cell">
+                        <span className="placement-badge">{(d.placement || "Chest").toUpperCase()}</span>
+                        <span className="cell-sub">Size: {d.printSize || "A4"}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {artworkUrl ? (
+                        <div className="artwork-preview-cell">
+                          <img src={artworkUrl} alt="Artwork" className="mini-admin-art" />
+                          <a href={artworkUrl} target="_blank" rel="noreferrer" className="view-art-link">
+                            View Full
+                          </a>
+                        </div>
+                      ) : d.customText ? (
+                        <span className="text-design-preview">"{d.customText}"</span>
+                      ) : (
+                        <span className="cell-sub">Studio Template</span>
+                      )}
+                    </td>
+                    <td>
+                      <strong>₹{d.pricing ? d.pricing.orderTotal : (d.totalPrice || 877)}</strong>
+                    </td>
+                    <td>
+                      <select
+                        className="admin-status-select"
+                        value={d.status || "Pending Review"}
+                        disabled={updatingId === idVal}
+                        onChange={(e) => handleStatusChange(idVal, e.target.value)}
+                      >
+                        <option value="Pending Review">Pending Review</option>
+                        <option value="Confirmed on WhatsApp">Confirmed on WhatsApp</option>
+                        <option value="In Production">In Production</option>
+                        <option value="Dispatched">Dispatched</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                    </td>
+                    <td>
+                      <a
+                        href={`https://wa.me/919405815466?text=${encodeURIComponent("Hi! Regarding Customization ID " + idVal + ": ")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="admin-wa-chat-btn"
+                        title="Open WhatsApp chat for this order"
+                      >
+                        WhatsApp
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminOrders({ orders, reload }) {
   const [selected, setSelected] = useState(null);
   const [status, setStatus] = useState("confirmed");
