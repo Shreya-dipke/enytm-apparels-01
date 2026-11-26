@@ -5320,7 +5320,7 @@ function CustomizeTeePage() {
   const [sizeTee1, setSizeTee1] = useState("L");
   const [sizeTee2, setSizeTee2] = useState("M");
   const [quantity, setQuantity] = useState(1);
-  const [placement, setPlacement] = useState("chest-centre"); // "chest-centre", "left-chest", "right-chest", "back", "full-front"
+  const [placement, setPlacement] = useState("front-center"); // "chest-centre", "left-chest", "right-chest", "back", "full-front"
   const [printSize, setPrintSize] = useState("A3"); // "A4", "A3"
 
   // Artwork & canvas manipulation
@@ -5750,7 +5750,7 @@ function CustomizeTeePage() {
   const baseTeePrice = 749;
   const numTees = packageType === "double" ? 2 * quantity : 1 * quantity;
   const customizationFee = packageType === "double" ? 129 * quantity : 79 * quantity;
-  const printPlacementFee = placement === "back" ? (printSize === "A4" ? 29 : 49) * numTees : 0;
+  const printPlacementFee = (placement === "back" || placement === "back-center") ? (printSize === "A4" ? 29 : 49) * numTees : 0;
   const orderTotal = (baseTeePrice * numTees) + customizationFee + printPlacementFee;
 
   // Mockup Download as image
@@ -6084,7 +6084,7 @@ MORE THAN A MOMENT.`;
                     {/* PRINT BOUNDARY GUIDE (SUBTLE DASHED AREA) */}
                     <div className={`printable-boundary-box placement-${placement} size-${printSize.toLowerCase()}`}>
                       <span className="boundary-tag-pill">
-                        {placement === "back" ? `${printSize} BACK SAFE AREA` : "SAFE CHEST PRINT AREA"}
+                        {(placement === "back" || placement === "back-center") ? `${printSize} BACK SAFE AREA` : placement === "sleeves" ? "SLEEVES PRINT AREA" : placement === "right-logo" ? "RIGHT LOGO AREA" : "FRONT (CENTER) PRINT AREA"}
                       </span>
                     </div>
 
@@ -6097,8 +6097,8 @@ MORE THAN A MOMENT.`;
 
                     {/* DYNAMIC INTERACTIVE ARTWORK OVERLAY */}
                     {isArtworkVisible &&
-                      ((placement === "back" && viewSide === "back") ||
-                        (placement !== "back" && viewSide !== "back")) && (
+                      (((placement === "back" || placement === "back-center") && viewSide === "back") ||
+                        (placement !== "back" && placement !== "back-center" && viewSide !== "back")) && (
                         <div
                           className={`tee-interactive-overlay tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide} ${selectedElement === "artwork" ? "is-selected" : ""} ${isFabricBlend && selectedColor !== "black" ? "fabric-multiply-mode" : ""}`}
                           style={{
@@ -6210,8 +6210,8 @@ MORE THAN A MOMENT.`;
 
                     {/* DYNAMIC INTERACTIVE CUSTOM TEXT OVERLAY */}
                     {isTextVisible && customText &&
-                      ((placement === "back" && viewSide === "back") ||
-                        (placement !== "back" && viewSide !== "back")) && (
+                      (((placement === "back" || placement === "back-center") && viewSide === "back") ||
+                        (placement !== "back" && placement !== "back-center" && viewSide !== "back")) && (
                         <div
                           className={`tee-interactive-overlay tee-text-overlay placement-${placement} view-${viewSide} ${selectedElement === "text" ? "is-selected" : ""}`}
                           style={{
@@ -6265,7 +6265,7 @@ MORE THAN A MOMENT.`;
                       )}
 
                     {/* VIEW FLIP NOTIFICATION PILLS */}
-                    {placement === "back" && viewSide === "front" && (
+                    {(placement === "back" || placement === "back-center") && viewSide === "front" && (
                       <button
                         type="button"
                         className="view-side-hint-pill"
@@ -6274,7 +6274,7 @@ MORE THAN A MOMENT.`;
                         Back Print Chosen · Click to View Back →
                       </button>
                     )}
-                    {placement !== "back" && viewSide === "back" && (
+                    {placement !== "back" && placement !== "back-center" && viewSide === "back" && (
                       <button
                         type="button"
                         className="view-side-hint-pill"
@@ -6283,6 +6283,12 @@ MORE THAN A MOMENT.`;
                         Front Print Chosen · Click to View Front →
                       </button>
                     )}
+
+                    {/* DRAG MOVE PRINT HELPER BADGE */}
+                    <div className="canvas-drag-move-hint-pill">
+                      <Move size={11} />
+                      <span>Drag to move print anywhere</span>
+                    </div>
                   </div>
 
                   {/* 360 ROTATE BADGE */}
@@ -6928,20 +6934,54 @@ MORE THAN A MOMENT.`;
                   <label className="config-label">Choose Targeted Print Placement</label>
                   <div className="placement-large-grid">
                     {[
-                      { id: "chest-centre", label: "Chest (Centre)", sub: "Balanced centered statement chest placement", fee: "Free" },
-                      { id: "left-chest", label: "Side Chest (Left)", sub: "Classic streetwear left pocket crest placement", fee: "Free" },
-                      { id: "right-chest", label: "Side Chest (Right)", sub: "Minimalist right chest branding placement", fee: "Free" },
-                      { id: "back", label: "Back Print", sub: "High-impact oversized streetwear back art", fee: printSize === "A4" ? "+₹29" : "+₹49" },
-                      { id: "full-front", label: "Full Front", sub: "Bold torso-covering oversized graphic", fee: "Free" },
+                      {
+                        id: "front-center",
+                        label: "Front (Center)",
+                        sub: "Centered bold front chest artwork. Move freely across the chest.",
+                        fee: "Free",
+                        side: "front",
+                        offset: { x: 0, y: 0 },
+                        scale: 1.0,
+                      },
+                      {
+                        id: "back-center",
+                        label: "Back Center",
+                        sub: "Statement oversized streetwear back art. High-impact visibility.",
+                        fee: printSize === "A4" ? "+₹29" : "+₹49",
+                        side: "back",
+                        offset: { x: 0, y: 0 },
+                        scale: 1.15,
+                      },
+                      {
+                        id: "sleeves",
+                        label: "Sleeves",
+                        sub: "Streetwear sleeve cuff / shoulder crest placement. Drag up or down sleeve.",
+                        fee: "Free",
+                        side: "front",
+                        offset: { x: -118, y: -20 },
+                        scale: 0.65,
+                      },
+                      {
+                        id: "right-logo",
+                        label: "Right Logo",
+                        sub: "Subtle luxury right chest crest placement. Drag to position precisely.",
+                        fee: "Free",
+                        side: "front",
+                        offset: { x: 52, y: -38 },
+                        scale: 0.55,
+                      },
                     ].map((pl) => (
                       <button
                         key={pl.id}
                         type="button"
-                        className={`placement-large-card ${placement === pl.id ? "is-active" : ""}`}
+                        className={`placement-large-card ${(placement === pl.id || (pl.id === "front-center" && placement === "chest-centre") || (pl.id === "back-center" && placement === "back")) ? "is-active" : ""}`}
                         onClick={() => {
                           setPlacement(pl.id);
-                          if (pl.id === "back") setViewSide("back");
-                          else setViewSide("front");
+                          setViewSide(pl.side);
+                          setArtworkOffsetX(pl.offset.x);
+                          setArtworkOffsetY(pl.offset.y);
+                          setArtworkScale(pl.scale);
+                          setSelectedElement("artwork");
                         }}
                       >
                         <div className="pl-card-header">
@@ -6949,6 +6989,7 @@ MORE THAN A MOMENT.`;
                           <span className="pl-card-fee">{pl.fee}</span>
                         </div>
                         <span className="pl-card-sub">{pl.sub}</span>
+                        <span className="placement-drag-tag">✦ Moveable on Canvas</span>
                       </button>
                     ))}
                   </div>
@@ -6971,18 +7012,53 @@ MORE THAN A MOMENT.`;
               {/* ROW 4: SELECT PLACEMENT & PRINT SIZE (ALWAYS VISIBLE) */}
               <div className="config-placement-size-row">
                 <div className="placement-selector-block">
-                  <label className="config-label">
-                    Print Placement <HelpCircle size={12} className="info-icon" />
-                  </label>
-                  <div className="placement-icons-row">
+                  <div className="label-with-hint">
+                    <label className="config-label">
+                      Print Placement <HelpCircle size={12} className="info-icon" />
+                    </label>
+                    <span className="placement-interactive-hint">Moveable print</span>
+                  </div>
+                  <div className="placement-icons-row four-options">
                     {[
-                      { id: "chest-centre", label: "Chest (Centre)" },
-                      { id: "left-chest", label: "Left Chest" },
-                      { id: "right-chest", label: "Right Chest" },
-                      { id: "back", label: "Back" },
-                      { id: "full-front", label: "Full Front" },
+                      {
+                        id: "front-center",
+                        label: "Front (Center)",
+                        side: "front",
+                        offset: { x: 0, y: 0 },
+                        scale: 1.0,
+                        renderRect: () => <rect x="14" y="14" width="8" height="6" rx="1" fill="#d8be9b" />,
+                      },
+                      {
+                        id: "back-center",
+                        label: "Back Center",
+                        side: "back",
+                        offset: { x: 0, y: 0 },
+                        scale: 1.15,
+                        renderRect: () => <rect x="13.5" y="12" width="9" height="11" rx="1" fill="#d8be9b" />,
+                      },
+                      {
+                        id: "sleeves",
+                        label: "Sleeves",
+                        side: "front",
+                        offset: { x: -118, y: -20 },
+                        scale: 0.65,
+                        renderRect: () => (
+                          <>
+                            <rect x="4" y="13" width="5" height="5" rx="1" fill="#d8be9b" />
+                            <rect x="27" y="13" width="5" height="5" rx="1" fill="#d8be9b" />
+                          </>
+                        ),
+                      },
+                      {
+                        id: "right-logo",
+                        label: "Right Logo",
+                        side: "front",
+                        offset: { x: 52, y: -38 },
+                        scale: 0.55,
+                        renderRect: () => <rect x="20" y="14" width="4" height="4" rx="1" fill="#d8be9b" />,
+                      },
                     ].map((p) => {
-                      const isSel = placement === p.id;
+                      const isSel = placement === p.id || (p.id === "front-center" && placement === "chest-centre") || (p.id === "back-center" && placement === "back");
                       return (
                         <button
                           key={p.id}
@@ -6990,8 +7066,11 @@ MORE THAN A MOMENT.`;
                           className={`placement-mini-btn ${isSel ? "is-selected" : ""}`}
                           onClick={() => {
                             setPlacement(p.id);
-                            if (p.id === "back") setViewSide("back");
-                            else setViewSide("front");
+                            setViewSide(p.side);
+                            setArtworkOffsetX(p.offset.x);
+                            setArtworkOffsetY(p.offset.y);
+                            setArtworkScale(p.scale);
+                            setSelectedElement("artwork");
                           }}
                         >
                           <svg
@@ -7006,21 +7085,7 @@ MORE THAN A MOMENT.`;
                               stroke="currentColor"
                               strokeWidth="1.4"
                             />
-                            {p.id === "chest-centre" && (
-                              <rect x="14" y="14" width="8" height="6" rx="1" fill="#d8be9b" />
-                            )}
-                            {p.id === "left-chest" && (
-                              <rect x="13" y="14" width="4" height="4" rx="1" fill="#d8be9b" />
-                            )}
-                            {p.id === "right-chest" && (
-                              <rect x="19" y="14" width="4" height="4" rx="1" fill="#d8be9b" />
-                            )}
-                            {p.id === "back" && (
-                              <rect x="13.5" y="12" width="9" height="11" rx="1" fill="#d8be9b" />
-                            )}
-                            {p.id === "full-front" && (
-                              <rect x="12" y="13" width="12" height="14" rx="1" fill="#d8be9b" />
-                            )}
+                            {p.renderRect()}
                           </svg>
                           <span className="placement-label-text">{p.label}</span>
                         </button>
@@ -7029,9 +7094,10 @@ MORE THAN A MOMENT.`;
                   </div>
                 </div>
 
+                {/* PRINT SIZE (A4 vs A3) */}
                 <div className="print-size-block">
                   <label className="config-label">
-                    Print Size {placement === "back" ? "(Back Only)" : "(Standard)"}
+                    Print Size {(placement === "back" || placement === "back-center") ? "(Back Only)" : "(Standard)"}
                   </label>
                   <div className="print-size-radios">
                     <button
@@ -7042,7 +7108,7 @@ MORE THAN A MOMENT.`;
                       <div className="radio-dot" />
                       <div className="radio-size-meta">
                         <span className="radio-name">A4</span>
-                        <span className="radio-dim">21 × 29.7 cm {placement === "back" ? "(+₹29)" : ""}</span>
+                        <span className="radio-dim">21 × 29.7 cm {(placement === "back" || placement === "back-center") ? "(+₹29)" : ""}</span>
                       </div>
                     </button>
 
@@ -7054,7 +7120,7 @@ MORE THAN A MOMENT.`;
                       <div className="radio-dot" />
                       <div className="radio-size-meta">
                         <span className="radio-name">A3</span>
-                        <span className="radio-dim">29.7 × 42 cm {placement === "back" ? "(+₹49)" : ""}</span>
+                        <span className="radio-dim">29.7 × 42 cm {(placement === "back" || placement === "back-center") ? "(+₹49)" : ""}</span>
                       </div>
                     </button>
                   </div>
@@ -7181,7 +7247,7 @@ MORE THAN A MOMENT.`;
                       alt="Front"
                       style={{ filter: currentColorObj.filter }}
                     />
-                    {placement !== "back" && (
+                    {placement !== "back" && placement !== "back-center" && (
                       <div className={`mini-overlay placement-${placement}`}>
                         <img
                           src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
@@ -7200,7 +7266,7 @@ MORE THAN A MOMENT.`;
                       alt="Back"
                       style={{ filter: currentColorObj.filter }}
                     />
-                    {placement === "back" && (
+                    {(placement === "back" || placement === "back-center") && (
                       <div className="mini-overlay placement-back">
                         <img
                           src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}

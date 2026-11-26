@@ -3176,3 +3176,101 @@
   color: #D7BC98 !important;
   border-color: rgba(215, 188, 152, 0.4) !important;
 }
+
+/* ======================================================== */
+/* 4 CORE PLACEMENT STYLES & MOVE CAPABILITIES              */
+/* ======================================================== */
+
+.placement-icons-row.four-options {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+@media (max-width: 600px) {
+  .placement-icons-row.four-options {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+.label-with-hint {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+}
+
+.placement-interactive-hint {
+  font-size: 10px !important;
+  color: #D7BC98 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-weight: 600 !important;
+}
+
+.placement-drag-tag {
+  display: inline-block !important;
+  font-size: 10px !important;
+  color: #D7BC98 !important;
+  margin-top: 6px !important;
+  font-weight: 600 !important;
+}
+
+/* OVERLAY & BOUNDARY PLACEMENTS */
+.tee-print-overlay.placement-front-center,
+.printable-boundary-box.placement-front-center {
+  top: 36% !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  width: 32% !important;
+  max-height: 32% !important;
+}
+
+.tee-print-overlay.placement-back-center,
+.printable-boundary-box.placement-back-center {
+  top: 31% !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  width: 36% !important;
+  max-height: 42% !important;
+}
+
+.tee-print-overlay.placement-sleeves,
+.printable-boundary-box.placement-sleeves {
+  top: 33% !important;
+  left: 23% !important;
+  transform: translate(-50%, 0) !important;
+  width: 17% !important;
+  max-height: 22% !important;
+}
+
+.tee-print-overlay.placement-right-logo,
+.printable-boundary-box.placement-right-logo {
+  top: 34% !important;
+  left: 61% !important;
+  transform: translate(-50%, 0) !important;
+  width: 14% !important;
+  max-height: 14% !important;
+}
+
+/* CANVAS DRAG MOVE HELPER BADGE */
+.canvas-drag-move-hint-pill {
+  position: absolute !important;
+  bottom: 12px !important;
+  left: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(14, 14, 14, 0.85) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(215, 188, 152, 0.3) !important;
+  border-radius: 9999px !important;
+  padding: 4px 10px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #D7BC98 !important;
+  letter-spacing: 0.3px !important;
+  pointer-events: none !important;
+  z-index: 22 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
