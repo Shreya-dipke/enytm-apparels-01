@@ -6276,15 +6276,6 @@ MORE THAN A MOMENT.`;
                     </div>
 
                     <div className="canvas-tool-group">
-                      {/* FABRIC REALISM TOGGLE */}
-                      <button
-                        type="button"
-                        className={`canvas-mode-btn ${isFabricBlend ? "is-active" : ""}`}
-                        onClick={() => setIsFabricBlend((b) => !b)}
-                        title="Toggle Realistic Garment Fabric Texture Blending"
-                      >
-                        <span>{isFabricBlend ? "Fabric Blend: ON" : "Fabric Blend: OFF"}</span>
-                      </button>
 
                       <button
                         type="button"
@@ -6336,12 +6327,6 @@ MORE THAN A MOMENT.`;
                       style={{ filter: currentColorObj.filter }}
                     />
 
-                    {/* PRINT BOUNDARY GUIDE (SUBTLE DASHED AREA) */}
-                    <div className={`printable-boundary-box placement-${placement} size-${printSize.toLowerCase()}`}>
-                      <span className="boundary-tag-pill">
-                        {(placement === "back" || placement === "back-center") ? `${printSize} BACK SAFE AREA` : placement === "sleeves" ? "SLEEVES PRINT AREA" : placement === "right-logo" ? "RIGHT LOGO AREA" : "FRONT (CENTER) PRINT AREA"}
-                      </span>
-                    </div>
 
                     {/* MAGNETIC CENTER SNAP LINE */}
                     {isSnappedToCenter && (
@@ -6392,102 +6377,6 @@ MORE THAN A MOMENT.`;
                               onPointerDown={(e) => startTransform(e, placeKey, "move")}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {/* TOP FLOATING QUICK ACTIONS BAR */}
-                              <div className="canvas-elem-mini-bar">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: {
-                                        ...prev[placeKey],
-                                        scale: Math.max(0.3, Number(((prev[placeKey]?.scale || 1) - 0.15).toFixed(2))),
-                                      },
-                                    }));
-                                  }}
-                                  title="Make Smaller (-15%)"
-                                >
-                                  Smaller -
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: {
-                                        ...prev[placeKey],
-                                        scale: Math.min(2.5, Number(((prev[placeKey]?.scale || 1) + 0.15).toFixed(2))),
-                                      },
-                                    }));
-                                  }}
-                                  title="Make Bigger (+15%)"
-                                >
-                                  Bigger +
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: { ...prev[placeKey], offsetX: 0 },
-                                    }));
-                                  }}
-                                  title="Center Alignment"
-                                >
-                                  Center
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: {
-                                        ...prev[placeKey],
-                                        rotation: ((prev[placeKey]?.rotation || 0) + 90) % 360,
-                                      },
-                                    }));
-                                  }}
-                                  title="Rotate 90°"
-                                >
-                                  +90°
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: {
-                                        ...prev[placeKey],
-                                        flipped: !prev[placeKey]?.flipped,
-                                      },
-                                    }));
-                                  }}
-                                  title="Flip Horizontal"
-                                >
-                                  Flip
-                                </button>
-                                <button
-                                  type="button"
-                                  className="del-elem-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPlacementDesigns((prev) => ({
-                                      ...prev,
-                                      [placeKey]: { ...prev[placeKey], enabled: false },
-                                    }));
-                                    setSelectedElement(null);
-                                  }}
-                                  title="Remove from this placement"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-
                               {/* ROTATION HANDLE */}
                               <div className="canvas-rot-stalk" />
                               <div
@@ -6555,28 +6444,6 @@ MORE THAN A MOMENT.`;
                           {/* INTERACTIVE BOUNDING BOX FOR TEXT */}
                           {selectedElement === "text" && (
                             <div className="canvas-bounding-box" onPointerDown={(e) => startTransform(e, "text", "move")} onClick={(e) => e.stopPropagation()}>
-                              <div className="canvas-elem-mini-bar">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setTextOffsetX(0);
-                                  }}
-                                >
-                                  Center
-                                </button>
-                                <button
-                                  type="button"
-                                  className="del-elem-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsTextVisible(false);
-                                    setSelectedElement(null);
-                                  }}
-                                >
-                                  ✕
-                                </button>
-                              </div>
                               <div
                                 className="canvas-handle canvas-handle-se"
                                 onPointerDown={(e) => startTransform(e, "text", "resize-se")}
@@ -6606,11 +6473,6 @@ MORE THAN A MOMENT.`;
                       </button>
                     )}
 
-                    {/* DRAG MOVE PRINT HELPER BADGE */}
-                    <div className="canvas-drag-move-hint-pill">
-                      <Move size={11} />
-                      <span>Drag to move print anywhere</span>
-                    </div>
                   </div>
 
                   
