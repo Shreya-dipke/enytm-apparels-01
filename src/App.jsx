@@ -53,11 +53,17 @@ import {
   Layers,
   CreditCard,
   Shirt,
-  ArrowUpRight
+  ArrowUpRight,
+  Cloud,
+  UploadCloud,
+  Zap,
+  Gem,
+  Maximize2
 } from "lucide-react";
 import { useCart } from "./context/useCart";
 import { api } from "./api";
 import "./index.css";
+import "./customize-studio.css";
 
 let globalProductsCache = (() => {
   try {
@@ -198,6 +204,7 @@ function Navbar({ onSearch }) {
 
         <nav className={`nav-links ${open ? "mobile-open" : ""}`}>
           <Link to="/shop" onClick={() => setOpen(false)}>SHOP</Link>
+          <Link to="/customize" onClick={() => setOpen(false)}>CUSTOMIZE</Link>
           <Link to="/shop?category=Oversized" onClick={() => setOpen(false)}>OVERSIZED</Link>
           <Link to="/shop?category=Polos" onClick={() => setOpen(false)}>POLOS</Link>
           <Link to={token ? "/account" : "/login"} onClick={() => setOpen(false)}>ORDERS</Link>
@@ -427,7 +434,7 @@ function Home() {
   const collections = [
     { title: "T-Shirts", link: "/shop?category=Oversized", img: "/categories/tshirts.jpg?v=2" },
     { title: "Polos", link: "/shop?category=Polos", img: "/categories/polos.jpg?v=2" },
-    { title: "Customize Tees", link: "/shop?category=Oversized", img: "/categories/customize.jpg?v=2" }
+    { title: "Customize Tees", link: "/customize", img: "/categories/customize.jpg?v=2" }
   ];
 
   const filteredProducts = useMemo(() => {
@@ -5267,6 +5274,771 @@ function FaqPage() {
   );
 }
 
+function CustomizeTeePage() {
+  const [selectedColor, setSelectedColor] = useState("offwhite");
+  const [viewSide, setViewSide] = useState("back");
+  const [placement, setPlacement] = useState("back");
+  const [printSize, setPrintSize] = useState("A3");
+  const [qtyTier, setQtyTier] = useState(1);
+  const [size1, setSize1] = useState("L");
+  const [size2, setSize2] = useState("M");
+  const [uploadedDesign, setUploadedDesign] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const colors = [
+    { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none" },
+    { id: "black", name: "Black", hex: "#181818", filter: "brightness(0.24) contrast(1.15)" },
+    { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "sepia(0.8) hue-rotate(65deg) brightness(0.38) saturate(1.2)" },
+    { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "sepia(0.9) hue-rotate(345deg) brightness(0.35) saturate(1.25)" },
+    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "sepia(0.35) brightness(0.95) saturate(0.9)" },
+    { id: "asshown", name: "As Shown", hex: "#f4f0e8", filter: "none", isAsShown: true },
+  ];
+
+  const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
+
+  const handleFileUpload = (file) => {
+    if (!file) return;
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedDesign({
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          dataUrl: e.target.result,
+          isImage: true,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setUploadedDesign({
+        name: file.name,
+        size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+        dataUrl: null,
+        isImage: false,
+      });
+    }
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  // Calculations
+  const baseTeePrice = 749;
+  const teeSubtotal = baseTeePrice * qtyTier;
+  const customizationFee = qtyTier === 1 ? 79 : 129;
+  const printSizeFees = printSize === "A3" ? 49 : 29;
+  const orderTotal = teeSubtotal + customizationFee + printSizeFees;
+
+  // WhatsApp Order Link generator
+  const generateWhatsAppLink = () => {
+    const sizeString = qtyTier === 1 ? size1 : `Shirt 1: ${size1}, Shirt 2: ${size2}`;
+    const text = `*NEW CUSTOMIZATION ENQUIRY - ENYTM STUDIO*
+---------------------------------------
+• *Product:* ENYTM Heavyweight Oversized Tee
+• *Color:* ${currentColorObj.name}
+• *View Mode:* ${viewSide === "back" ? "Back View" : "Front View"}
+• *Print Placement:* ${
+      placement === "back"
+        ? "Back Print"
+        : placement === "chest-centre"
+        ? "Chest (Centre)"
+        : placement === "left-chest"
+        ? "Left Chest"
+        : "Side (Left)"
+    }
+• *Print Size:* ${printSize} (${printSize === "A3" ? "29.7 × 42 cm Large" : "21 × 29.7 cm Medium"})
+• *Quantity:* ${qtyTier} T-Shirt${qtyTier > 1 ? "s" : ""}
+• *Garment Size:* ${sizeString}
+
+*PRICE BREAKDOWN:*
+• T-Shirt Base: ₹${teeSubtotal}
+• Customization Add-on: +₹${customizationFee}
+• Print Size Add-on: +₹${printSizeFees}
+• *Total Estimated:* ₹${orderTotal}
+
+*DESIGN DETAILS:*
+• ${uploadedDesign ? `Custom Design: ${uploadedDesign.name} (${uploadedDesign.size})` : "Default Studio Artwork (Mountain & Sun)"}
+
+I would like to confirm and place this customization order. Please advise on production & dispatch!`;
+
+    return `https://wa.me/919405815466?text=${encodeURIComponent(text)}`;
+  };
+
+  return (
+    <main className="customize-studio-page">
+      <div className="customize-container">
+        {/* HEADER SECTION */}
+        <header className="customize-header">
+          <div className="customize-header-left">
+            <p className="customize-eyebrow">— CUSTOMIZATION STUDIO —</p>
+            <h1 className="customize-title">
+              Customize <span className="champagne-italic">Your Tee</span>
+            </h1>
+            <p className="customize-subtitle">
+              Bring your ideas to life on our premium T-shirts.
+            </p>
+            <div className="customize-features-row">
+              <span className="customize-feature-badge">
+                <Cloud size={16} /> Premium Fabric
+              </span>
+              <span className="customize-feature-badge">
+                <Layers size={16} /> High-Quality Print
+              </span>
+              <span className="customize-feature-badge">
+                <Zap size={16} /> Easy Process
+              </span>
+              <span className="customize-feature-badge">
+                <ShieldCheck size={16} /> Same Premium Quality
+              </span>
+            </div>
+          </div>
+          <div className="customize-header-right">
+            <img
+              src="/customize/woven-patch.jpg"
+              alt="Premium Quality ENYTM"
+              className="customize-woven-patch"
+            />
+          </div>
+        </header>
+
+        {/* TWO-COLUMN STUDIO GRID */}
+        <div className="customize-studio-grid">
+          {/* LEFT COLUMN: T-SHIRT CANVAS & PLACEMENT GUIDE */}
+          <div className="customize-left-col">
+            {/* T-SHIRT CANVAS CARD */}
+            <div className="customize-canvas-card">
+              <button
+                type="button"
+                className="canvas-expand-btn"
+                onClick={() => setIsZoomed(true)}
+                title="Expand Tee Canvas"
+                aria-label="Expand preview"
+              >
+                <Maximize2 size={16} />
+              </button>
+
+              <button
+                type="button"
+                className="canvas-arrow-btn canvas-arrow-prev"
+                onClick={() => setViewSide((v) => (v === "back" ? "front" : "back"))}
+                aria-label="Previous view"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                className="canvas-arrow-btn canvas-arrow-next"
+                onClick={() => setViewSide((v) => (v === "back" ? "front" : "back"))}
+                aria-label="Next view"
+              >
+                <ChevronRight size={18} />
+              </button>
+
+              {/* TEE STAGE WITH DYNAMIC FILTER & ARTWORK */}
+              <div className="tee-stage">
+                <img
+                  src="/customize/tee-hanger.jpg"
+                  alt="ENYTM Tee Preview"
+                  className="tee-base-img"
+                  style={{ filter: currentColorObj.filter }}
+                />
+
+                {/* GRAPHIC PRINT OVERLAY */}
+                <div
+                  className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                >
+                  {uploadedDesign && uploadedDesign.isImage ? (
+                    <img
+                      src={uploadedDesign.dataUrl}
+                      alt="Custom Uploaded Artwork"
+                      className="print-graphic-img"
+                    />
+                  ) : (
+                    <img
+                      src="/customize/mountain-artwork.png"
+                      alt="ENYTM Studio Print"
+                      className="print-graphic-img"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* FRONT / BACK PILL TOGGLE */}
+              <div className="canvas-side-pill">
+                <div className="side-toggle-group">
+                  <button
+                    type="button"
+                    className={`side-toggle-btn ${viewSide === "front" ? "is-active" : ""}`}
+                    onClick={() => {
+                      setViewSide("front");
+                      if (placement === "back") setPlacement("chest-centre");
+                    }}
+                  >
+                    Front
+                  </button>
+                  <button
+                    type="button"
+                    className={`side-toggle-btn ${viewSide === "back" ? "is-active" : ""}`}
+                    onClick={() => {
+                      setViewSide("back");
+                      setPlacement("back");
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+
+              {/* COLOR SWATCHES ROW */}
+              <div className="canvas-colors-row">
+                {colors.map((color) => {
+                  const isSelected = selectedColor === color.id;
+                  return (
+                    <button
+                      key={color.id}
+                      type="button"
+                      className={`color-swatch-item ${isSelected ? "is-selected" : ""}`}
+                      onClick={() => setSelectedColor(color.id)}
+                      title={color.name}
+                    >
+                      <span
+                        className="color-swatch-circle"
+                        style={{
+                          backgroundColor: color.hex,
+                          border: color.id === "offwhite" ? "1px solid #ddd" : undefined,
+                        }}
+                      >
+                        {color.isAsShown && <span className="as-shown-plus">+</span>}
+                      </span>
+                      <span className="color-swatch-label">{color.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* PRINT PLACEMENT GUIDE CARD */}
+            <div className="customize-placement-guide-card">
+              <h3 className="placement-guide-title">Print Placement Guide</h3>
+              <div className="placement-guide-grid-top">
+                <button
+                  type="button"
+                  className={`placement-guide-item ${placement === "chest-centre" ? "is-active" : ""}`}
+                  onClick={() => {
+                    setPlacement("chest-centre");
+                    setViewSide("front");
+                  }}
+                >
+                  <div className="guide-img-wrap">
+                    <img src="/customize/guide-chest-centre.jpg" alt="Chest Centre" />
+                  </div>
+                  <p className="guide-item-label">Chest (Centre)</p>
+                </button>
+
+                <button
+                  type="button"
+                  className={`placement-guide-item ${placement === "left-chest" ? "is-active" : ""}`}
+                  onClick={() => {
+                    setPlacement("left-chest");
+                    setViewSide("front");
+                  }}
+                >
+                  <div className="guide-img-wrap">
+                    <img src="/customize/guide-side-left.jpg" alt="Side Chest Left" />
+                  </div>
+                  <p className="guide-item-label">Side Chest (Left)</p>
+                </button>
+
+                <button
+                  type="button"
+                  className={`placement-guide-item ${placement === "side-left" ? "is-active" : ""}`}
+                  onClick={() => {
+                    setPlacement("side-left");
+                    setViewSide("front");
+                  }}
+                >
+                  <div className="guide-img-wrap">
+                    <img src="/customize/guide-side-right.jpg" alt="Side Chest Right" />
+                  </div>
+                  <p className="guide-item-label">Side Chest (Right)</p>
+                </button>
+              </div>
+
+              <div className="placement-guide-grid-bottom">
+                <button
+                  type="button"
+                  className={`placement-guide-item ${placement === "back" && printSize === "A4" ? "is-active" : ""}`}
+                  onClick={() => {
+                    setPlacement("back");
+                    setPrintSize("A4");
+                    setViewSide("back");
+                  }}
+                >
+                  <div className="guide-img-wrap">
+                    <img src="/customize/guide-back-a4.jpg" alt="A4 Back Print" />
+                  </div>
+                  <p className="guide-item-label">A4 Back Print</p>
+                  <p className="guide-item-sub">(21 × 29.7 cm)</p>
+                </button>
+
+                <button
+                  type="button"
+                  className={`placement-guide-item ${placement === "back" && printSize === "A3" ? "is-active" : ""}`}
+                  onClick={() => {
+                    setPlacement("back");
+                    setPrintSize("A3");
+                    setViewSide("back");
+                  }}
+                >
+                  <div className="guide-img-wrap">
+                    <img src="/customize/guide-back-a3.jpg" alt="A3 Back Print" />
+                  </div>
+                  <p className="guide-item-label">A3 Back Print</p>
+                  <p className="guide-item-sub">(29.7 × 42 cm)</p>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: STEPPER CONFIGURATOR */}
+          <div className="customize-right-col">
+            <div className="customize-configurator">
+              {/* STEP 1: UPLOAD DESIGN */}
+              <div className="step-card">
+                <div className="step-header">
+                  <span className="step-number">1</span>
+                  <h3 className="step-title">Upload Your Design</h3>
+                </div>
+
+                {!uploadedDesign ? (
+                  <div
+                    className={`upload-dropzone ${isDragging ? "is-dragging" : ""}`}
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={onDrop}
+                  >
+                    <UploadCloud size={28} className="upload-icon" />
+                    <p className="upload-prompt">
+                      Drag & drop your design here or click to upload
+                    </p>
+                    <div className="upload-badges">
+                      <span className="upload-badge">PDF</span>
+                      <span className="upload-badge">PNG</span>
+                      <span className="upload-badge">JPG</span>
+                      <span className="upload-badge">Max 50 MB</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="upload-active-file">
+                    <div className="upload-file-left">
+                      {uploadedDesign.isImage && (
+                        <img
+                          src={uploadedDesign.dataUrl}
+                          alt="Thumb"
+                          className="upload-file-thumb"
+                        />
+                      )}
+                      <div className="upload-file-meta">
+                        <p className="upload-file-name">{uploadedDesign.name}</p>
+                        <span className="upload-file-size">{uploadedDesign.size}</span>
+                      </div>
+                    </div>
+                    <div className="upload-file-actions">
+                      <button
+                        type="button"
+                        className="upload-change-btn"
+                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        className="upload-remove-btn"
+                        onClick={() => setUploadedDesign(null)}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleFileUpload(e.target.files[0]);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* STEP 2: CHOOSE PRINT PLACEMENT */}
+              <div className="step-card">
+                <div className="step-header">
+                  <span className="step-number">2</span>
+                  <h3 className="step-title">Choose Print Placement</h3>
+                </div>
+
+                <div className="placement-options-grid">
+                  {/* Chest Centre */}
+                  <button
+                    type="button"
+                    className={`placement-option-btn ${placement === "chest-centre" ? "is-selected" : ""}`}
+                    onClick={() => {
+                      setPlacement("chest-centre");
+                      setViewSide("front");
+                    }}
+                  >
+                    {placement === "chest-centre" && (
+                      <span className="placement-check-badge">
+                        <Check size={12} />
+                      </span>
+                    )}
+                    <svg className="mini-tee-icon" viewBox="0 0 40 40" width="36" height="36" fill="none">
+                      <path d="M12 8L16 12C17.2 12.5 18.5 12.8 20 12.8C21.5 12.8 22.8 12.5 24 12L28 8L36 14L32 20L28 17.5V34H12V17.5L8 20L4 14L12 8Z" stroke="currentColor" strokeWidth="1.5" />
+                      <rect x="16" y="16" width="8" height="6" rx="1" fill="#d8be9b" />
+                    </svg>
+                    <span className="placement-label">Chest (Centre)</span>
+                  </button>
+
+                  {/* Left Chest */}
+                  <button
+                    type="button"
+                    className={`placement-option-btn ${placement === "left-chest" ? "is-selected" : ""}`}
+                    onClick={() => {
+                      setPlacement("left-chest");
+                      setViewSide("front");
+                    }}
+                  >
+                    {placement === "left-chest" && (
+                      <span className="placement-check-badge">
+                        <Check size={12} />
+                      </span>
+                    )}
+                    <svg className="mini-tee-icon" viewBox="0 0 40 40" width="36" height="36" fill="none">
+                      <path d="M12 8L16 12C17.2 12.5 18.5 12.8 20 12.8C21.5 12.8 22.8 12.5 24 12L28 8L36 14L32 20L28 17.5V34H12V17.5L8 20L4 14L12 8Z" stroke="currentColor" strokeWidth="1.5" />
+                      <rect x="15" y="16" width="4.5" height="4.5" rx="1" fill="#d8be9b" />
+                    </svg>
+                    <span className="placement-label">Left Chest</span>
+                  </button>
+
+                  {/* Side Left */}
+                  <button
+                    type="button"
+                    className={`placement-option-btn ${placement === "side-left" ? "is-selected" : ""}`}
+                    onClick={() => {
+                      setPlacement("side-left");
+                      setViewSide("front");
+                    }}
+                  >
+                    {placement === "side-left" && (
+                      <span className="placement-check-badge">
+                        <Check size={12} />
+                      </span>
+                    )}
+                    <svg className="mini-tee-icon" viewBox="0 0 40 40" width="36" height="36" fill="none">
+                      <path d="M12 8L16 12C17.2 12.5 18.5 12.8 20 12.8C21.5 12.8 22.8 12.5 24 12L28 8L36 14L32 20L28 17.5V34H12V17.5L8 20L4 14L12 8Z" stroke="currentColor" strokeWidth="1.5" />
+                      <rect x="13.5" y="21" width="3.5" height="8" rx="1" fill="#d8be9b" />
+                    </svg>
+                    <span className="placement-label">Side (Left)</span>
+                  </button>
+
+                  {/* Back */}
+                  <button
+                    type="button"
+                    className={`placement-option-btn ${placement === "back" ? "is-selected" : ""}`}
+                    onClick={() => {
+                      setPlacement("back");
+                      setViewSide("back");
+                    }}
+                  >
+                    {placement === "back" && (
+                      <span className="placement-check-badge">
+                        <Check size={12} />
+                      </span>
+                    )}
+                    <svg className="mini-tee-icon" viewBox="0 0 40 40" width="36" height="36" fill="none">
+                      <path d="M12 8L16 10C17.2 10.3 18.5 10.5 20 10.5C21.5 10.5 22.8 10.3 24 10L28 8L36 14L32 20L28 17.5V34H12V17.5L8 20L4 14L12 8Z" stroke="currentColor" strokeWidth="1.5" />
+                      <rect x="15" y="14" width="10" height="12" rx="1" fill="#d8be9b" />
+                    </svg>
+                    <span className="placement-label">Back</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* STEP 3: SELECT PRINT SIZE */}
+              <div className="step-card">
+                <div className="step-header">
+                  <span className="step-number">3</span>
+                  <h3 className="step-title">Select Print Size</h3>
+                  <span className="step-subtitle">({placement === "back" ? "Back Only" : "Custom Placement"})</span>
+                </div>
+
+                <div className="print-size-grid">
+                  <button
+                    type="button"
+                    className={`radio-choice-card ${printSize === "A4" ? "is-selected" : ""}`}
+                    onClick={() => setPrintSize("A4")}
+                  >
+                    <div className="custom-radio-dot" />
+                    <div className="choice-card-body">
+                      <div className="choice-card-head">
+                        <span className="choice-card-name">A4</span>
+                        <span className="choice-card-fee">+₹29</span>
+                      </div>
+                      <p className="choice-card-desc">21 × 29.7 cm (Medium)</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`radio-choice-card ${printSize === "A3" ? "is-selected" : ""}`}
+                    onClick={() => setPrintSize("A3")}
+                  >
+                    <div className="custom-radio-dot" />
+                    <div className="choice-card-body">
+                      <div className="choice-card-head">
+                        <span className="choice-card-name">A3</span>
+                        <span className="choice-card-fee">+₹49</span>
+                      </div>
+                      <p className="choice-card-desc">29.7 × 42 cm (Large)</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* STEP 4: CUSTOMIZATION CHARGES */}
+              <div className="step-card">
+                <div className="step-header">
+                  <span className="step-number">4</span>
+                  <h3 className="step-title">Customization Charges</h3>
+                </div>
+
+                <div className="print-size-grid">
+                  <button
+                    type="button"
+                    className={`radio-choice-card ${qtyTier === 1 ? "is-selected" : ""}`}
+                    onClick={() => setQtyTier(1)}
+                  >
+                    <div className="custom-radio-dot" />
+                    <div className="choice-card-body">
+                      <div className="choice-card-head">
+                        <span className="choice-card-name">1 T-Shirt</span>
+                      </div>
+                      <p className="choice-card-fee-big">+₹79</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`radio-choice-card best-value-card ${qtyTier === 2 ? "is-selected" : ""}`}
+                    onClick={() => setQtyTier(2)}
+                  >
+                    <span className="best-value-pill">Best Value</span>
+                    <div className="custom-radio-dot" />
+                    <div className="choice-card-body">
+                      <div className="choice-card-head">
+                        <span className="choice-card-name">2 T-Shirts</span>
+                      </div>
+                      <p className="choice-card-fee-big">+₹129</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* STEP 5: CHOOSE SIZE */}
+              <div className="step-card">
+                <div className="step-header">
+                  <span className="step-number">5</span>
+                  <h3 className="step-title">
+                    Choose Size {qtyTier > 1 ? "(Shirt 1 & Shirt 2)" : "(Each T-Shirt)"}
+                  </h3>
+                </div>
+
+                <div className="size-selector-block">
+                  {qtyTier > 1 && <p className="size-label-small">Shirt 1 Size:</p>}
+                  <div className="size-options-row">
+                    {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        className={`size-choice-btn ${size1 === sz ? "is-selected" : ""}`}
+                        onClick={() => setSize1(sz)}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+
+                  {qtyTier > 1 && (
+                    <>
+                      <p className="size-label-small" style={{ marginTop: "12px" }}>
+                        Shirt 2 Size:
+                      </p>
+                      <div className="size-options-row">
+                        {["S", "M", "L", "XL", "XXL"].map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            className={`size-choice-btn ${size2 === sz ? "is-selected" : ""}`}
+                            onClick={() => setSize2(sz)}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* ORDER SUMMARY */}
+              <div className="order-summary-card">
+                <div className="summary-head">
+                  <ShoppingCart size={18} />
+                  <span>Order Summary</span>
+                </div>
+
+                <div className="summary-line">
+                  <span>
+                    {currentColorObj.name} T-Shirt ({qtyTier})
+                  </span>
+                  <span className="amount">₹{teeSubtotal}</span>
+                </div>
+
+                <div className="summary-line">
+                  <span>Customization Charge ({qtyTier} T-Shirt{qtyTier > 1 ? "s" : ""})</span>
+                  <span className="amount">+₹{customizationFee}</span>
+                </div>
+
+                <div className="summary-line">
+                  <span>
+                    {printSize} {placement === "back" ? "Back Print" : "Placement Print"}
+                  </span>
+                  <span className="amount">+₹{printSizeFees}</span>
+                </div>
+
+                <div className="summary-divider" />
+
+                <div className="summary-total-line">
+                  <span className="summary-total-label">
+                    Total ({qtyTier} T-Shirt{qtyTier > 1 ? "s" : ""})
+                  </span>
+                  <span className="summary-total-amount">₹{orderTotal}</span>
+                </div>
+              </div>
+
+              {/* GUARANTEE TIMELINE BAR */}
+              <div className="customize-guarantee-bar">
+                <div className="guarantee-item">
+                  <CalendarDays size={22} />
+                  <div className="guarantee-content">
+                    <p className="guarantee-title">Production</p>
+                    <p className="guarantee-desc">7 – 10 Days</p>
+                  </div>
+                </div>
+
+                <div className="guarantee-item">
+                  <Truck size={22} />
+                  <div className="guarantee-content">
+                    <p className="guarantee-title">Delivery</p>
+                    <p className="guarantee-desc">~ 1 Week</p>
+                  </div>
+                </div>
+
+                <div className="guarantee-item">
+                  <Gem size={22} />
+                  <div className="guarantee-content">
+                    <p className="guarantee-title">Free Chest & Side Logo</p>
+                    <p className="guarantee-desc">(Centre / Left / Right)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* WHATSAPP CTA BUTTON */}
+              <div className="customize-whatsapp-cta">
+                <a
+                  href={generateWhatsAppLink()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="whatsapp-cta-btn"
+                >
+                  <svg
+                    viewBox="0 0 32 32"
+                    width="24"
+                    height="24"
+                    fill="currentColor"
+                  >
+                    <path d="M16 2.5C8.544 2.5 2.5 8.544 2.5 16c0 2.656.766 5.13 2.086 7.227L3 29.5l6.453-1.547A13.435 13.435 0 0 0 16 29.5c7.456 0 13.5-6.044 13.5-13.5S23.456 2.5 16 2.5zm0 24.609c-2.316 0-4.48-.684-6.3-1.859l-.45-.293-3.832.918.941-3.73-.309-.465A11.082 11.082 0 0 1 4.906 16c0-6.117 4.977-11.094 11.094-11.094 6.117 0 11.094 4.977 11.094 11.094 0 6.117-4.977 11.094-11.094 11.094zm6.094-8.309c-.332-.168-1.969-.973-2.273-1.082-.305-.113-.527-.168-.75.168-.223.332-.863 1.082-1.059 1.305-.195.223-.391.25-.723.082-.332-.168-1.402-.516-2.672-1.648-.988-.883-1.656-1.973-1.852-2.305-.195-.332-.02-.512.145-.676.152-.148.332-.391.496-.586.168-.195.223-.332.332-.555.113-.223.055-.418-.027-.586-.082-.168-.75-1.809-1.027-2.477-.27-.648-.543-.559-.75-.57l-.641-.012c-.223 0-.586.082-.895.418-.305.332-1.168 1.141-1.168 2.785s1.195 3.23 1.363 3.453c.168.223 2.352 3.59 5.7 5.035.797.344 1.418.551 1.902.707.8.254 1.527.219 2.102.133.641-.098 1.969-.805 2.25-1.582.277-.777.277-1.445.195-1.582-.082-.141-.305-.223-.637-.391z" />
+                  </svg>
+                  <span>Send Everything on WhatsApp →</span>
+                </a>
+                <p className="whatsapp-subtext">
+                  Your design, selections and order details will be sent to us on WhatsApp for confirmation and production.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* EXPAND MODAL ZOOM PREVIEW */}
+        {isZoomed && (
+          <div className="canvas-zoom-modal" onClick={() => setIsZoomed(false)}>
+            <div className="canvas-zoom-content" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="canvas-zoom-close"
+                onClick={() => setIsZoomed(false)}
+              >
+                <X size={20} />
+              </button>
+              <div className="tee-stage-zoomed">
+                <img
+                  src="/customize/tee-hanger.jpg"
+                  alt="ENYTM Tee Preview Zoomed"
+                  className="tee-base-img"
+                  style={{ filter: currentColorObj.filter }}
+                />
+                <div
+                  className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                >
+                  {uploadedDesign && uploadedDesign.isImage ? (
+                    <img
+                      src={uploadedDesign.dataUrl}
+                      alt="Custom Artwork Zoomed"
+                      className="print-graphic-img"
+                    />
+                  ) : (
+                    <img
+                      src="/customize/mountain-artwork.png"
+                      alt="ENYTM Studio Print Zoomed"
+                      className="print-graphic-img"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
 function Footer() {
   const whatsappLink = "https://wa.me/message/5KFLGKP4XCG7C1";
   return (
@@ -6685,6 +7457,8 @@ function App() {
           <Route path="/collection" element={<Home />} />
           <Route path="/launch" element={<LaunchCountdown />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/customize" element={<CustomizeTeePage />} />
+          <Route path="/customise" element={<CustomizeTeePage />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
