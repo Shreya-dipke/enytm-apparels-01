@@ -5808,11 +5808,19 @@ function CustomizeTeePage() {
   // Garment Colors - Authentic real garment colorways (no CSS filters, true fabric dyeing)
   const colors = [
     { id: "offwhite", name: "Off White", hex: "#f4f0e8", filter: "none", available: true },
-    { id: "black", name: "Black", hex: "#181818", filter: "none", available: true },
+    { id: "black", name: "Jet Black", hex: "#181818", filter: "none", available: true },
+    { id: "charcoal", name: "Vintage Charcoal", hex: "#2b2b2b", filter: "none", available: true },
     { id: "olive", name: "Dark Olive Green", hex: "#2e3d30", filter: "none", available: true },
+    { id: "forest", name: "Forest Pine Green", hex: "#1b3322", filter: "none", available: true },
+    { id: "navy", name: "Midnight Navy", hex: "#182030", filter: "none", available: true },
     { id: "coffee", name: "Dark Coffee", hex: "#3b2c26", filter: "none", available: true },
-    { id: "beige", name: "Beige", hex: "#cfbeaa", filter: "none", available: true },
-    { id: "grey", name: "Grey", hex: "#7a7a7a", filter: "none", available: true },
+    { id: "terracotta", name: "Terracotta Rust", hex: "#8a3e2e", filter: "none", available: true },
+    { id: "burgundy", name: "Deep Burgundy", hex: "#451722", filter: "none", available: true },
+    { id: "beige", name: "Warm Beige", hex: "#cfbeaa", filter: "none", available: true },
+    { id: "sage", name: "Dusty Sage", hex: "#7c8c7c", filter: "none", available: true },
+    { id: "grey", name: "Slate Grey", hex: "#7a7a7a", filter: "none", available: true },
+    { id: "lavender", name: "Dusty Lilac", hex: "#7c748c", filter: "none", available: true },
+    { id: "powderblue", name: "Powder Blue", hex: "#6c88a4", filter: "none", available: true },
   ];
 
   const currentColorObj = colors.find((c) => c.id === selectedColor) || colors[0];
@@ -5874,7 +5882,7 @@ function CustomizeTeePage() {
   // Background pre-warming for instant 0ms color switches
   useEffect(() => {
     const idleTimer = setTimeout(() => {
-      const nonWhiteColors = ["black", "olive", "coffee", "beige", "grey"];
+      const nonWhiteColors = colors.filter((c) => c.id !== "offwhite").map((c) => c.id);
       const baseSrc = getStageTeeImage(viewSide);
       nonWhiteColors.forEach((c) => {
         getDynamicGarmentImage(baseSrc, c);
@@ -6904,10 +6912,10 @@ MORE THAN A MOMENT.`;
                             className="color-circle"
                             style={{
                               backgroundColor: c.hex,
-                              border: c.id === "offwhite" ? "1px solid #ddd" : undefined,
+                              border: ["offwhite", "beige"].includes(c.id) ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
                             }}
                           >
-                            {isSel && <Check size={11} className={c.id === "offwhite" ? "dark-check" : "light-check"} />}
+                            {isSel && <Check size={11} className={["offwhite", "beige"].includes(c.id) ? "dark-check" : "light-check"} />}
                           </span>
                         </button>
                       );
