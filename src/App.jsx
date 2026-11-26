@@ -7310,8 +7310,8 @@ MORE THAN A MOMENT.`;
           <div className="bottom-feature-item">
             <ShieldCheck size={20} className="feature-icon" />
             <div className="feature-text">
-              <h4 className="feature-title">Free Chest & Side Logo</h4>
-              <p className="feature-desc">Included in your package</p>
+              <h4 className="feature-title">Quality Guarantee</h4>
+              <p className="feature-desc">100% Inspected Before Dispatch</p>
             </div>
           </div>
         </div>
