@@ -6162,13 +6162,23 @@ function CustomizeTeePage() {
   };
 
   // Pricing formula matching exact specifications:
-  // Base T-Shirt: ₹499
+  // Base T-Shirt by Fabric GSM:
+  // 240 GSM: ₹499
+  // 280 GSM: ₹599
+  // 300 GSM (French Terry): ₹699
+  // Placements:
   // Front Print: ₹79
   // Right Logo: ₹39
   // Back Print: ₹99
   // Left Sleeve: ₹39
   // Right Sleeve: ₹39
-  const baseTeePrice = 499;
+  const baseTeePrice = selectedFabric === "280gsm" ? 599 : (selectedFabric === "french-terry" || selectedFabric === "300gsm") ? 699 : 499;
+  const fabricGsmLabel = selectedFabric === "280gsm" ? "280 GSM" : (selectedFabric === "french-terry" || selectedFabric === "300gsm") ? "300 GSM" : "240 GSM";
+  const fabricName = selectedFabric === "280gsm"
+    ? "Heavyweight Luxury (280 GSM)"
+    : (selectedFabric === "french-terry" || selectedFabric === "300gsm")
+      ? "French Terry Streetwear (300 GSM)"
+      : "Premium Combed Cotton (240 GSM)";
   const numTees = Math.max(1, quantity);
 
   const hasFrontPrint = Boolean(
@@ -6388,6 +6398,8 @@ function CustomizeTeePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           color: currentColorObj.name,
+          fabric: fabricName,
+          fabricGsm: fabricGsmLabel,
           sizes: [sizeTee1],
           quantity: numTees,
           placement,
@@ -6438,7 +6450,7 @@ function CustomizeTeePage() {
       customSizes: sizesDesc,
       customPlacement: placement,
       customPrintSize: printSize,
-      customFabric: selectedFabric,
+      customFabric: `${fabricName} (Base: ₹${baseTeePrice})`,
       customText: customText || null,
       customDesign: uploadedDesign ? uploadedDesign.name : (customText ? "Custom Typography" : "Blank Oversized T-Shirt"),
       customOpacity: artworkOpacity,
@@ -6519,7 +6531,8 @@ I want to customize my T-shirt.
 Here are my details:
 
 👕 Product: Oversized T-shirt
-💰 Blank T-shirt: ₹499
+🧵 Fabric: ${fabricName}
+💰 Blank T-shirt (${fabricGsmLabel}): ₹${baseTeePrice}
 🎨 Colour: ${currentColorObj.name}
 📏 Size: ${sizesText}
 🔢 Quantity: ${numTees}
@@ -6534,7 +6547,7 @@ ${frontUrl ? `• Front View: ${frontUrl}\n` : ""}${backUrl ? `• Back View: ${
 (ℹ️ Note: High-res mockups have also been saved to my device downloads and attached)
 
 💰 Price Breakdown:
-• Base T-shirt: ₹${baseTeePrice * numTees} (${numTees} × ₹499)
+• Base T-shirt (${fabricGsmLabel}): ₹${baseTeePrice * numTees} (${numTees} × ₹${baseTeePrice})
 ${hasFrontPrint ? `• Front (Center) Print: ₹${frontPrintFee * numTees} (${numTees} × ₹79)\n` : ""}${hasLogoPrint ? `• Right Logo Print: ₹${logoPrintFee * numTees} (${numTees} × ₹39)\n` : ""}${hasBackPrint ? `• Back Center Print: ₹${backPrintFee * numTees} (${numTees} × ₹99)\n` : ""}${hasLeftSleeve ? `• Left Sleeve Print: ₹${leftSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}${hasRightSleeve ? `• Right Sleeve Print: ₹${rightSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}• Shipping: FREE
 Total: ₹${orderTotal}
 
@@ -6980,9 +6993,9 @@ MORE THAN A MOMENT.`;
                       value={selectedFabric}
                       onChange={(e) => setSelectedFabric(e.target.value)}
                     >
-                      <option value="240gsm">Premium Combed Cotton (240 GSM)</option>
-                      <option value="280gsm">Heavyweight Luxury (280 GSM)</option>
-                      <option value="french-terry">French Terry Streetwear (300 GSM)</option>
+                      <option value="240gsm">Premium Combed Cotton (240 GSM) - ₹499</option>
+                      <option value="280gsm">Heavyweight Luxury (280 GSM) - ₹599</option>
+                      <option value="french-terry">French Terry Streetwear (300 GSM) - ₹699</option>
                     </select>
                     <ChevronDown size={14} className="select-chevron" />
                   </div>
@@ -7201,7 +7214,7 @@ MORE THAN A MOMENT.`;
               {/* ROW 5: DETAILED ORDER SUMMARY BREAKDOWN */}
               <div className="order-summary-breakdown-card">
                 <div className="summary-line-item">
-                  <span>Base {currentColorObj.name} T-Shirt ({numTees})</span>
+                  <span>Base {currentColorObj.name} T-Shirt ({fabricGsmLabel}) × {numTees}</span>
                   <span>₹{baseTeePrice * numTees}</span>
                 </div>
                 {hasFrontPrint && (
@@ -7372,6 +7385,10 @@ MORE THAN A MOMENT.`;
                 <div className="spec-row">
                   <span>Product:</span>
                   <strong>Oversized Streetwear T-Shirt</strong>
+                </div>
+                <div className="spec-row">
+                  <span>Fabric:</span>
+                  <strong>{fabricName} (Base: ₹{baseTeePrice})</strong>
                 </div>
                 <div className="spec-row">
                   <span>Garment Color:</span>
