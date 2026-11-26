@@ -3570,3 +3570,25 @@
 .view-back .tee-print-overlay.placement-sleeves {
   display: none !important;
 }
+
+/* ADMIN FOUR-MOCKUP THUMBNAIL STRIP */
+.admin-four-mockup-strip {
+  display: flex !important;
+  gap: 5px !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
+
+.admin-four-mockup-strip .mini-admin-art {
+  width: 34px !important;
+  height: 34px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  transition: transform 0.15s ease !important;
+}
+
+.admin-four-mockup-strip .mini-admin-art:hover {
+  transform: scale(1.15) !important;
+  border-color: #d8be9b !important;
+}

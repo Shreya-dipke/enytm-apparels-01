@@ -6206,221 +6206,172 @@ function CustomizeTeePage() {
   // State for download mockup indicator
   const [isDownloadingMockup, setIsDownloadingMockup] = useState(false);
 
-  // Mockup Download as image - 100% exact DOM-aligned composite matching screen preview
+  // Helper to load an image via Promise
+  const loadImageAsync = (src) => {
+    return new Promise((resolve) => {
+      if (!src) return resolve(null);
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  };
+
+  // Reusable multi-angle 1024x1024 composite mockup generator (Front, Back, Left, Right)
+  const renderAngleMockup = async (targetSide) => {
+    const canvasWidth = 1024;
+    const canvasHeight = 1024;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // 1. Studio Stage Background (#090909)
+    ctx.fillStyle = "#090909";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // 2. Base Garment with Real Fabric Dyeing for targetSide
+    const rawTeeSrc = getStageTeeImage(targetSide);
+    const dyedTeeSrc = selectedColor === "offwhite"
+      ? rawTeeSrc
+      : await getDynamicGarmentImage(rawTeeSrc, selectedColor);
+
+    const teeImg = await loadImageAsync(dyedTeeSrc);
+    if (teeImg) {
+      const natW = teeImg.naturalWidth || 819;
+      const natH = teeImg.naturalHeight || 1024;
+      const imgAspect = natW / natH;
+      let teeW = canvasWidth;
+      let teeH = canvasHeight;
+      let teeX = 0;
+      let teeY = 0;
+      if (imgAspect < 1) {
+        teeH = canvasHeight;
+        teeW = canvasHeight * imgAspect;
+        teeX = (canvasWidth - teeW) / 2;
+        teeY = 0;
+      } else {
+        teeW = canvasWidth;
+        teeH = canvasWidth / imgAspect;
+        teeX = 0;
+        teeY = (canvasHeight - teeH) / 2;
+      }
+      ctx.drawImage(teeImg, teeX, teeY, teeW, teeH);
+    }
+
+    // 3. Placement Layout Configurations
+    const placementConfigs = {
+      "front-center": { left: 0.50, top: 0.27, width: 0.32, height: 0.32 },
+      "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
+      "sleeve-left":  { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
+      "sleeve-right": { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
+      "sleeves":      { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
+      "right-logo":   { left: 0.63, top: 0.27, width: 0.13, height: 0.13 },
+    };
+
+    // 4. Render Active Graphics for this Angle
+    const activeEntries = Object.entries(placementDesigns).filter(([placeKey, d]) => {
+      if (!d || !d.enabled || !d.artwork) return false;
+      if (targetSide === "front") return placeKey === "front-center" || placeKey === "right-logo" || placeKey === "chest-centre";
+      if (targetSide === "back") return placeKey === "back-center" || placeKey === "back";
+      if (targetSide === "left") return placeKey === "sleeve-left" || placeKey === "sleeves";
+      if (targetSide === "right") return placeKey === "sleeve-right" || placeKey === "sleeves";
+      return false;
+    });
+
+    for (const [placeKey, design] of activeEntries) {
+      const img = await loadImageAsync(design.artwork);
+      if (!img) continue;
+
+      const cfg = placementConfigs[placeKey] || placementConfigs["front-center"];
+      const boxW = canvasWidth * cfg.width;
+      const boxH = canvasHeight * cfg.height;
+      const centerX = (canvasWidth * cfg.left) + ((design.offsetX || 0) * (canvasWidth / 500));
+      const centerY = (canvasHeight * cfg.top) + (boxH / 2) + ((design.offsetY || 0) * (canvasHeight / 500));
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      if (design.rotation) ctx.rotate((design.rotation * Math.PI) / 180);
+      const scaleXVal = (design.scale || 1) * (design.flipped ? -1 : 1);
+      const scaleYVal = design.scale || 1;
+      ctx.scale(scaleXVal, scaleYVal);
+      ctx.globalAlpha = design.opacity ?? 1;
+
+      if (isFabricBlend && selectedColor !== "black") {
+        ctx.globalCompositeOperation = "multiply";
+      }
+
+      const natW = img.naturalWidth || img.width;
+      const natH = img.naturalHeight || img.height;
+      let drawW = boxW;
+      let drawH = boxH;
+      if (natW && natH) {
+        const imgAspect = natW / natH;
+        const boxAspect = boxW / boxH;
+        if (imgAspect > boxAspect) {
+          drawW = boxW;
+          drawH = boxW / imgAspect;
+        } else {
+          drawH = boxH;
+          drawW = boxH * imgAspect;
+        }
+      }
+      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    }
+
+    // 5. Render Custom Typography for this Angle
+    const isTextOnThisSide = isTextVisible && customText && (
+      (targetSide === "front" && (placement === "front-center" || placement === "right-logo" || placement === "chest-centre")) ||
+      (targetSide === "back" && (placement === "back" || placement === "back-center")) ||
+      (targetSide === "left" && (placement === "sleeve-left" || placement === "sleeves")) ||
+      (targetSide === "right" && (placement === "sleeve-right" || placement === "sleeves"))
+    );
+
+    if (isTextOnThisSide) {
+      const cfg = placementConfigs[placement] || placementConfigs["front-center"];
+      const textCenterX = (canvasWidth * cfg.left) + ((textOffsetX || 0) * (canvasWidth / 500));
+      const textCenterY = (canvasHeight * cfg.top) + (canvasHeight * cfg.height / 2) + ((textOffsetY || 0) * (canvasHeight / 500));
+
+      ctx.save();
+      ctx.translate(textCenterX, textCenterY);
+      if (textRotation) ctx.rotate((textRotation * Math.PI) / 180);
+      ctx.scale(textScale || 1, textScale || 1);
+
+      const fontSizePx = textSize === "lg" ? 44 : textSize === "sm" ? 24 : 32;
+      const fontWeights = isTextBold ? "bold" : "normal";
+      const fontStyles = isTextItalic ? "italic" : "normal";
+      const fontFamilies = textFont === "serif" ? "Cinzel, serif" : textFont === "streetwear" ? "Impact, sans-serif" : "Montserrat, sans-serif";
+
+      ctx.font = `${fontStyles} ${fontWeights} ${fontSizePx * 1.6}px ${fontFamilies}`;
+      ctx.fillStyle = textColor || "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(customText, 0, 0);
+      ctx.restore();
+    }
+
+    return canvas.toDataURL("image/jpeg", 0.94);
+  };
+
+  // Mockup Download as image
   const handleDownloadMockup = async () => {
     if (isDownloadingMockup) return;
     setIsDownloadingMockup(true);
 
     try {
-      const stageEl = canvasRef.current;
-      const stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
-      const canvasWidth = 1024;
-      const canvasHeight = 1024;
-      const scaleX = stageRect && stageRect.width > 0 ? canvasWidth / stageRect.width : 1;
-      const scaleY = stageRect && stageRect.height > 0 ? canvasHeight / stageRect.height : scaleX;
-
-      const canvas = document.createElement("canvas");
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        setIsDownloadingMockup(false);
-        return;
+      const dataUrl = await renderAngleMockup(viewSide);
+      if (dataUrl) {
+        const downloadName = `ENYTM-Mockup-${currentColorObj.name.replace(/\s+/g, "-")}-${viewSide}.jpg`;
+        const a = document.createElement("a");
+        a.download = downloadName;
+        a.href = dataUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       }
-
-      // Helper to load an image via Promise
-      const loadImage = (src) => {
-        return new Promise((resolve) => {
-          if (!src) return resolve(null);
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = src;
-        });
-      };
-
-      // 1. Fill canvas background to match studio stage
-      ctx.fillStyle = "#090909";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      // 2. Draw base T-shirt garment with active real fabric color & exact screen aspect ratio
-      const teeSrc = activeStageTeeSrc || getStageTeeImage(viewSide);
-      const teeImg = await loadImage(teeSrc);
-      if (teeImg) {
-        const teeImgEl = stageEl ? stageEl.querySelector(".tee-desktop-img") : null;
-        let teeX = 0;
-        let teeY = 0;
-        let teeW = canvasWidth;
-        let teeH = canvasHeight;
-
-        if (teeImgEl && stageRect) {
-          const tRect = teeImgEl.getBoundingClientRect();
-          teeX = (tRect.left - stageRect.left) * scaleX;
-          teeY = (tRect.top - stageRect.top) * scaleY;
-          teeW = tRect.width * scaleX;
-          teeH = tRect.height * scaleY;
-        } else {
-          // Precise aspect-ratio contain fallback
-          const natW = teeImg.naturalWidth || 819;
-          const natH = teeImg.naturalHeight || 1024;
-          const imgAspect = natW / natH;
-          if (imgAspect < 1) {
-            teeH = canvasHeight;
-            teeW = canvasHeight * imgAspect;
-            teeX = (canvasWidth - teeW) / 2;
-            teeY = 0;
-          } else {
-            teeW = canvasWidth;
-            teeH = canvasWidth / imgAspect;
-            teeX = 0;
-            teeY = (canvasHeight - teeH) / 2;
-          }
-        }
-
-        ctx.filter = "none";
-        ctx.drawImage(teeImg, teeX, teeY, teeW, teeH);
-      }
-
-      // 3. Fallback layout percentages in case DOM elements are not currently attached
-      const placementConfigs = {
-        "front-center": { left: 0.50, top: 0.27, width: 0.32, height: 0.32 },
-        "back-center":  { left: 0.50, top: 0.31, width: 0.36, height: 0.42 },
-        "sleeve-left":  { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
-        "sleeve-right": { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
-        "sleeves":      { left: 0.51, top: 0.31, width: 0.22, height: 0.22 },
-        "right-logo":   { left: 0.63, top: 0.27, width: 0.13, height: 0.13 },
-      };
-
-      // 4. Collect all active artwork placements for the current view
-      const activeEntries = Object.entries(placementDesigns).filter(([placeKey, d]) => {
-        if (!d || !d.enabled || !d.artwork) return false;
-        if (viewSide === "front") return placeKey === "front-center" || placeKey === "right-logo" || placeKey === "chest-centre";
-        if (viewSide === "back") return placeKey === "back-center" || placeKey === "back";
-        if (viewSide === "left") return placeKey === "sleeve-left" || placeKey === "sleeves";
-        if (viewSide === "right") return placeKey === "sleeve-right" || placeKey === "sleeves";
-        return false;
-      });
-
-      // Load all artwork images in parallel
-      const loadedArtworks = await Promise.all(
-        activeEntries.map(async ([placeKey, d]) => {
-          const img = await loadImage(d.artwork);
-          return { placeKey, design: d, img };
-        })
-      );
-
-      // Render each artwork onto canvas
-      for (const { placeKey, design, img } of loadedArtworks) {
-        if (!img) continue;
-
-        // Try exact DOM measuring first
-        const overlayEl = stageEl ? stageEl.querySelector(`.tee-print-overlay.placement-${placeKey}`) : null;
-        let centerX, centerY, boxW, boxH;
-
-        if (overlayEl && stageRect) {
-          const elRect = overlayEl.getBoundingClientRect();
-          centerX = (elRect.left - stageRect.left + elRect.width / 2) * scaleX;
-          centerY = (elRect.top - stageRect.top + elRect.height / 2) * scaleY;
-          boxW = overlayEl.offsetWidth * scaleX;
-          boxH = overlayEl.offsetHeight * scaleY;
-        } else {
-          const cfg = placementConfigs[placeKey] || placementConfigs["front-center"];
-          boxW = canvasWidth * cfg.width;
-          boxH = canvasHeight * cfg.height;
-          centerX = (canvasWidth * cfg.left) + ((design.offsetX || 0) * scaleX);
-          centerY = (canvasHeight * cfg.top) + (boxH / 2) + ((design.offsetY || 0) * scaleY);
-        }
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-
-        if (design.rotation) {
-          ctx.rotate((design.rotation * Math.PI) / 180);
-        }
-
-        const scaleXVal = (design.scale || 1) * (design.flipped ? -1 : 1);
-        const scaleYVal = design.scale || 1;
-        ctx.scale(scaleXVal, scaleYVal);
-        ctx.globalAlpha = design.opacity ?? 1;
-
-        if (isFabricBlend && selectedColor !== "black") {
-          ctx.globalCompositeOperation = "multiply";
-        }
-
-        const natW = img.naturalWidth || img.width;
-        const natH = img.naturalHeight || img.height;
-        let drawW = boxW;
-        let drawH = boxH;
-        if (natW && natH) {
-          const imgAspect = natW / natH;
-          const boxAspect = boxW / boxH;
-          if (imgAspect > boxAspect) {
-            drawW = boxW;
-            drawH = boxW / imgAspect;
-          } else {
-            drawH = boxH;
-            drawW = boxH * imgAspect;
-          }
-        }
-
-        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-        ctx.restore();
-      }
-
-      // 5. Render Custom Text if active on this view side
-      const isTextForView = isTextVisible && customText && (
-        (viewSide === "front" && (placement === "front-center" || placement === "right-logo" || placement === "chest-centre")) ||
-        (viewSide === "back" && (placement === "back" || placement === "back-center")) ||
-        (viewSide === "left" && (placement === "sleeve-left" || placement === "sleeves")) ||
-        (viewSide === "right" && (placement === "sleeve-right" || placement === "sleeves"))
-      );
-
-      if (isTextForView) {
-        const textEl = stageEl ? stageEl.querySelector(".tee-text-overlay") : null;
-        let textCenterX, textCenterY;
-
-        if (textEl && stageRect) {
-          const tRect = textEl.getBoundingClientRect();
-          textCenterX = (tRect.left - stageRect.left + tRect.width / 2) * scaleX;
-          textCenterY = (tRect.top - stageRect.top + tRect.height / 2) * scaleY;
-        } else {
-          const textCfg = placementConfigs[placement] || placementConfigs["front-center"];
-          textCenterX = (canvasWidth * textCfg.left) + ((textOffsetX || 0) * scaleX);
-          textCenterY = (canvasHeight * textCfg.top) + ((canvasHeight * textCfg.height) / 2) + ((textOffsetY || 0) * scaleY);
-        }
-
-        ctx.save();
-        ctx.translate(textCenterX, textCenterY);
-        if (textRotation) {
-          ctx.rotate((textRotation * Math.PI) / 180);
-        }
-        ctx.scale(textScale || 1, textScale || 1);
-
-        const renderedTextDiv = textEl ? textEl.querySelector(".tee-custom-text-rendered") : null;
-        const computed = renderedTextDiv ? window.getComputedStyle(renderedTextDiv) : null;
-        const fontFam = computed ? computed.fontFamily : "'Montserrat', sans-serif";
-        const fontSizePx = computed ? parseFloat(computed.fontSize) * scaleY : (textSize === "lg" ? 44 : textSize === "sm" ? 24 : 32) * scaleY;
-        const fontWeight = computed ? computed.fontWeight : (isTextBold ? "bold" : "normal");
-        const fontStyle = computed ? computed.fontStyle : (isTextItalic ? "italic" : "normal");
-        const color = computed ? computed.color : (textColor || "#ffffff");
-
-        ctx.font = `${fontStyle} ${fontWeight} ${Math.round(fontSizePx)}px ${fontFam}`;
-        ctx.fillStyle = color;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(customText, 0, 0);
-        ctx.restore();
-      }
-
-      // 6. Trigger download of the completed composite
-      const downloadName = `enytm-custom-tee-${(currentColorObj?.name || "garment").toLowerCase().replace(/\s+/g, "-")}-${viewSide}.png`;
-      const a = document.createElement("a");
-      a.download = downloadName;
-      a.href = canvas.toDataURL("image/png");
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
     } catch (err) {
       console.error("Mockup download error:", err);
     } finally {
@@ -6428,8 +6379,8 @@ function CustomizeTeePage() {
     }
   };
 
-  // Save design to backend API
-  const saveDesignToBackend = async () => {
+  // Save design to backend API along with all 4 angle mockup photos
+  const saveDesignToBackend = async (mockupImages = null) => {
     setIsSavingDesign(true);
     try {
       const res = await fetch("/api/custom-designs", {
@@ -6443,20 +6394,32 @@ function CustomizeTeePage() {
           printSize,
           customText: customText || null,
           uploadedDesign: uploadedDesign ? { name: uploadedDesign.name, size: uploadedDesign.size } : null,
+          mockupImages: mockupImages || null,
+          pricing: {
+            baseTeePrice,
+            frontPrintFee,
+            logoPrintFee,
+            backPrintFee,
+            leftSleeveFee,
+            rightSleeveFee,
+            customizationFee,
+            orderTotal,
+          },
         }),
       });
       const data = await res.json();
       setIsSavingDesign(false);
-      return data.customId || `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
+      return data || { customId: `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}` };
     } catch (e) {
       setIsSavingDesign(false);
-      return `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
+      return { customId: `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}` };
     }
   };
 
   // Add to Cart handler
   const handleAddToCart = async () => {
-    const customId = await saveDesignToBackend();
+    const saveRes = await saveDesignToBackend();
+    const customId = saveRes.customId || `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
     const sizesDesc = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
     const customItem = {
       id: `custom-${customId}`,
@@ -6488,29 +6451,68 @@ function CustomizeTeePage() {
     setShowConfirmModal(false);
   };
 
-  // WhatsApp Order Link generator (Exclusively sends customization details to WhatsApp)
+  // WhatsApp Order Link generator (Sends detailed specifications + all 4 angle mockup links to WhatsApp)
   const handleWhatsAppOrder = async () => {
-    const customId = await saveDesignToBackend();
-    let placementLabel = "Chest (Centre)";
-    if (placement === "left-chest") placementLabel = "Left Chest";
-    else if (placement === "right-chest") placementLabel = "Right Chest";
-    else if (placement === "back") placementLabel = "Back";
-    else if (placement === "full-front") placementLabel = "Full Front";
+    setIsSavingDesign(true);
 
-    const sizesText = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
-    // Build list of all active placement designs
-    const activePlacementsList = Object.entries(placementDesigns)
-      .filter(([_, d]) => d.enabled && d.artwork)
-      .map(([k, d]) => {
-        const title = k === "front-center" ? "Front (Center)" : k === "back-center" ? `Back Center (${printSize})` : k === "sleeve-left" ? "Left Sleeve" : k === "sleeve-right" ? "Right Sleeve" : k === "sleeves" ? "Sleeves" : "Right Logo";
-        return `• ${title}: ${d.name || "Custom Design"}`;
+    try {
+      // 1. Generate HD 1024x1024 mockup composites for Front, Back, Left, Right in parallel
+      const [frontMockup, backMockup, leftMockup, rightMockup] = await Promise.all([
+        renderAngleMockup("front"),
+        renderAngleMockup("back"),
+        renderAngleMockup("left"),
+        renderAngleMockup("right"),
+      ]);
+
+      // 2. Automatically download all 4 angle mockup images to customer's device for instant WhatsApp attachment
+      const autoDownloadMockup = (dataUrl, sideLabel) => {
+        if (!dataUrl) return;
+        const link = document.createElement("a");
+        link.download = `ENYTM-${sideLabel}-${currentColorObj.name.replace(/\s+/g, "-")}.jpg`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      autoDownloadMockup(frontMockup, "Front-View");
+      autoDownloadMockup(backMockup, "Back-View");
+      autoDownloadMockup(leftMockup, "Left-Sleeve");
+      autoDownloadMockup(rightMockup, "Right-Sleeve");
+
+      // 3. Upload all 4 mockups to backend server to generate permanent public URLs
+      const saveRes = await saveDesignToBackend({
+        front: frontMockup,
+        back: backMockup,
+        left: leftMockup,
+        right: rightMockup,
       });
 
-    const placementsSummaryText = activePlacementsList.length > 0
-      ? activePlacementsList.join("\n")
-      : (customText ? `• Custom Text: "${customText}"` : "• Plain Garment (No Artwork Added)");
+      const customId = saveRes.customId || `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}`;
+      const mockupUrls = saveRes.mockupUrls || {};
+      const origin = window.location.origin;
 
-    const text = `Hi ENYTM™️! 👋
+      const frontUrl = mockupUrls.front ? `${origin}${mockupUrls.front}` : null;
+      const backUrl = mockupUrls.back ? `${origin}${mockupUrls.back}` : null;
+      const leftUrl = mockupUrls.left ? `${origin}${mockupUrls.left}` : null;
+      const rightUrl = mockupUrls.right ? `${origin}${mockupUrls.right}` : null;
+
+      const sizesText = packageType === "double" ? `Tee 1: ${sizeTee1}, Tee 2: ${sizeTee2}` : sizeTee1;
+
+      // Build list of active placements
+      const activePlacementsList = Object.entries(placementDesigns)
+        .filter(([_, d]) => d.enabled && d.artwork)
+        .map(([k, d]) => {
+          const title = k === "front-center" ? "Front (Center)" : k === "back-center" ? `Back Center (${printSize})` : k === "sleeve-left" ? "Left Sleeve" : k === "sleeve-right" ? "Right Sleeve" : k === "sleeves" ? "Sleeves" : "Right Logo";
+          return `• ${title}: ${d.name || "Custom Design"}`;
+        });
+
+      const placementsSummaryText = activePlacementsList.length > 0
+        ? activePlacementsList.join("\n")
+        : (customText ? `• Custom Text: "${customText}"` : "• Plain Garment (No Artwork Added)");
+
+      // 4. Construct WhatsApp Message with Specifications and all 4 HD Mockup Links
+      const text = `Hi ENYTM™️! 👋
 
 I want to customize my T-shirt.
 
@@ -6527,19 +6529,29 @@ ${placementsSummaryText}
 ${customText ? `✍️ Custom Text: "${customText}"\n` : ""}
 🆔 Customization ID: ${customId}
 
+📸 HD Garment Mockup Images (Front, Back, Left, Right):
+${frontUrl ? `• Front View: ${frontUrl}\n` : ""}${backUrl ? `• Back View: ${backUrl}\n` : ""}${leftUrl ? `• Left Sleeve: ${leftUrl}\n` : ""}${rightUrl ? `• Right Sleeve: ${rightUrl}\n` : ""}
+(ℹ️ Note: High-res mockups have also been saved to my device downloads and attached)
+
 💰 Price Breakdown:
 • Base T-shirt: ₹${baseTeePrice * numTees} (${numTees} × ₹499)
 ${hasFrontPrint ? `• Front (Center) Print: ₹${frontPrintFee * numTees} (${numTees} × ₹79)\n` : ""}${hasLogoPrint ? `• Right Logo Print: ₹${logoPrintFee * numTees} (${numTees} × ₹39)\n` : ""}${hasBackPrint ? `• Back Center Print: ₹${backPrintFee * numTees} (${numTees} × ₹99)\n` : ""}${hasLeftSleeve ? `• Left Sleeve Print: ₹${leftSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}${hasRightSleeve ? `• Right Sleeve Print: ₹${rightSleeveFee * numTees} (${numTees} × ₹39)\n` : ""}• Shipping: FREE
 Total: ₹${orderTotal}
 
-Please check my design and share the final price and confirmation.
+Please check my design mockups and share the confirmation.
 
 Looking forward to my customized ENYTM™️ T-shirt!
 
 MORE THAN A MOMENT.`;
 
-    window.open(`https://wa.me/919405815466?text=${encodeURIComponent(text)}`, "_blank");
-    setShowConfirmModal(false);
+      window.open(`https://wa.me/919405815466?text=${encodeURIComponent(text)}`, "_blank");
+      setShowConfirmModal(false);
+    } catch (err) {
+      console.error("WhatsApp Order error:", err);
+      alert("Error generating mockups: " + err.message);
+    } finally {
+      setIsSavingDesign(false);
+    }
   };
 
   // View angle cycler
@@ -7960,18 +7972,43 @@ function AdminCustomDesigns() {
                       </div>
                     </td>
                     <td>
-                      {artworkUrl ? (
-                        <div className="artwork-preview-cell">
-                          <img src={artworkUrl} alt="Artwork" className="mini-admin-art" />
-                          <a href={artworkUrl} target="_blank" rel="noreferrer" className="view-art-link">
-                            View Full
-                          </a>
-                        </div>
-                      ) : d.customText ? (
-                        <span className="text-design-preview">"{d.customText}"</span>
-                      ) : (
-                        <span className="cell-sub">Studio Template</span>
-                      )}
+                      <div className="admin-artwork-mockups-wrap">
+                        {d.mockupUrls && (d.mockupUrls.front || d.mockupUrls.back) ? (
+                          <div className="admin-four-mockup-strip">
+                            {d.mockupUrls.front && (
+                              <a href={d.mockupUrls.front} target="_blank" rel="noreferrer" title="Front Mockup">
+                                <img src={d.mockupUrls.front} alt="Front" className="mini-admin-art" />
+                              </a>
+                            )}
+                            {d.mockupUrls.back && (
+                              <a href={d.mockupUrls.back} target="_blank" rel="noreferrer" title="Back Mockup">
+                                <img src={d.mockupUrls.back} alt="Back" className="mini-admin-art" />
+                              </a>
+                            )}
+                            {d.mockupUrls.left && (
+                              <a href={d.mockupUrls.left} target="_blank" rel="noreferrer" title="Left Sleeve">
+                                <img src={d.mockupUrls.left} alt="Left" className="mini-admin-art" />
+                              </a>
+                            )}
+                            {d.mockupUrls.right && (
+                              <a href={d.mockupUrls.right} target="_blank" rel="noreferrer" title="Right Sleeve">
+                                <img src={d.mockupUrls.right} alt="Right" className="mini-admin-art" />
+                              </a>
+                            )}
+                          </div>
+                        ) : artworkUrl ? (
+                          <div className="artwork-preview-cell">
+                            <img src={artworkUrl} alt="Artwork" className="mini-admin-art" />
+                            <a href={artworkUrl} target="_blank" rel="noreferrer" className="view-art-link">
+                              View Art
+                            </a>
+                          </div>
+                        ) : d.customText ? (
+                          <span className="text-design-preview">"{d.customText}"</span>
+                        ) : (
+                          <span className="cell-sub">Plain Garment</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <strong>₹{d.pricing ? d.pricing.orderTotal : (d.totalPrice || 877)}</strong>

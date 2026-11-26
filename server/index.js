@@ -486,7 +486,8 @@ app.post("/api/webhooks/razorpay", express.raw({ type: "application/json" }), as
   }
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.get("/api/products", async (req, res) => {
   try {
@@ -1585,33 +1586,58 @@ app.get("/api/custom-designs/templates", (req, res) => {
   res.json({ success: true, templates });
 });
 
-// 3. Save Custom Design & Calculate Authoritative Pricing
+// 3. Save Custom Design & Store All 4 Angle Mockup Images
 app.post("/api/custom-designs", async (req, res) => {
   try {
     const {
       color = "Off White",
       sizes = ["L"],
       quantity = 1,
-      placement = "chest-centre",
+      placement = "front-center",
       printSize = "A3",
       customText = null,
       uploadedDesign = null,
+      mockupImages = null,
       frontCanvas = null,
       backCanvas = null,
       customerNotes = "",
+      pricing = null,
     } = req.body || {};
 
-    const basePricePerTee = 749;
-    const qty = Math.max(1, Number(quantity) || 1);
-    const customizationFee = qty === 1 ? 79 : qty === 2 ? 129 : 129 + ((qty - 2) * 69);
-    
-    let printPlacementFee = 0;
-    if (placement === "back") {
-      printPlacementFee = printSize === "A4" ? 29 : 49;
+    const customId = `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Save all 4 angle mockup images (Front, Back, Left, Right) to uploads directory
+    const mockupUrls = {};
+    const candidateMockups = mockupImages || {
+      front: frontCanvas,
+      back: backCanvas,
+    };
+
+    if (candidateMockups && typeof candidateMockups === "object") {
+      const publicUploadsDir = path.join(ROOT, "public", "uploads");
+      for (const side of ["front", "back", "left", "right"]) {
+        const dataUrl = candidateMockups[side];
+        if (dataUrl && typeof dataUrl === "string" && dataUrl.startsWith("data:image")) {
+          try {
+            const base64Data = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+            const filename = `mockup-${customId}-${side}.jpg`;
+            const filePath = path.join(uploadsDir, filename);
+            fs.writeFileSync(filePath, Buffer.from(base64Data, "base64"));
+
+            if (fs.existsSync(publicUploadsDir) && publicUploadsDir !== uploadsDir) {
+              fs.writeFileSync(path.join(publicUploadsDir, filename), Buffer.from(base64Data, "base64"));
+            }
+            mockupUrls[side] = `/uploads/${filename}`;
+          } catch (writeErr) {
+            console.error(`[MOCKUP WRITE ERROR ${side}]`, writeErr.message);
+          }
+        }
+      }
     }
 
-    const calculatedTotal = (basePricePerTee * qty) + customizationFee + (printPlacementFee * qty);
-    const customId = `ENYTM-CUSTOM-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const basePricePerTee = 499;
+    const qty = Math.max(1, Number(quantity) || 1);
+    const calculatedTotal = pricing?.orderTotal || pricing?.total || (basePricePerTee * qty);
 
     const newDesign = {
       id: customId,
@@ -1624,17 +1650,21 @@ app.post("/api/custom-designs", async (req, res) => {
       printSize,
       customText,
       uploadedDesign,
-      frontCanvas,
-      backCanvas,
+      mockupUrls,
+      frontImage: mockupUrls.front || null,
+      backImage: mockupUrls.back || null,
+      leftImage: mockupUrls.left || null,
+      rightImage: mockupUrls.right || null,
+      frontCanvas: mockupUrls.front || null,
+      backCanvas: mockupUrls.back || null,
       customerNotes,
-      pricing: {
+      pricing: pricing || {
         basePricePerTee,
-        customizationFee,
-        printPlacementFee,
         total: calculatedTotal,
         currency: "INR",
       },
-      status: "draft_saved",
+      totalPrice: calculatedTotal,
+      status: "Confirmed on WhatsApp",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -1651,6 +1681,7 @@ app.post("/api/custom-designs", async (req, res) => {
     res.json({
       success: true,
       customId,
+      mockupUrls,
       total: calculatedTotal,
       design: newDesign,
     });
