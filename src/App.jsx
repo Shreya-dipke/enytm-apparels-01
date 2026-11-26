@@ -5557,7 +5557,6 @@ function CustomizeTeePage() {
     { id: 2, title: "Back View", img: PLAIN_TEE_BACK, view: "back" },
     { id: 3, title: "Collar Ribbing", img: "/customize/thumb-collar.jpg", view: "front" },
     { id: 4, title: "Fabric Weave", img: "/customize/thumb-fabric.jpg", view: "front" },
-    { id: 5, title: "360° View", is360: true },
   ];
 
   // Pre-designed template library
@@ -6372,15 +6371,7 @@ MORE THAN A MOMENT.`;
                     </div>
                   </div>
 
-                  {/* 360 ROTATE BADGE */}
-                  <div
-                    className={`stage-360-badge ${is360Playing ? "is-playing" : ""}`}
-                    onClick={() => setIs360Playing((p) => !p)}
-                    title="Toggle 360 Auto-Rotation"
-                  >
-                    <RotateCw size={13} className={is360Playing ? "spin-icon" : ""} />
-                    <span>{is360Playing ? "Playing 360°" : "360° View"}</span>
-                  </div>
+                  
                 </div>
 
                 {/* VIEW SIDE PILL (FRONT / BACK / LEFT / RIGHT) */}
@@ -6448,13 +6439,7 @@ MORE THAN A MOMENT.`;
                 >
                   <ImageIcon size={14} /> <span>Logo</span>
                 </button>
-                <button
-                  type="button"
-                  className={`tab-btn ${activeTab === "templates" ? "is-active" : ""}`}
-                  onClick={() => setActiveTab("templates")}
-                >
-                  <Sparkles size={14} /> <span>Library</span>
-                </button>
+                
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === "placement" ? "is-active" : ""}`}
@@ -6696,70 +6681,6 @@ MORE THAN A MOMENT.`;
                       </div>
                     )}
                   </div>
-
-                  {/* QUICK CUSTOMIZATIONS */}
-                  <div className="quick-customizations-card">
-                    <label className="config-label">Canvas Controls</label>
-                    <div className="quick-actions-list">
-                      <button
-                        type="button"
-                        className="quick-action-row"
-                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                      >
-                        <div className="quick-action-left">
-                          <Pencil size={13} />
-                          <span>Replace Artwork</span>
-                        </div>
-                        <span className="action-badge-mini">Browse</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        className="quick-action-row"
-                        onClick={() => {
-                          pushState();
-                          setPrintSize((s) => (s === "A3" ? "A4" : "A3"));
-                          setArtworkScale((s) => (s === 1 ? 1.15 : 1));
-                        }}
-                      >
-                        <div className="quick-action-left">
-                          <Sliders size={13} />
-                          <span>Size: {printSize} ({printSize === "A3" ? "29.7×42cm" : "21×29.7cm"})</span>
-                        </div>
-                        <span className="action-badge-mini">Toggle</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        className="quick-action-row"
-                        onClick={() => {
-                          pushState();
-                          setArtworkRotation((r) => (r + 90) % 360);
-                        }}
-                      >
-                        <div className="quick-action-left">
-                          <RotateCw size={13} />
-                          <span>Rotate ({artworkRotation}°)</span>
-                        </div>
-                        <span className="action-badge-mini">+90°</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        className="quick-action-row"
-                        onClick={() => {
-                          pushState();
-                          setArtworkOpacity((prev) => (prev >= 1 ? 0.85 : prev >= 0.85 ? 0.70 : prev >= 0.70 ? 0.50 : 1));
-                        }}
-                      >
-                        <div className="quick-action-left">
-                          <Droplet size={13} />
-                          <span>Opacity: {Math.round(artworkOpacity * 100)}%</span>
-                        </div>
-                        <span className="action-badge-mini">Cycle</span>
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -6963,53 +6884,6 @@ MORE THAN A MOMENT.`;
                         </div>
                       )}
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 4: TEMPLATE LIBRARY */}
-              {activeTab === "templates" && (
-                <div className="tab-custom-panel">
-                  <div className="templates-category-tabs">
-                    {["all", "Nature", "Streetwear", "Typography", "Minimalist"].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        className={`tmpl-cat-btn ${activeTemplateCategory === cat ? "is-active" : ""}`}
-                        onClick={() => setActiveTemplateCategory(cat)}
-                      >
-                        {cat.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="template-cards-grid">
-                    {templateLibrary
-                      .filter((t) => activeTemplateCategory === "all" || t.category === activeTemplateCategory)
-                      .map((tmpl) => (
-                        <div
-                          key={tmpl.id}
-                          className="template-card-item"
-                          onClick={() => {
-                            pushState();
-                            if (tmpl.text) {
-                              setCustomText(tmpl.text);
-                              if (tmpl.font) setTextFont(tmpl.font);
-                            }
-                            if (tmpl.image) {
-                              setUploadedDesign(null);
-                            }
-                          }}
-                        >
-                          {tmpl.image ? (
-                            <img src={tmpl.image} alt={tmpl.title} className="tmpl-preview-img" />
-                          ) : (
-                            <div className="tmpl-text-preview">{tmpl.text}</div>
-                          )}
-                          <span className="tmpl-card-title">{tmpl.title}</span>
-                          <span className="tmpl-apply-tag">Click to Apply</span>
-                        </div>
-                      ))}
                   </div>
                 </div>
               )}
