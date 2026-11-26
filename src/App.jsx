@@ -5364,6 +5364,188 @@ function CustomizeTeePage() {
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
+  // REAL-TIME DIRECT MANIPULATION CANVAS STATE
+  const [selectedElement, setSelectedElement] = useState("artwork"); // "artwork" | "text" | null
+  const [isTransforming, setIsTransforming] = useState(null); // "move" | "resize-nw" | "resize-ne" | "resize-se" | "resize-sw" | "rotate" | null
+  const [isSnappedToCenter, setIsSnappedToCenter] = useState(false);
+  const [isFabricBlend, setIsFabricBlend] = useState(true);
+  const [textOffsetX, setTextOffsetX] = useState(0);
+  const [textScale, setTextScale] = useState(1);
+  const [textRotation, setTextRotation] = useState(0);
+
+  const transformRef = useRef({
+    type: null,
+    element: null,
+    startX: 0,
+    startY: 0,
+    startOffsetX: 0,
+    startOffsetY: 0,
+    startScale: 1,
+    startRot: 0,
+    centerX: 0,
+    centerY: 0,
+    initialDist: 1,
+    initialAngle: 0,
+  });
+
+  // Start real-time transformation on canvas
+  const startTransform = (e, element, type) => {
+    e.stopPropagation();
+    setSelectedElement(element);
+    setIsTransforming(type);
+
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+
+    let centerX = clientX;
+    let centerY = clientY;
+
+    const overlayEl = e.currentTarget.closest(".tee-interactive-overlay");
+    if (overlayEl) {
+      const rect = overlayEl.getBoundingClientRect();
+      centerX = rect.left + rect.width / 2;
+      centerY = rect.top + rect.height / 2;
+    } else if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      centerX = rect.left + rect.width / 2;
+      centerY = rect.top + rect.height / 2;
+    }
+
+    const initialDist = Math.hypot(clientX - centerX, clientY - centerY) || 1;
+    const initialAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+
+    transformRef.current = {
+      type,
+      element,
+      startX: clientX,
+      startY: clientY,
+      startOffsetX: element === "artwork" ? artworkOffsetX : textOffsetX,
+      startOffsetY: element === "artwork" ? artworkOffsetY : textOffsetY,
+      startScale: element === "artwork" ? artworkScale : textScale,
+      startRot: element === "artwork" ? artworkRotation : textRotation,
+      centerX,
+      centerY,
+      initialDist,
+      initialAngle,
+    };
+  };
+
+  // Global pointer & touch tracking for buttery smooth 60fps direct manipulation
+  useEffect(() => {
+    const onPointerMove = (e) => {
+      if (!isTransforming) return;
+      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      const { type, element, startX, startY, startOffsetX, startOffsetY, startScale, startRot, centerX, centerY, initialDist, initialAngle } = transformRef.current;
+
+      if (type === "move") {
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        let newX = startOffsetX + dx;
+        let newY = startOffsetY + dy;
+
+        // Constraint check - limit to canvas boundary +/- 160px horizontal, +/- 170px vertical
+        newX = Math.max(-160, Math.min(160, newX));
+        newY = Math.max(-170, Math.min(170, newY));
+
+        // Magnetic snap to center within 8px
+        if (Math.abs(newX) < 8) {
+          newX = 0;
+          setIsSnappedToCenter(true);
+        } else {
+          setIsSnappedToCenter(false);
+        }
+
+        if (element === "artwork") {
+          setArtworkOffsetX(newX);
+          setArtworkOffsetY(newY);
+        } else {
+          setTextOffsetX(newX);
+          setTextOffsetY(newY);
+        }
+      } else if (type.startsWith("resize")) {
+        const currDist = Math.hypot(clientX - centerX, clientY - centerY);
+        const ratio = currDist / initialDist;
+        const newScale = Math.min(2.0, Math.max(0.4, Number((startScale * ratio).toFixed(2))));
+        if (element === "artwork") {
+          setArtworkScale(newScale);
+        } else {
+          setTextScale(newScale);
+        }
+      } else if (type === "rotate") {
+        const currAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+        const delta = currAngle - initialAngle;
+        let newRot = Math.round((startRot + delta + 360) % 360);
+        // Magnetic snap to 0, 90, 180, 270 if within 5 degrees
+        [0, 90, 180, 270, 360].forEach((snap) => {
+          if (Math.abs(newRot - snap) < 5) newRot = snap % 360;
+        });
+        if (element === "artwork") {
+          setArtworkRotation(newRot);
+        } else {
+          setTextRotation(newRot);
+        }
+      }
+    };
+
+    const onPointerUp = () => {
+      if (isTransforming) {
+        setIsTransforming(null);
+        setIsSnappedToCenter(false);
+        pushState();
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("touchmove", onPointerMove, { passive: false });
+    window.addEventListener("touchend", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", onPointerUp);
+    };
+  }, [isTransforming]);
+
+  // Keyboard shortcut listener for precision nudge and deletion
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedElement) return;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+
+      const step = e.shiftKey ? 10 : 2;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (selectedElement === "artwork") setArtworkOffsetX((x) => x - step);
+        else setTextOffsetX((x) => x - step);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (selectedElement === "artwork") setArtworkOffsetX((x) => x + step);
+        else setTextOffsetX((x) => x + step);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (selectedElement === "artwork") setArtworkOffsetY((y) => y - step);
+        else setTextOffsetY((y) => y - step);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (selectedElement === "artwork") setArtworkOffsetY((y) => y + step);
+        else setTextOffsetY((y) => y + step);
+      } else if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        if (selectedElement === "artwork") setIsArtworkVisible(false);
+        else setIsTextVisible(false);
+        setSelectedElement(null);
+      } else if (e.key === "Escape") {
+        setSelectedElement(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedElement]);
+
   // Asset paths with cache buster to guarantee fresh loads
   const PLAIN_TEE_FRONT = "/customize/plain-tee-hanger.jpg?v=2";
   const PLAIN_TEE_BACK = "/customize/plain-tee-back.jpg?v=2";
@@ -5804,10 +5986,10 @@ MORE THAN A MOMENT.`;
                 ))}
               </div>
 
-              {/* CENTRAL TEE STAGE */}
+              {/* CENTRAL TEE STAGE: REAL-TIME INTERACTIVE CUSTOMIZATION CANVAS */}
               <div className="customize-center-stage">
                 <div className="customize-canvas-box">
-                  {/* CANVAS TOP TOOLBAR: ZOOM, UNDO, REDO, DOWNLOAD, EXPAND */}
+                  {/* CANVAS TOP TOOLBAR: ZOOM, UNDO, REDO, DOWNLOAD, FABRIC BLEND */}
                   <div className="canvas-top-bar">
                     <div className="canvas-tool-group">
                       <button
@@ -5815,7 +5997,7 @@ MORE THAN A MOMENT.`;
                         className="canvas-icon-btn"
                         onClick={handleUndo}
                         disabled={historyIndex <= 0}
-                        title="Undo"
+                        title="Undo (Ctrl+Z)"
                       >
                         <Undo2 size={15} />
                       </button>
@@ -5824,7 +6006,7 @@ MORE THAN A MOMENT.`;
                         className="canvas-icon-btn"
                         onClick={handleRedo}
                         disabled={historyIndex >= history.length - 1}
-                        title="Redo"
+                        title="Redo (Ctrl+Y)"
                       >
                         <Redo2 size={15} />
                       </button>
@@ -5839,11 +6021,21 @@ MORE THAN A MOMENT.`;
                     </div>
 
                     <div className="canvas-tool-group">
+                      {/* FABRIC REALISM TOGGLE */}
+                      <button
+                        type="button"
+                        className={`canvas-mode-btn ${isFabricBlend ? "is-active" : ""}`}
+                        onClick={() => setIsFabricBlend((b) => !b)}
+                        title="Toggle Realistic Garment Fabric Texture Blending"
+                      >
+                        <span>{isFabricBlend ? "Fabric Blend: ON" : "Fabric Blend: OFF"}</span>
+                      </button>
+
                       <button
                         type="button"
                         className="canvas-icon-btn"
                         onClick={handleDownloadMockup}
-                        title="Download Mockup Image"
+                        title="Download Mockup PNG"
                       >
                         <Download size={15} />
                       </button>
@@ -5877,7 +6069,11 @@ MORE THAN A MOMENT.`;
                   </button>
 
                   {/* TEE VIEWPORT CANVAS */}
-                  <div className="tee-stage-viewport" ref={canvasRef}>
+                  <div
+                    className="tee-stage-viewport"
+                    ref={canvasRef}
+                    onClick={() => setSelectedElement(null)}
+                  >
                     <img
                       src={viewSide === "back" ? PLAIN_TEE_BACK : PLAIN_TEE_FRONT}
                       alt="ENYTM Plain Oversized Tee"
@@ -5886,35 +6082,145 @@ MORE THAN A MOMENT.`;
                     />
 
                     {/* PRINT BOUNDARY GUIDE (SUBTLE DASHED AREA) */}
-                    <div className={`printable-boundary-box placement-${placement} size-${printSize.toLowerCase()}`} />
+                    <div className={`printable-boundary-box placement-${placement} size-${printSize.toLowerCase()}`}>
+                      <span className="boundary-tag-pill">
+                        {placement === "back" ? `${printSize} BACK SAFE AREA` : "SAFE CHEST PRINT AREA"}
+                      </span>
+                    </div>
 
-                    {/* DYNAMIC ARTWORK OVERLAY */}
+                    {/* MAGNETIC CENTER SNAP LINE */}
+                    {isSnappedToCenter && (
+                      <div className="canvas-snap-center-line">
+                        <span className="snap-label">CENTERED</span>
+                      </div>
+                    )}
+
+                    {/* DYNAMIC INTERACTIVE ARTWORK OVERLAY */}
                     {isArtworkVisible &&
                       ((placement === "back" && viewSide === "back") ||
                         (placement !== "back" && viewSide !== "back")) && (
                         <div
-                          className={`tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide}`}
+                          className={`tee-interactive-overlay tee-print-overlay placement-${placement} size-${printSize.toLowerCase()} view-${viewSide} ${selectedElement === "artwork" ? "is-selected" : ""} ${isFabricBlend && selectedColor !== "black" ? "fabric-multiply-mode" : ""}`}
                           style={{
                             opacity: artworkOpacity,
                             transform: `translate(calc(-50% + ${artworkOffsetX}px), ${artworkOffsetY}px) rotate(${artworkRotation}deg) scale(${artworkScale})`,
+                          }}
+                          onPointerDown={(e) => startTransform(e, "artwork", "move")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedElement("artwork");
                           }}
                         >
                           <img
                             src={uploadedDesign && uploadedDesign.isImage ? uploadedDesign.dataUrl : STUDIO_ARTWORK}
                             alt="Custom Print"
                             className={`print-graphic-img ${artworkFlipped ? "flipped-x" : ""}`}
+                            draggable={false}
                           />
+
+                          {/* INTERACTIVE BOUNDING BOX & HANDLES WHEN SELECTED */}
+                          {selectedElement === "artwork" && (
+                            <div className="canvas-bounding-box" onClick={(e) => e.stopPropagation()}>
+                              {/* TOP FLOATING QUICK ACTIONS BAR */}
+                              <div className="canvas-elem-mini-bar">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArtworkOffsetX(0);
+                                  }}
+                                  title="Align Center"
+                                >
+                                  Center
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArtworkRotation((r) => (r + 90) % 360);
+                                  }}
+                                  title="Rotate 90°"
+                                >
+                                  +90°
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setArtworkFlipped((f) => !f);
+                                  }}
+                                  title="Flip Horizontal"
+                                >
+                                  Flip
+                                </button>
+                                <button
+                                  type="button"
+                                  className="del-elem-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsArtworkVisible(false);
+                                    setSelectedElement(null);
+                                  }}
+                                  title="Delete / Hide"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              {/* ROTATION STALK & CIRCULAR HANDLE */}
+                              <div className="canvas-rot-stalk" />
+                              <div
+                                className="canvas-handle canvas-handle-rot"
+                                onPointerDown={(e) => startTransform(e, "artwork", "rotate")}
+                                title="Drag to Rotate"
+                              >
+                                <RotateCw size={11} />
+                              </div>
+
+                              {/* 4 CORNER RESIZE HANDLES */}
+                              <div
+                                className="canvas-handle canvas-handle-nw"
+                                onPointerDown={(e) => startTransform(e, "artwork", "resize-nw")}
+                                title="Drag to Resize"
+                              />
+                              <div
+                                className="canvas-handle canvas-handle-ne"
+                                onPointerDown={(e) => startTransform(e, "artwork", "resize-ne")}
+                                title="Drag to Resize"
+                              />
+                              <div
+                                className="canvas-handle canvas-handle-se"
+                                onPointerDown={(e) => startTransform(e, "artwork", "resize-se")}
+                                title="Drag to Resize"
+                              />
+                              <div
+                                className="canvas-handle canvas-handle-sw"
+                                onPointerDown={(e) => startTransform(e, "artwork", "resize-sw")}
+                                title="Drag to Resize"
+                              />
+
+                              {/* LIVE DIMENSION SPECIFICATION BADGE */}
+                              <div className="canvas-elem-dim-badge">
+                                {Math.round(21 * artworkScale)} × {Math.round(21 * artworkScale)} cm
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                    {/* DYNAMIC CUSTOM TEXT OVERLAY */}
+                    {/* DYNAMIC INTERACTIVE CUSTOM TEXT OVERLAY */}
                     {isTextVisible && customText &&
                       ((placement === "back" && viewSide === "back") ||
                         (placement !== "back" && viewSide !== "back")) && (
                         <div
-                          className={`tee-text-overlay placement-${placement} view-${viewSide}`}
+                          className={`tee-interactive-overlay tee-text-overlay placement-${placement} view-${viewSide} ${selectedElement === "text" ? "is-selected" : ""}`}
                           style={{
-                            transform: `translate(-50%, ${textOffsetY}px)`,
+                            transform: `translate(calc(-50% + ${textOffsetX}px), ${textOffsetY}px) rotate(${textRotation}deg) scale(${textScale})`,
+                          }}
+                          onPointerDown={(e) => startTransform(e, "text", "move")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedElement("text");
                           }}
                         >
                           <div
@@ -5923,6 +6229,38 @@ MORE THAN A MOMENT.`;
                           >
                             {customText}
                           </div>
+
+                          {/* INTERACTIVE BOUNDING BOX FOR TEXT */}
+                          {selectedElement === "text" && (
+                            <div className="canvas-bounding-box" onClick={(e) => e.stopPropagation()}>
+                              <div className="canvas-elem-mini-bar">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTextOffsetX(0);
+                                  }}
+                                >
+                                  Center
+                                </button>
+                                <button
+                                  type="button"
+                                  className="del-elem-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsTextVisible(false);
+                                    setSelectedElement(null);
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <div
+                                className="canvas-handle canvas-handle-se"
+                                onPointerDown={(e) => startTransform(e, "text", "resize-se")}
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 

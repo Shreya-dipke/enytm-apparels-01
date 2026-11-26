@@ -2952,3 +2952,227 @@
   background: #25D366 !important;
   color: #ffffff !important;
 }
+
+/* ======================================================== */
+/* REAL-TIME INTERACTIVE CANVAS STUDIO STYLES               */
+/* ======================================================== */
+
+.tee-stage-viewport {
+  position: relative !important;
+  cursor: default !important;
+  user-select: none !important;
+}
+
+/* INTERACTIVE OVERLAYS */
+.tee-interactive-overlay {
+  cursor: grab !important;
+  touch-action: none !important;
+}
+
+.tee-interactive-overlay:active {
+  cursor: grabbing !important;
+}
+
+/* REALISTIC FABRIC BLENDING */
+.fabric-multiply-mode .print-graphic-img {
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.08) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* SAFE AREA BOUNDARY */
+.boundary-tag-pill {
+  position: absolute !important;
+  top: -20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: rgba(20, 20, 20, 0.85) !important;
+  border: 1px solid rgba(215, 188, 152, 0.4) !important;
+  border-radius: 9999px !important;
+  padding: 2px 8px !important;
+  font-size: 9px !important;
+  letter-spacing: 0.5px !important;
+  color: #D7BC98 !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.tee-stage-viewport:hover .boundary-tag-pill {
+  opacity: 1 !important;
+}
+
+/* MAGNETIC SNAP LINE */
+.canvas-snap-center-line {
+  position: absolute !important;
+  top: 15% !important;
+  bottom: 15% !important;
+  left: 50% !important;
+  width: 1px !important;
+  border-left: 1.5px dashed #D7BC98 !important;
+  transform: translateX(-50%) !important;
+  z-index: 25 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: fadeInSnap 0.15s ease-out !important;
+}
+
+.snap-label {
+  background: #D7BC98 !important;
+  color: #080808 !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+@keyframes fadeInSnap {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* BOUNDING BOX */
+.canvas-bounding-box {
+  position: absolute !important;
+  inset: -6px !important;
+  border: 1.5px solid #D7BC98 !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  pointer-events: auto !important;
+  border-radius: 3px !important;
+}
+
+/* TOP MINI BAR */
+.canvas-elem-mini-bar {
+  position: absolute !important;
+  top: -34px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: #141414 !important;
+  border: 1px solid #333333 !important;
+  border-radius: 6px !important;
+  padding: 3px 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+  white-space: nowrap !important;
+  z-index: 30 !important;
+}
+
+.canvas-elem-mini-bar button {
+  background: transparent !important;
+  border: none !important;
+  color: #e0e0e0 !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  padding: 2px 6px !important;
+  cursor: pointer !important;
+  border-radius: 3px !important;
+  transition: all 0.15s ease !important;
+}
+
+.canvas-elem-mini-bar button:hover {
+  background: #252525 !important;
+  color: #D7BC98 !important;
+}
+
+.canvas-elem-mini-bar button.del-elem-btn {
+  color: #ff5555 !important;
+}
+
+.canvas-elem-mini-bar button.del-elem-btn:hover {
+  background: rgba(255, 85, 85, 0.2) !important;
+}
+
+/* ROTATION STALK & HANDLE */
+.canvas-rot-stalk {
+  position: absolute !important;
+  top: -18px !important;
+  left: 50% !important;
+  width: 1px !important;
+  height: 18px !important;
+  background: #D7BC98 !important;
+  transform: translateX(-50%) !important;
+  pointer-events: none !important;
+}
+
+.canvas-handle-rot {
+  position: absolute !important;
+  top: -28px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 18px !important;
+  height: 18px !important;
+  background: #181818 !important;
+  border: 1.5px solid #D7BC98 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #D7BC98 !important;
+  cursor: grab !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  z-index: 31 !important;
+}
+
+.canvas-handle-rot:hover {
+  background: #D7BC98 !important;
+  color: #080808 !important;
+}
+
+/* CORNER RESIZE HANDLES */
+.canvas-handle {
+  position: absolute !important;
+  width: 10px !important;
+  height: 10px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #080808 !important;
+  border-radius: 2px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+  z-index: 30 !important;
+}
+
+.canvas-handle-nw { top: -5px !important; left: -5px !important; cursor: nwse-resize !important; }
+.canvas-handle-ne { top: -5px !important; right: -5px !important; cursor: nesw-resize !important; }
+.canvas-handle-se { bottom: -5px !important; right: -5px !important; cursor: nwse-resize !important; }
+.canvas-handle-sw { bottom: -5px !important; left: -5px !important; cursor: nesw-resize !important; }
+
+/* DIMENSION BADGE */
+.canvas-elem-dim-badge {
+  position: absolute !important;
+  bottom: -22px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: rgba(16, 16, 16, 0.9) !important;
+  border: 1px solid #333333 !important;
+  color: #a0a0a0 !important;
+  font-size: 9px !important;
+  font-family: monospace !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
+}
+
+/* FABRIC MODE BUTTON */
+.canvas-mode-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #a0a0a0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.canvas-mode-btn.is-active {
+  background: rgba(215, 188, 152, 0.15) !important;
+  color: #D7BC98 !important;
+  border-color: rgba(215, 188, 152, 0.4) !important;
+}
