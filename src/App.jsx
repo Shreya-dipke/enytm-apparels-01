@@ -438,49 +438,18 @@ function Home() {
 
   return (
     <main className="home-black-label home-v3">
-      <section className="hero hero-v2">
-        <img
-          src="/enytm-hero.jpg"
-          alt="ENYTM The Black Label"
-          className="hero-desktop-img"
-        />
-        <img
-          src="/hero-mobile.jpg"
-          alt="ENYTM The Black Label"
-          className="hero-mobile-img"
-        />
-        <div className="hero-overlay" />
-        <div className="hero-edition">
-          <span className="hero-edition-dot" /> ENYTM / THE BLACK LABEL <span>EST. 2026</span>
-        </div>
-        <div className="hero-content hero-content-v2">
-          <div style={{ width: "32px", height: "2px", background: "#cbb89a", margin: "10px 0 16px" }} />
-          <h1>
-            YOUR<br />
-            EVERYDAY.<br />
-            <em>REDEFINED.</em>
-          </h1>
-          <p className="hero-subline">
-            Quiet confidence. Considered details.<br />Heavyweight fabrics made to live in.
-          </p>
-          <div className="hero-cta-group">
-            <Link className="btn primary hero-cta hero-cta-primary" to="/shop" style={{ borderRadius: "999px" }}>
-              Shop Now <ArrowRight size={17} />
-            </Link>
-            <a className="btn outline hero-cta hero-cta-secondary" href="#collections" style={{ borderRadius: "999px" }}>
-              <Play size={13} style={{ fill: "currentColor", marginRight: 4 }} /> Watch Film
-            </a>
-          </div>
-          <span className="hero-caption">MORE THAN A MOMENT · DESIGNED TO STAY.</span>
-        </div>
-        <div className="hero-index">
-          <span>01</span>
-          <i />
-          <span>04</span>
-        </div>
-        <div className="scroll">
-          <span>SCROLL</span> ↓
-        </div>
+      <section className="hero hero-v2 hero-campaign-section">
+        <Link
+          to="/shop"
+          className="hero-campaign-link"
+          aria-label="Shop The Collection - Your Everyday. Redefined."
+        >
+          <img
+            src="/enytm-hero-campaign.jpg"
+            alt="ENYTM - Your Everyday. Redefined. Oversized T-Shirts & Premium Polos"
+            className="hero-campaign-img"
+          />
+        </Link>
       </section>
 
 

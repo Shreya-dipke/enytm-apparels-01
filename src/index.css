@@ -17830,3 +17830,90 @@ a.btn.outline {
     flex-direction: column !important;
   }
 }
+
+/* ========================================================
+   ENYTM CAMPAIGN HERO SECTION (OFFICIAL POSTER BANNER)
+   ======================================================== */
+.hero.hero-campaign-section,
+.home-v3 .hero.hero-campaign-section {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  background: #0c0c0c !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+.hero-campaign-link {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  position: relative !important;
+  text-decoration: none !important;
+  background: #0c0c0c !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
+.hero-campaign-img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+  transition: opacity 0.25s ease !important;
+}
+
+.hero-campaign-link:hover .hero-campaign-img {
+  opacity: 0.96 !important;
+}
+
+/* Mobile: Perfectly preserve 853 / 1024 poster ratio edge-to-edge */
+@media (max-width: 768px) {
+  .hero.hero-campaign-section,
+  .home-v3 .hero.hero-campaign-section {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+  }
+
+  .hero-campaign-img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 853 / 1024 !important;
+  }
+}
+
+/* Desktop: Center poster elegantly within viewport without clipping */
+@media (min-width: 769px) {
+  .hero.hero-campaign-section,
+  .home-v3 .hero.hero-campaign-section {
+    height: min(880px, calc(100vh - 100px)) !important;
+    max-height: min(880px, calc(100vh - 100px)) !important;
+  }
+
+  .hero-campaign-link {
+    height: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .hero-campaign-img {
+    height: 100% !important;
+    max-height: min(880px, calc(100vh - 100px)) !important;
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+}
