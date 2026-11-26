@@ -19579,15 +19579,28 @@ a.btn.outline {
 .color-swatches-inline {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   flex-wrap: wrap !important;
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
 }
 
 .color-dot-btn {
   background: transparent !important;
   border: none !important;
-  padding: 0 !important;
+  padding: 3px !important;
+  margin: 0 !important;
   cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  outline: none !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  position: relative !important;
+  z-index: 10 !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .color-circle {
@@ -19598,8 +19611,9 @@ a.btn.outline {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s !important;
+  transition: all 0.2s ease !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  pointer-events: none !important;
 }
 
 .color-dot-btn.is-selected .color-circle {
@@ -21068,15 +21082,28 @@ a.btn.outline {
 .color-swatches-inline {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   flex-wrap: wrap !important;
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
 }
 
 .color-dot-btn {
   background: transparent !important;
   border: none !important;
-  padding: 0 !important;
+  padding: 3px !important;
+  margin: 0 !important;
   cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  outline: none !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  position: relative !important;
+  z-index: 10 !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .color-circle {
@@ -21087,8 +21114,9 @@ a.btn.outline {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s !important;
+  transition: all 0.2s ease !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  pointer-events: none !important;
 }
 
 .color-dot-btn.is-selected .color-circle {

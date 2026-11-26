@@ -6547,7 +6547,7 @@ MORE THAN A MOMENT.`;
                         <span>360°</span>
                       </div>
                     ) : (
-                      <img src={thumb.img} alt={thumb.title} />
+                      <img src={thumb.img} alt={thumb.title} style={{ filter: currentColorObj.filter }} />
                     )}
                   </button>
                 ))}
@@ -6827,7 +6827,15 @@ MORE THAN A MOMENT.`;
                           key={c.id}
                           type="button"
                           className={`color-dot-btn ${isSel ? "is-selected" : ""}`}
-                          onClick={() => setSelectedColor(c.id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedColor(c.id);
+                          }}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            setSelectedColor(c.id);
+                          }}
                           title={c.name}
                         >
                           <span
